@@ -1,0 +1,1143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm kiếm vé - Vexeapp</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
+    <link rel="stylesheet" href="{% static 'css/timkiem.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Nhà xe Đà Nẵng_Huế</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'timkiem' %}" class="sidebar-item active">
+                <i class="fa-solid fa-magnifying-glass" style="color: #06A0E2;"></i> Tìm kiếm vé
+            </a>
+            <a href="{% url 'quanlyve' %}" class="sidebar-item">
+                <i class="fa-solid fa-ticket" style="color: #444;"></i> Vé của tôi
+            </a>
+            <a href="{% url 'danhgiachuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-comments" style="color: #444;"></i> Đánh giá chuyến xe
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content search-page-content">
+            <div id="search-view">
+                <div class="search-card">
+                    <div class="search-form">
+                        <div class="form-row locations-row">
+                            <div class="form-group">
+                                <label>Nơi xuất phát</label>
+                                <div class="custom-dropdown" id="dropdown-origin">
+                                    <div class="dropdown-header form-control">
+                                        <span class="dropdown-selected">Chọn Nơi xuất phát</span>
+                                        <i class="fa-solid fa-angle-down"></i>
+                                    </div>
+                                    <ul class="dropdown-list">
+                                        <li class="dropdown-option">Đà Nẵng</li>
+                                        <li class="dropdown-option">Hội An</li>
+                                        <li class="dropdown-option">Huế</li>
+                                    </ul>
+                                    <input type="hidden" name="origin" value="">
+                                </div>
+                            </div>
+
+                            <div class="exchange-icon-wrapper">
+                                <i class="fa-solid fa-right-left" style="color: #06A0E2; cursor: pointer;"></i>
+                                <div class="dots-line">
+                                    <span class="dot-green"></span>
+                                    <span class="line-dashed"></span>
+                                    <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nơi đến</label>
+                                <div class="custom-dropdown" id="dropdown-dest">
+                                    <div class="dropdown-header form-control">
+                                        <span class="dropdown-selected">Chọn Nơi đến</span>
+                                        <i class="fa-solid fa-angle-down"></i>
+                                    </div>
+                                    <ul class="dropdown-list">
+                                        <li class="dropdown-option">Huế</li>
+                                        <li class="dropdown-option">Đà Nẵng</li>
+                                        <li class="dropdown-option">Hội An</li>
+                                    </ul>
+                                    <input type="hidden" name="destination" value="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row times-row">
+                            <div class="form-group">
+                                <label>Ngày đi</label>
+                                <div class="custom-datepicker" id="datepicker-depart">
+                                    <div class="dropdown-header form-control">
+                                        <span class="dropdown-selected date-selected">mm/dd/yyyy</span>
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </div>
+                                    <div class="calendar-dropdown">
+                                        <div class="calendar-header">
+                                            <span class="month-year">February 2026</span>
+                                            <div class="calendar-nav">
+                                                <i class="fa-solid fa-chevron-left"></i>
+                                                <i class="fa-solid fa-chevron-right"></i>
+                                            </div>
+                                        </div>
+                                        <div class="calendar-grid">
+                                            <!-- JS renders grid here -->
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="depart_date" value="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Giờ đi</label>
+                                <div class="custom-dropdown" id="dropdown-time">
+                                    <div class="dropdown-header form-control">
+                                        <span class="dropdown-selected">--:-- --</span>
+                                        <i class="fa-regular fa-clock"></i>
+                                    </div>
+                                    <ul class="dropdown-list time-list">
+                                        <li class="dropdown-option">04:00</li>
+                                        <li class="dropdown-option">05:00</li>
+                                        <li class="dropdown-option">06:00</li>
+                                        <li class="dropdown-option">07:00</li>
+                                        <li class="dropdown-option">08:00</li>
+                                        <li class="dropdown-option">09:00</li>
+                                        <li class="dropdown-option">10:00</li>
+                                        <li class="dropdown-option">11:00</li>
+                                        <li class="dropdown-option">12:00</li>
+                                        <li class="dropdown-option">13:00</li>
+                                        <li class="dropdown-option">14:00</li>
+                                        <li class="dropdown-option">15:00</li>
+                                        <li class="dropdown-option">16:00</li>
+                                        <li class="dropdown-option">17:00</li>
+                                        <li class="dropdown-option">18:00</li>
+                                        <li class="dropdown-option">19:00</li>
+                                        <li class="dropdown-option">20:00</li>
+                                        <li class="dropdown-option">21:00</li>
+                                        <li class="dropdown-option">22:00</li>
+                                    </ul>
+                                    <input type="hidden" name="depart_time" value="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions-center">
+                            <button class="btn-search">
+                                <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <div class="history-header">
+                        <h2>Lịch sử tìm kiếm</h2>
+                        <a href="#" class="btn-clear-all">Xóa tất cả</a>
+                    </div>
+
+                    <div class="history-list">
+                        <div class="history-item">
+                            <div class="route-name">Đà Nẵng <i class="fa-solid fa-arrow-right"></i> Huế</div>
+                            <div class="route-time">25/02/2026 - 08:00</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="route-name">Huế <i class="fa-solid fa-arrow-right"></i> Đà Nẵng</div>
+                            <div class="route-time">20/02/2026 - 07:30</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="route-name">Huế <i class="fa-solid fa-arrow-right"></i> Đà Nẵng</div>
+                            <div class="route-time">12/02/2026 - 10:30</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="route-name">Hội An <i class="fa-solid fa-arrow-right"></i> Huế</div>
+                            <div class="route-time">01/12/2025 - 09:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results-view" style="display: none;">
+                <div class="tickets-grid"></div>
+            </div>
+
+            <div id="seat-view" style="display: none;">
+                <div class="search-card">
+                    <div class="search-form">
+                        <div class="form-row locations-row">
+                            <div class="form-group">
+                                <label>Nơi xuất phát</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    Đà Nẵng <i class="fa-solid fa-caret-down"></i>
+                                </div>
+                            </div>
+
+                            <div class="exchange-icon-wrapper">
+                                <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
+                                <div class="dots-line">
+                                    <span class="dot-green"></span>
+                                    <span class="line-dashed"></span>
+                                    <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nơi đến</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    Huế <i class="fa-solid fa-caret-down"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row times-row" style="margin-bottom: 0;">
+                            <div class="form-group">
+                                <label>Ngày đi</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    02/26/2026 <i class="fa-regular fa-calendar"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Giờ đi</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    07:00 - 09:30 <i class="fa-regular fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="seat-selection-container">
+                    <div class="seat-map-card">
+                        <div class="seat-row">
+                            <div class="seat-item available">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                    <path
+                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>B7</span>
+                            </div>
+                            <div class="seat-item sold" title="Đã bán">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                    <path
+                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>B6</span>
+                            </div>
+                            <div class="seat-item sold" title="Đã bán">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                    <path
+                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>B5</span>
+                            </div>
+                        </div>
+                        <div class="seat-row">
+                            <div class="seat-item sold" title="Đã bán">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                    <path
+                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>B2</span>
+                            </div>
+                            <div class="seat-item sold" title="Đã bán">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                    <path
+                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>B3</span>
+                            </div>
+                            <div class="seat-item sold" title="Đã bán">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                    <path
+                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>B4</span>
+                            </div>
+                        </div>
+                        <div class="seat-row">
+                            <div class="seat-item available">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                    <path
+                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>B1</span>
+                            </div>
+                            <div style="width: 50px; visibility: hidden;"></div>
+                            <div class="steering-wheel">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="steering-svg"
+                                    style="width: 50px; height: 50px; fill: currentColor;">
+                                    <circle cx="50" cy="50" r="36" stroke="currentColor" stroke-width="12"
+                                        fill="none" />
+                                    <path
+                                        d="M 14 46 Q 32 40 50 45 Q 68 40 86 46 L 86 54 L 60 54 L 56 86 L 44 86 L 40 54 L 14 54 Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                    <circle cx="50" cy="50" r="16" />
+                                    <circle cx="50" cy="50" r="6" fill="white" />
+                                    <circle cx="50" cy="50" r="2.5" fill="currentColor" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="seat-right-panel">
+                        <div class="seat-legend-card">
+                            <div class="legend-item">
+                                <div class="color-box yellow"></div>
+                                <span>Ghế đang chọn</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="color-box blue"></div>
+                                <span>Ghế đã bán</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="color-box gray"></div>
+                                <span>Ghế còn trống</span>
+                            </div>
+                        </div>
+
+                        <div class="seat-booking-summary">
+                            <div class="summary-top">
+                                <div class="seat-count" id="seatCount">0</div>
+                                <div class="seat-label">Ghế đã chọn</div>
+                            </div>
+                            <div class="summary-bottom">
+                                <div class="total-price" id="totalPrice">0.000 vnđ</div>
+                                <button class="btn-continue" id="btnSeatContinue">Tiếp tục</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="info-view" style="display: none;">
+                <div class="search-card">
+                    <div class="search-form">
+                        <div class="form-row locations-row">
+                            <div class="form-group">
+                                <label>Nơi xuất phát</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    Đà Nẵng <i class="fa-solid fa-caret-down"></i>
+                                </div>
+                            </div>
+
+                            <div class="exchange-icon-wrapper">
+                                <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
+                                <div class="dots-line">
+                                    <span class="dot-green"></span>
+                                    <span class="line-dashed"></span>
+                                    <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nơi đến</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    Huế <i class="fa-solid fa-caret-down"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row times-row" style="margin-bottom: 0;">
+                            <div class="form-group">
+                                <label>Ngày đi</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    02/26/2026 <i class="fa-regular fa-calendar"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Giờ đi</label>
+                                <div class="form-control"
+                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                                    07:00 - 09:30 <i class="fa-regular fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3 class="info-title">Hãy điền thông tin cụ thể</h3>
+                    <div class="info-form">
+                        <div class="info-row">
+                            <div class="info-group">
+                                <label>Điểm đón của bạn</label>
+                                <input type="text" class="info-input" id="pickupInput"
+                                    placeholder="Vd: 123 Nguyễn Văn Linh, Hải Châu, Đà Nẵng">
+                                <span class="error-msg" id="pickupError"></span>
+                            </div>
+                            <div class="info-group">
+                                <label>Điểm trả của bạn</label>
+                                <input type="text" class="info-input" id="dropoffInput"
+                                    placeholder="Vd: 38 Trần Phú, Huế">
+                                <span class="error-msg" id="dropoffError"></span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-group">
+                                <label>Họ và tên khách hàng</label>
+                                <input type="text" class="info-input" id="nameInput" placeholder="Vd: Nguyễn Văn A">
+                                <span class="error-msg" id="nameError"></span>
+                            </div>
+                            <div class="info-group">
+                                <label>Số điện thoại</label>
+                                <input type="tel" class="info-input" id="phoneInput" placeholder="Vd: 0373945787">
+                                <span class="error-msg" id="phoneError"></span>
+                            </div>
+                        </div>
+                        <div class="info-action">
+                            <button class="btn-info-continue" id="btnInfoContinue">Tiếp tục</button>
+                        </div>
+                    </div>
+                </div>
+        </main>
+
+        <!-- OTP Modal Overlay -->
+        <div id="otp-modal" class="modal-overlay" style="display: none;">
+            <div class="otp-card">
+                <h3 class="otp-title">Nhập mã OTP</h3>
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" class="otp-digit" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-digit" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-digit" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-digit" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-digit" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-digit" autocomplete="off">
+                </div>
+                <div class="otp-error" id="otpError">Vui lòng nhập mã OTP</div>
+            </div>
+        </div>
+
+        <!-- Success Modal Overlay -->
+        <div id="success-modal" class="modal-overlay" style="display: none;">
+            <div class="success-card">
+                <div class="close-btn" id="btnSuccessClose"><i class="fa-solid fa-xmark"></i></div>
+                <div class="success-header">
+                    <div class="success-icon"><i class="fa-regular fa-circle-check"></i></div>
+                    <h3 class="success-title">Đặt vé thành công</h3>
+                </div>
+                <div class="success-divider"></div>
+                <div class="success-content">
+                    <h4 class="success-subtitle">Thông tin chuyến xe</h4>
+                    <div class="success-details">
+                        <div class="detail-item">
+                            <i class="fa-solid fa-car-side"></i>
+                            <span class="detail-label">Chuyến:</span> <span class="detail-value">VN001328</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fa-regular fa-clock"></i>
+                            <span class="detail-label">Giờ đón:</span> <span class="detail-value" id="successTime">07h00
+                                26/02/2026</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fa-solid fa-chair"></i>
+                            <span class="detail-label">Số ghế:</span> <span class="detail-value" id="successSeats">B1,
+                                B7</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fa-solid fa-user"></i>
+                            <span class="detail-label">Khách hàng:</span> <span class="detail-value" id="successName">Lê
+                                Thị Thanh Nhàn</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fa-solid fa-phone"></i>
+                            <span class="detail-label">SĐT khách hàng:</span> <span class="detail-value"
+                                id="successPhone">0822422400</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            // Custom Dropdown logic
+            const dropdowns = document.querySelectorAll('.custom-dropdown');
+            dropdowns.forEach(dropdown => {
+                const header = dropdown.querySelector('.dropdown-header');
+                const selected = dropdown.querySelector('.dropdown-selected');
+                const list = dropdown.querySelector('.dropdown-list');
+                const options = dropdown.querySelectorAll('.dropdown-option');
+                const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+
+                header.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Close others
+                    dropdowns.forEach(d => {
+                        if (d !== dropdown) d.classList.remove('active');
+                    });
+                    dropdown.classList.toggle('active');
+                });
+
+                options.forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selected.textContent = option.textContent;
+                        selected.style.color = '#333';
+                        if (hiddenInput) hiddenInput.value = option.textContent;
+                        dropdown.classList.remove('active');
+                    });
+                });
+            });
+
+            // Datepicker logic
+            const datepicker = document.getElementById('datepicker-depart');
+            if (datepicker) {
+                const header = datepicker.querySelector('.dropdown-header');
+                const selectedDateStr = datepicker.querySelector('.date-selected');
+                const hiddenInputDate = datepicker.querySelector('input[type="hidden"]');
+                const grid = datepicker.querySelector('.calendar-grid');
+
+                header.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdowns.forEach(d => d.classList.remove('active'));
+                    datepicker.classList.toggle('active');
+                });
+
+                let currentDate = new Date(2026, 1, 1); // Feb 2026
+
+                function renderCalendar(date) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    const year = date.getFullYear();
+                    const month = date.getMonth();
+                    datepicker.querySelector('.month-year').textContent = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(date);
+
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+                    let html = '<div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>';
+
+                    // Previous month days
+                    for (let i = firstDay - 1; i >= 0; i--) {
+                        html += `<div class="calendar-date other-month">${daysInPrevMonth - i}</div>`;
+                    }
+
+                    // Current month days
+                    for (let i = 1; i <= daysInMonth; i++) {
+                        const cellDate = new Date(year, month, i);
+                        const isPast = cellDate < today;
+                        const dText = i === 1 ? '01' : i;
+                        const statusClass = isPast ? 'past-date' : 'current-month';
+
+                        html += `<div class="calendar-date ${statusClass}" data-date="${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}" ${isPast ? 'style="opacity: 0.3; cursor: not-allowed;"' : ''}>${dText}</div>`;
+                    }
+
+                    const totalCells = firstDay + daysInMonth;
+                    const nextDays = Math.ceil(totalCells / 7) * 7 - totalCells;
+                    for (let i = 1; i <= nextDays; i++) {
+                        html += `<div class="calendar-date other-month">${i}</div>`;
+                    }
+
+                    grid.innerHTML = html;
+
+                    grid.querySelectorAll('.current-month').forEach(cell => {
+                        cell.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            grid.querySelectorAll('.calendar-date').forEach(c => c.classList.remove('selected'));
+                            cell.classList.add('selected');
+                            const val = cell.getAttribute('data-date');
+                            const parts = val.split('-');
+                            selectedDateStr.textContent = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                            selectedDateStr.style.color = '#333';
+                            if (hiddenInputDate) hiddenInputDate.value = val;
+                            datepicker.classList.remove('active');
+                        });
+                    });
+                }
+
+                renderCalendar(currentDate);
+
+                datepicker.querySelector('.fa-chevron-left').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendar(currentDate);
+                });
+
+                datepicker.querySelector('.fa-chevron-right').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendar(currentDate);
+                });
+            }
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+                dropdowns.forEach(d => d.classList.remove('active'));
+                if (datepicker) datepicker.classList.remove('active');
+            });
+
+            // Selecting seats logic
+            const seatView = document.getElementById('seat-view');
+            const seatCountEl = document.getElementById('seatCount');
+            const totalPriceEl = document.getElementById('totalPrice');
+
+            if (seatView) {
+                seatView.addEventListener('click', (e) => {
+                    const seatItem = e.target.closest('.seat-item.available');
+                    if (seatItem) {
+                        seatItem.classList.toggle('selected');
+                        const selectedSeats = seatView.querySelectorAll('.seat-item.selected').length;
+                        seatCountEl.textContent = selectedSeats;
+
+                        let basePrice = window.currentBookingTrip ? parseInt(String(window.currentBookingTrip.price || '150000').replace(/\D/g, '')) || 150000 : 150000;
+                        let priceNum = selectedSeats * basePrice;
+                        // format to e.g. 130.000
+                        const priceStr = priceNum === 0 ? "0" : priceNum.toLocaleString('vi-VN').replace(',', '.');
+                        totalPriceEl.textContent = priceStr + ' vnđ';
+                    }
+                });
+            }
+
+            // Real Search Results
+            const btnSearch = document.querySelector('.btn-search');
+            const searchView = document.getElementById('search-view');
+            const resultsView = document.getElementById('results-view');
+            const ticketsGrid = document.querySelector('.tickets-grid');
+
+            // To store the globally selected trip for booking
+            window.currentBookingTrip = null;
+
+            if (btnSearch && searchView && resultsView) {
+                btnSearch.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    const originInput = document.querySelector('input[name="origin"]');
+                    const destInput = document.querySelector('input[name="destination"]');
+                    const dateInput = document.querySelector('input[name="depart_date"]'); // format YYYY-MM-DD
+
+                    const origin = originInput ? originInput.value.trim() : '';
+                    const dest = destInput ? destInput.value.trim() : '';
+                    let departDateStr = dateInput ? dateInput.value : ''; // "2026-02-28"
+
+                    if (!origin) { alert('Vui lòng chọn Nơi xuất phát'); return; }
+                    if (!dest) { alert('Vui lòng chọn Nơi đến'); return; }
+                    if (!departDateStr) { alert('Vui lòng chọn Ngày đi (bằng cách click vào lịch)'); return; }
+
+                    // Filter trips
+                    let allTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+
+                    const now = new Date();
+
+                    // Check if selected date is strictly in the past (only date part)
+                    const selectedDate = new Date(departDateStr);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (selectedDate < today) {
+                        // Past date -> no trips
+                        allTrips = [];
+                    }
+
+                    // Filter by date & route & future time
+                    let filteredTrips = allTrips.filter(t => {
+                        // 1. Route match (t.route usually looks like "Đà Nẵng - Huế")
+                        const isRouteMatch = (t.route.toLowerCase().includes(origin.toLowerCase()) && t.route.toLowerCase().includes(dest.toLowerCase()));
+
+                        // 2. Date match
+                        const isDateMatch = t.date === departDateStr;
+
+                        // 3. Time match (if it's today, trip time must be > current time)
+                        let isFutureTime = true;
+                        if (t.date === departDateStr && t.time) {
+                            const [h, m] = t.time.split(':');
+                            const tripDateTime = new Date(departDateStr);
+                            tripDateTime.setHours(parseInt(h), parseInt(m), 0, 0);
+
+                            if (tripDateTime < now) {
+                                isFutureTime = false; // trip has already departed today
+                            }
+                        }
+                        return isRouteMatch && isDateMatch && isFutureTime;
+                    });
+
+                    searchView.style.display = 'none';
+                    resultsView.style.display = 'block';
+
+                    let html = '';
+
+                    if (filteredTrips.length === 0) {
+                        html = '<div style="padding:40px; text-align:center; font-size:18px; color:#555; grid-column: 1 / -1;">Không có tuyến xe nào trong thời gian này.</div>';
+                    } else {
+                        filteredTrips.forEach(trip => {
+                            const carImg = 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=150&h=100&fit=crop';
+                            const carName = 'Nhà xe Đà Nẵng - Huế';
+
+                            let numPrice = parseInt(String(trip.price || '150000').replace(/\D/g, '')) || 150000;
+                            const priceText = numPrice.toLocaleString('vi-VN').replace(',', '.') + 'đ';
+
+                            const is4Seat = trip.type && trip.type.includes('4');
+                            const is7Seat = trip.type && trip.type.includes('7');
+                            const totalSeats = is4Seat ? 4 : (is7Seat ? 7 : 9);
+                            const bookedCount = trip.bookedSeats ? trip.bookedSeats.length : 0;
+                            const emptySeats = totalSeats - bookedCount;
+
+                            html += `
+                            <div class="ticket-card">
+                                <div class="ticket-top">
+                                    <div class="route-line-vertical">
+                                        <div class="route-point">
+                                            <span class="dot-green"></span>
+                                            <div class="point-info">
+                                                <span class="time">${trip.time}</span>
+                                                <span class="place">${origin}</span>
+                                            </div>
+                                        </div>
+                                        <div class="route-point">
+                                            <span class="dot-red"></span>
+                                            <div class="point-info">
+                                                <span class="time">--:--</span>
+                                                <span class="place">${dest}</span>
+                                            </div>
+                                        </div>
+                                        <div class="line-dotted-vertical"></div>
+                                    </div>
+                                    <div class="ticket-price-info">
+                                        <div class="price" style="font-size:20px; color:#13B5F6; font-weight:bold;">${priceText}</div>
+                                        <div class="seats">${emptySeats} chỗ trống</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="ticket-middle">
+                                    <img src="${carImg}" alt="Xe khách" class="car-img" onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=150&h=100&fit=crop'">
+                                    <div class="car-details">
+                                        <div class="car-name">${carName}</div>
+                                        <div class="car-type">${trip.type || 'Xe khách'}</div>
+                                        <div class="car-rating">
+                                            <i class="fa-solid fa-star" style="color: #FFC107;"></i> 
+                                            <span>4.8 (120 đánh giá)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="ticket-bottom">
+                                    <div class="instant-confirm">
+                                        <i class="fa-solid fa-check"></i> Xác nhận chỗ ngay
+                                    </div>
+                                    <button class="btn-choose-seat" data-trip-id="${trip.id}">Chọn chỗ</button>
+                                </div>
+                            </div>
+                            `;
+                        });
+                    }
+                    ticketsGrid.innerHTML = html;
+                });
+
+                // Seat view trigger
+                ticketsGrid.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.btn-choose-seat');
+                    if (btn) {
+                        const tripId = btn.getAttribute('data-trip-id');
+                        const allTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                        window.currentBookingTrip = allTrips.find(t => t.id === tripId);
+
+                        // Render Seats dynamically
+                        const seatsGrid = document.querySelector('.seat-grid');
+                        if (seatsGrid && window.currentBookingTrip) {
+                            const trip = window.currentBookingTrip;
+                            const is4Seat = trip.type && trip.type.includes('4');
+                            const is7Seat = trip.type && trip.type.includes('7');
+                            const totalSeats = is4Seat ? 4 : (is7Seat ? 7 : 9);
+                            const booked = trip.bookedSeats || [];
+
+                            let seatHtml = '';
+                            for (let i = 1; i <= totalSeats; i++) {
+                                const seatLabel = "A" + i;
+                                const isBooked = booked.includes(seatLabel);
+                                const statusClass = isBooked ? 'booked' : 'available';
+                                seatHtml += `
+                                    <div class="seat-item ${statusClass}" data-seat="${seatLabel}">
+                                        <i class="fa-solid fa-chair"></i>
+                                        <span>${seatLabel}</span>
+                                    </div>
+                                 `;
+                            }
+                            seatsGrid.innerHTML = seatHtml;
+
+                            // Reset count and price
+                            document.getElementById('seatCount').textContent = '0';
+                            document.getElementById('totalPrice').textContent = '0 vnđ';
+                        }
+
+                        resultsView.style.display = 'none';
+                        seatView.style.display = 'block';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+
+                // Info view trigger
+                const btnSeatContinue = document.getElementById('btnSeatContinue');
+                const infoView = document.getElementById('info-view');
+                if (btnSeatContinue && infoView && seatView) {
+                    btnSeatContinue.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (parseInt(seatCountEl.textContent) > 0) {
+                            seatView.style.display = 'none';
+                            infoView.style.display = 'block';
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else {
+                            alert('Vui lòng chọn ít nhất 1 chỗ!');
+                        }
+                    });
+                }
+
+                // Form validation trigger - Sequential
+                const btnInfoContinue = document.getElementById('btnInfoContinue');
+                if (btnInfoContinue) {
+                    const pickupInput = document.getElementById('pickupInput');
+                    const pickupError = document.getElementById('pickupError');
+                    const dropoffInput = document.getElementById('dropoffInput');
+                    const dropoffError = document.getElementById('dropoffError');
+                    const nameInput = document.getElementById('nameInput');
+                    const nameError = document.getElementById('nameError');
+                    const phoneInput = document.getElementById('phoneInput');
+                    const phoneError = document.getElementById('phoneError');
+
+                    // Reset styling rapidly when user types
+                    const inputs = [pickupInput, dropoffInput, nameInput, phoneInput];
+                    const errors = [pickupError, dropoffError, nameError, phoneError];
+                    inputs.forEach((input, index) => {
+                        if (input) {
+                            input.addEventListener('input', () => {
+                                input.classList.remove('error');
+                                if (errors[index]) errors[index].style.display = 'none';
+                            });
+                            input.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    input.blur();
+                                }
+                            });
+                        }
+                    });
+
+                    // 1. Blur Validation: Pickup
+                    if (pickupInput) pickupInput.addEventListener('blur', () => {
+                        const val = pickupInput.value.trim().toLowerCase();
+                        if (!val) {
+                            pickupInput.classList.add('error');
+                            if (pickupError) { pickupError.textContent = 'Vui lòng nhập điểm đón'; pickupError.style.display = 'block'; }
+                        } else if (!val.includes('đà nẵng')) {
+                            pickupInput.classList.add('error');
+                            if (pickupError) { pickupError.textContent = 'Điểm đón không hợp lệ, vui lòng chọn điểm đón khác'; pickupError.style.display = 'block'; }
+                        }
+                    });
+
+                    // 2. Blur Validation: Dropoff
+                    if (dropoffInput) dropoffInput.addEventListener('blur', () => {
+                        const val = dropoffInput.value.trim().toLowerCase();
+                        if (!val) {
+                            dropoffInput.classList.add('error');
+                            if (dropoffError) { dropoffError.textContent = 'Vui lòng nhập điểm trả'; dropoffError.style.display = 'block'; }
+                        } else if (!val.includes('huế')) {
+                            dropoffInput.classList.add('error');
+                            if (dropoffError) { dropoffError.textContent = 'Điểm đến không hợp lệ, vui lòng chọn điểm đến khác'; dropoffError.style.display = 'block'; }
+                        }
+                    });
+
+                    // 3. Blur Validation: Name
+                    if (nameInput) nameInput.addEventListener('blur', () => {
+                        const val = nameInput.value.trim();
+                        if (!val) {
+                            nameInput.classList.add('error');
+                            if (nameError) { nameError.textContent = 'Vui lòng nhập họ và tên'; nameError.style.display = 'block'; }
+                        } else if (/\d/.test(val)) {
+                            nameInput.classList.add('error');
+                            if (nameError) { nameError.textContent = 'Tên không hợp lệ, vui lòng nhập lại'; nameError.style.display = 'block'; }
+                        }
+                    });
+
+                    // 4. Blur Validation: Phone
+                    if (phoneInput) phoneInput.addEventListener('blur', () => {
+                        const val = phoneInput.value.trim();
+                        if (!val) {
+                            phoneInput.classList.add('error');
+                            if (phoneError) { phoneError.textContent = 'Vui lòng nhập số điện thoại'; phoneError.style.display = 'block'; }
+                        } else if (!/^\d{10}$/.test(val)) {
+                            phoneInput.classList.add('error');
+                            if (phoneError) { phoneError.textContent = 'Số điện thoại không hợp lệ, vui lòng nhập lại'; phoneError.style.display = 'block'; }
+                        }
+                    });
+
+                    btnInfoContinue.addEventListener('click', (e) => {
+                        e.preventDefault();
+
+                        // Clear all errors before re-evaluating strictly from top to bottom
+                        inputs.forEach(input => { if (input) input.classList.remove('error'); });
+                        errors.forEach(err => { if (err) err.style.display = 'none'; });
+
+                        // 1. Check pick-up location
+                        const pickupVal = (pickupInput && pickupInput.value) ? pickupInput.value.trim().toLowerCase() : '';
+                        if (!pickupVal) {
+                            if (pickupInput) pickupInput.classList.add('error');
+                            if (pickupError) {
+                                pickupError.textContent = 'Vui lòng nhập điểm đón';
+                                pickupError.style.display = 'block';
+                            }
+                            return;
+                        } else if (!pickupVal.includes('đà nẵng')) {
+                            if (pickupInput) pickupInput.classList.add('error');
+                            if (pickupError) {
+                                pickupError.textContent = 'Điểm đón không hợp lệ, vui lòng chọn điểm đón khác';
+                                pickupError.style.display = 'block';
+                            }
+                            return;
+                        }
+
+                        // 2. Check drop-off location
+                        const dropoffVal = (dropoffInput && dropoffInput.value) ? dropoffInput.value.trim().toLowerCase() : '';
+                        if (!dropoffVal) {
+                            if (dropoffInput) dropoffInput.classList.add('error');
+                            if (dropoffError) {
+                                dropoffError.textContent = 'Vui lòng nhập điểm trả';
+                                dropoffError.style.display = 'block';
+                            }
+                            return;
+                        } else if (!dropoffVal.includes('huế')) {
+                            if (dropoffInput) dropoffInput.classList.add('error');
+                            if (dropoffError) {
+                                dropoffError.textContent = 'Điểm đến không hợp lệ, vui lòng chọn điểm đến khác';
+                                dropoffError.style.display = 'block';
+                            }
+                            return;
+                        }
+
+                        // 3. Check customer name
+                        const nameVal = nameInput ? nameInput.value.trim() : '';
+                        if (!nameVal) {
+                            if (nameInput) nameInput.classList.add('error');
+                            if (nameError) {
+                                nameError.textContent = 'Vui lòng nhập họ và tên';
+                                nameError.style.display = 'block';
+                            }
+                            return;
+                        } else if (/\d/.test(nameVal)) {
+                            if (nameInput) nameInput.classList.add('error');
+                            if (nameError) {
+                                nameError.textContent = 'Tên không hợp lệ, vui lòng nhập lại';
+                                nameError.style.display = 'block';
+                            }
+                            return;
+                        }
+
+                        // 4. Check phone number
+                        const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+                        if (!phoneVal) {
+                            if (phoneInput) phoneInput.classList.add('error');
+                            if (phoneError) {
+                                phoneError.textContent = 'Vui lòng nhập số điện thoại';
+                                phoneError.style.display = 'block';
+                            }
+                            return;
+                        } else if (!/^\d{10}$/.test(phoneVal)) {
+                            if (phoneInput) phoneInput.classList.add('error');
+                            if (phoneError) {
+                                phoneError.textContent = 'Số điện thoại không hợp lệ, vui lòng nhập lại';
+                                phoneError.style.display = 'block';
+                            }
+                            return;
+                        }
+
+                        // Show OTP Modal
+                        const otpModal = document.getElementById('otp-modal');
+                        if (otpModal) {
+                            otpModal.style.display = 'flex';
+                            const firstDigit = otpModal.querySelector('.otp-digit');
+                            if (firstDigit) firstDigit.focus();
+                        }
+                    });
+                }
+
+                // OTP Inputs Logic
+                const otpInputs = document.querySelectorAll('.otp-digit');
+                const otpError = document.getElementById('otpError');
+                if (otpInputs.length > 0) {
+                    otpInputs.forEach((input, index) => {
+                        // Handle Input Typing
+                        input.addEventListener('input', (e) => {
+                            input.value = input.value.replace(/[^0-9]/g, '');
+                            if (otpError) otpError.style.display = 'none';
+
+                            if (input.value !== '') {
+                                if (index < otpInputs.length - 1) {
+                                    otpInputs[index + 1].focus();
+                                } else {
+                                    input.blur();
+
+                                    // SUCCESS LOGIC & DATA PERSISTENCE
+                                    if (!window.currentBookingTrip) return;
+
+                                    const pickupVal = document.getElementById('pickupInput') ? document.getElementById('pickupInput').value.trim() : '';
+                                    const dropoffVal = document.getElementById('dropoffInput') ? document.getElementById('dropoffInput').value.trim() : '';
+                                    const nameVal = document.getElementById('nameInput') ? document.getElementById('nameInput').value.trim() : '';
+                                    const phoneVal = document.getElementById('phoneInput') ? document.getElementById('phoneInput').value.trim() : '';
+
+                                    const selectedSeatsDOM = document.querySelectorAll('.seat-item.selected');
+                                    const seatArr = Array.from(selectedSeatsDOM).map(s => s.getAttribute('data-seat'));
+
+                                    // 1. Update app_trips in localStorage
+                                    let allTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                                    const tripIndex = allTrips.findIndex(t => t.id === window.currentBookingTrip.id);
+
+                                    if (tripIndex !== -1) {
+                                        if (!allTrips[tripIndex].bookedSeats) allTrips[tripIndex].bookedSeats = [];
+                                        if (!allTrips[tripIndex].passengers) allTrips[tripIndex].passengers = [];
+
+                                        // Add seats
+                                        allTrips[tripIndex].bookedSeats = [...allTrips[tripIndex].bookedSeats, ...seatArr];
+
+                                        // Add passenger info
+                                        allTrips[tripIndex].passengers.push({
+                                            name: nameVal,
+                                            phone: phoneVal,
+                                            pickup: pickupVal,
+                                            dropoff: dropoffVal,
+                                            seats: seatArr,
+                                            bookingTime: new Date().toISOString()
+                                        });
+
+                                        localStorage.setItem('app_trips', JSON.stringify(allTrips));
+                                    }
+
+                                    // 2. Create User Ticket record
+                                    let userTickets = JSON.parse(localStorage.getItem('user_tickets') || '[]');
+                                    const newTicket = {
+                                        id: 'TK' + Date.now(),
+                                        tripId: window.currentBookingTrip.id,
+                                        route: window.currentBookingTrip.route,
+                                        date: window.currentBookingTrip.date,
+                                        time: window.currentBookingTrip.time,
+                                        seats: seatArr,
+                                        name: nameVal,
+                                        phone: phoneVal,
+                                        status: 'Đã đặt'
+                                    };
+                                    userTickets.push(newTicket);
+                                    localStorage.setItem('user_tickets', JSON.stringify(userTickets));
+
+                                    // 3. Show success Modal Population
+                                    const successModal = document.getElementById('success-modal');
+                                    const nameElem = document.getElementById('successName');
+                                    const phoneElem = document.getElementById('successPhone');
+                                    const seatsElem = document.getElementById('successSeats');
+                                    const timeElem = document.getElementById('successTime');
+
+                                    if (seatsElem) seatsElem.textContent = seatArr.join(', ');
+                                    if (nameElem) nameElem.textContent = nameVal;
+                                    if (phoneElem) phoneElem.textContent = phoneVal;
+                                    if (timeElem) timeElem.textContent = `${window.currentBookingTrip.time} ${window.currentBookingTrip.date.split('-').reverse().join('/')}`;
+
+                                    const otpModalElem = document.getElementById('otp-modal');
+                                    if (otpModalElem) otpModalElem.style.display = 'none';
+                                    if (successModal) successModal.style.display = 'flex';
+                                }
+                            }
+                        });
+
+                        // Handle Backspace tracking
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Backspace' && input.value === '') {
+                                if (index > 0) {
+                                    otpInputs[index - 1].focus();
+                                    otpInputs[index - 1].value = '';
+                                }
+                            }
+                        });
+                    });
+                }
+
+                // Success Close Logic
+                const btnSuccessClose = document.getElementById('btnSuccessClose');
+                if (btnSuccessClose) {
+                    btnSuccessClose.addEventListener('click', () => {
+                        const successModal = document.getElementById('success-modal');
+                        const infoV = document.getElementById('info-view');
+                        const seatV = document.getElementById('seat-view');
+                        const resultsV = document.getElementById('results-view');
+                        const searchV = document.getElementById('search-view');
+
+                        if (successModal) successModal.style.display = 'none';
+                        if (infoV) infoV.style.display = 'none';
+                        if (seatV) seatV.style.display = 'none';
+                        if (resultsV) resultsV.style.display = 'none';
+
+                        // Reset global layout positioning seamlessly back to the search dashboard
+                        if (searchV) {
+                            searchV.style.display = 'block';
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+</body>
+
+</html>

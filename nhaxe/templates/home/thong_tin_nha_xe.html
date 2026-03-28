@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin nhà xe - Vexeapp</title>
+
+    {% load static %}
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/thong_tin_nha_xe.css' %}">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-logo">
+                <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+                <h1>NHÀ XE HÙNG CƯỜNG</h1>
+            </div>
+            <div class="header-user" id="userDropdownBtn">
+                <div class="user-avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+                <div class="dropdown-menu" id="userMenu">
+                    <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                        <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                    </a>
+                    <a href="{% url 'index' %}" class="dropdown-item">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                    <i class="fa-solid fa-house"></i> Trang chủ
+                </a>
+                <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                    <i class="fa-solid fa-users"></i> Quản lý tài xế
+                </a>
+                <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                    <i class="fa-solid fa-route"></i> Quản lý tuyến xe
+                </a>
+                <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                    <i class="fa-solid fa-tags"></i> Quản lý loại xe
+                </a>
+                <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
+                    <i class="fa-solid fa-map"></i> Quản lý chuyến xe
+                </a>
+                <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                    <i class="fa-solid fa-car"></i> Quản lý phương tiện
+                </a>
+                <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
+                    <i class="fa-solid fa-user-group"></i> Quản lý khách hàng
+                </a>
+            </aside>
+
+            <!-- Right Content Area -->
+            <main class="content-area">
+                <div class="page-title">Thông tin nhà xe</div>
+
+                <div class="form-container">
+                    <div class="form-grid">
+                        <div class="left-column">
+                            <div class="form-group">
+                                <label>Tên nhà xe</label>
+                                <input type="text" id="companyName" value="Nhà xe Hùng Cường" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Người đại diện</label>
+                                <input type="text" id="representative" value="Trang Nguyễn" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <input type="tel" id="phoneNumber" value="09065412323" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="email" value="hungcuong123@gmail.com" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Địa chỉ trụ sở</label>
+                                <input type="text" id="address" value="Đà Nẵng" readonly>
+                            </div>
+                        </div>
+
+                        <div class="right-column">
+                            <div class="form-group">
+                                <label>Tên đăng nhập</label>
+                                <input type="text" id="username" value="hungcuongowner123" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mật khẩu</label>
+                                <input type="password" id="password" value="*************" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nhập lại mật khẩu</label>
+                                <input type="password" id="confirmPassword" value="*************" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="image-section">
+                        <h3>Hình ảnh</h3>
+                        <div class="image-banner">
+                            <img src="{% static 'img/Vexeapp_banner.png' %}" alt="Banner nhà xe" onerror="this.src='{% static 'img/xe1.jpg' %}'">
+                        </div>
+                    </div>
+
+                    <div class="bottom-actions" style="margin-top: 20px;">
+                        <button id="btnEdit" class="btn btn-primary">Chỉnh sửa</button>
+                        <div id="editActions" class="hidden" style="width: 100%; display: flex;">
+                            <button id="btnCancel" class="btn btn-secondary">Hủy</button>
+                            <button id="btnSave" class="btn btn-success" style="flex: 1;">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+
+        <!-- System Footer -->
+        <footer class="footer-banner">
+            <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+            <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+        </footer>
+    </div>
+
+    <!-- External Script -->
+    <script src="{% static 'js/script.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
+
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
+            }
+
+            const btnEdit = document.getElementById('btnEdit');
+            const btnSave = document.getElementById('btnSave');
+            const btnCancel = document.getElementById('btnCancel');
+            const editActions = document.getElementById('editActions');
+            const inputs = document.querySelectorAll('.form-group input');
+
+            let initialValues = {};
+
+            btnEdit.addEventListener('click', () => {
+                inputs.forEach(input => {
+                    initialValues[input.id] = input.value;
+                    input.removeAttribute('readonly');
+                });
+
+                btnEdit.classList.add('hidden');
+                editActions.classList.remove('hidden');
+                inputs[0].focus();
+            });
+
+            btnCancel.addEventListener('click', () => {
+                inputs.forEach(input => {
+                    input.value = initialValues[input.id];
+                    input.setAttribute('readonly', true);
+                });
+
+                btnEdit.classList.remove('hidden');
+                editActions.classList.add('hidden');
+            });
+
+            btnSave.addEventListener('click', () => {
+                inputs.forEach(input => {
+                    input.setAttribute('readonly', true);
+                });
+                
+                btnEdit.classList.remove('hidden');
+                editActions.classList.add('hidden');
+                
+                alert('Đã lưu thông tin nhà xe thành công!');
+            });
+        });
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

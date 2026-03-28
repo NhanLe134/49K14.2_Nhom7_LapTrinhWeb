@@ -1,0 +1,111 @@
+/* CSS cho Màn hình hiển thị lộ trình */
+
+.main-content-lotrinh {
+    flex: 1;
+    padding: 30px;
+    background-color: #fcfcfc;
+}
+
+.lotrinh-container {
+    display: flex;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.map-section {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.map-iframe, .map-image {
+    width: 100%;
+    height: 400px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    object-fit: cover;
+}
+
+.btn-complete {
+    margin-top: 25px;
+    background-color: #12b7f5;
+    color: white;
+    border: none;
+    padding: 12px 50px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(18, 183, 245, 0.2);
+    transition: background-color 0.2s;
+}
+
+.btn-complete:hover {
+    background-color: #0fa1db;
+}
+
+.list-section {
+    flex: 1.2;
+}
+
+.list-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.pickup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.pickup-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.pickup-header strong {
+    font-size: 1.05rem;
+    color: #111;
+}
+
+.pickup-details {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #444;
+    line-height: 1.5;
+}
+
+.pickup-details p {
+    margin-bottom: 3px;
+}
+
+.seat-text {
+    color: #38bdf8;
+    font-weight: bold;
+}
+
+.loc-row {
+    margin-top: 4px;
+}
+
+.loc-up i { color: #22c55e; width: 15px; }
+.loc-down i { color: #ef4444; width: 15px; }
+
+.loc-text {
+    display: block;
+    padding-left: 20px;
+    color: #666;
+    margin-top: 2px;
+}

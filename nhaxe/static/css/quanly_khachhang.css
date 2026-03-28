@@ -1,0 +1,275 @@
+:root {
+    --primary-color: #38bdf8;
+    --primary-light: #e0f2fe;
+    --primary-dark: #0284c7;
+    --bg-color: #ffffff;
+    --sidebar-bg: #fafafa;
+    --text-main: #1e293b;
+    --text-light: #64748b;
+    --border-color: #e2e8f0;
+    --btn-disabled: #bcbcbc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body, html {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    overflow: hidden;
+}
+
+/* ----- Header ----- */
+.header {
+    height: 80px;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    flex-shrink: 0;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-logo img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: contain;
+    background-color: white;
+}
+
+.header-logo h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: white;
+    color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 8px 0;
+    margin-top: 10px;
+    display: none;
+    z-index: 100;
+    border: 1px solid var(--border-color);
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.dropdown-item i {
+    width: 20px;
+    color: var(--text-light);
+}
+
+.dropdown-item:hover {
+    background-color: var(--sidebar-bg);
+    color: var(--primary-color);
+}
+
+.dropdown-item:hover i {
+    color: var(--primary-color);
+}
+
+/* ----- Layout giữa ----- */
+.main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ----- Sidebar ----- */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-item, .sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    cursor: pointer;
+    color: var(--text-main);
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    text-decoration: none;
+}
+
+.menu-item i {
+    width: 24px;
+    margin-right: 12px;
+    font-size: 1.2rem;
+    color: var(--text-main);
+}
+
+.menu-item:hover, .sidebar-item:hover {
+    background-color: var(--border-color);
+}
+
+.menu-item.active, .sidebar-item.active {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    position: relative;
+}
+
+.menu-item.active i, .sidebar-item.active i {
+    color: var(--primary-dark);
+}
+
+/* Dải viền active bên trái */
+.menu-item.active::before, .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-dark);
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+/* ----- Main Content ----- */
+.content {
+    flex: 1;
+    padding: 32px 48px;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text-main);
+    text-transform: uppercase;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    max-width: 650px;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    color: var(--text-light); /* Màu chữ hơi mờ để giống placeholder/readonly */
+    outline: none;
+    background-color: #fafafa;
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+}
+
+/* Divider & Nút Lưu */
+.bottom-actions {
+    margin-top: auto; /* Đẩy khu vực này xuống sát dưới cùng content */
+    max-width: 650px;
+    padding-bottom: 20px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--text-main);
+    margin-bottom: 16px;
+}
+
+.btn-save {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--btn-disabled);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: not-allowed;
+    text-align: center;
+}
+
+/* ----- Footer ----- */
+.footer-banner {
+    height: 80px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    flex-shrink: 0;
+    z-index: 10;
+}

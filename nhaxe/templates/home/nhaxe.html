@@ -1,0 +1,201 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ Nhà xe - Vexeapp</title>
+    <!-- Use FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-house" style="color: #06A0E2;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h2 class="page-title">Lịch làm việc</h2>
+            <p class="page-subtitle">Lịch làm việc của các tài xế trong tuần</p>
+
+            <!-- Schedule Table -->
+            <table class="schedule-table">
+                <thead>
+                    <tr id="scheduleHeader">
+                        <th>Tài xế</th>
+                        <!-- Dates dynamically generated -->
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    <!-- Rows dynamically generated -->
+                </tbody>
+            </table>
+
+            <!-- Stats -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <i class="fa-regular fa-calendar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tổng chuyến tuần</div>
+                        <div class="stat-value">8</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tài xế hoạt động</div>
+                        <div class="stat-value">3</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">TB chuyến/tài xế</div>
+                        <div class="stat-value">2.7</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script src="{% static 'js/common.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            generateAdminSchedule();
+        });
+
+        function generateAdminSchedule() {
+            const header = document.getElementById('scheduleHeader');
+            const body = document.getElementById('scheduleBody');
+            if (!header || !body) return;
+
+            const now = new Date();
+            let dayOfWeek = now.getDay();
+            let diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - diff);
+
+            const dowNames = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
+            let headerHTML = '<th>Tài xế</th>';
+            let weekDates = [];
+
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(monday);
+                currentDate.setDate(monday.getDate() + i);
+                const dateStr = String(currentDate.getDate()).padStart(2, '0') + '-' + String(currentDate.getMonth() + 1).padStart(2, '0');
+                const fullDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+                weekDates.push(fullDateStr);
+
+                const isToday = (currentDate.getDate() === now.getDate() &&
+                    currentDate.getMonth() === now.getMonth() &&
+                    currentDate.getFullYear() === now.getFullYear());
+
+                headerHTML += `<th ${isToday ? 'style="color: #06A0E2; font-weight: bold;"' : ''}>${dowNames[i]}<span>${dateStr}</span></th>`;
+            }
+            header.innerHTML = headerHTML;
+
+            const trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+            const drivers = ['Huy Phong', 'Thanh Nhã', 'Quang Khôi'];
+
+            let bodyHTML = '';
+            let totalAssignedTrips = 0;
+            let activeDrivers = new Set();
+
+            drivers.forEach(driver => {
+                let rowHTML = `<tr><td>${driver}</td>`;
+
+                weekDates.forEach(date => {
+                    const driverTrips = trips.filter(t => t.driver === driver && t.date === date);
+                    if (driverTrips.length > 0) {
+                        rowHTML += `<td>`;
+                        driverTrips.forEach(t => {
+                            const shortTime = t.time.includes('-') ? t.time.split('-')[0].trim() : t.time;
+                            rowHTML += `<div class="schedule-block">
+                                <div class="time">${shortTime}</div>
+                                <div class="route">${t.route}</div>
+                            </div>`;
+                            totalAssignedTrips++;
+                            activeDrivers.add(driver);
+                        });
+                        rowHTML += `</td>`;
+                    } else {
+                        rowHTML += `<td><div class="cell-off">Nghỉ</div></td>`;
+                    }
+                });
+
+                rowHTML += `</tr>`;
+                bodyHTML += rowHTML;
+            });
+
+            body.innerHTML = bodyHTML;
+
+            const statValues = document.querySelectorAll('.stat-card .stat-value');
+            if (statValues.length >= 3) {
+                statValues[0].textContent = totalAssignedTrips;
+                statValues[1].textContent = activeDrivers.size;
+                statValues[2].textContent = activeDrivers.size > 0 ? (totalAssignedTrips / activeDrivers.size).toFixed(1) : '0';
+            }
+        }
+    </script>
+</body>
+
+</html>

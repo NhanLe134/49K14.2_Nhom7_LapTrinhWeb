@@ -1,0 +1,207 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viết đánh giá - Vexeapp</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
+    <link rel="stylesheet" href="{% static 'css/danhgiachuyenxe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Nhà xe Đà Nẵng_Huế</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-house"></i> Trang chủ
+            </a>
+            <a href="{% url 'timkiem' %}" class="sidebar-item">
+                <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm vé
+            </a>
+            <a href="{% url 'quanlyve' %}" class="sidebar-item">
+                <i class="fa-solid fa-ticket"></i> Vé của tôi
+            </a>
+            <a href="{% url 'danhgiachuyenxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-comments" style="color: #06A0E2;"></i> Đánh giá chuyến xe
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content review-main">
+            <div class="review-container">
+                <div class="review-form-box">
+                    <h2 class="review-title" style="margin-bottom: 20px;">Đánh giá chuyến xe</h2>
+
+                    <div class="form-section-title">Thông tin chuyến đi</div>
+                    <hr class="divider">
+
+                    <div class="trip-info-summary">
+                        <div class="bus-name-blue">Khang Limousine</div>
+                        <div class="info-row"><strong>Lộ trình:</strong> Huế - Đà Nẵng</div>
+                        <div class="info-row"><strong>Ngày:</strong> 13/04/2026</div>
+                        <div class="info-row"><strong>Giờ:</strong> 13:45 - 16:45</div>
+                    </div>
+
+                    <div class="rating-section">
+                        <strong class="rating-label">Đánh giá chất lượng dịch vụ</strong>
+                        <div class="stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+
+                    <div class="review-content-section">
+                        <strong class="review-label">Nội dung đánh giá:</strong>
+                        <textarea class="review-textarea" placeholder="Vui lòng nội dung đánh giá" rows="5"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <div class="anonymous-checkbox">
+                            <i class="fa-regular fa-circle-check" style="color: #06A0E2;"></i> Đánh giá ẩn danh
+                        </div>
+                        <button class="submit-review-btn">Gửi</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script src="../script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
+
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
+            }
+
+            // Star rating interaction
+            const stars = document.querySelectorAll('.stars i');
+            let currentRating = 0;
+            stars.forEach((star, index) => {
+                star.addEventListener('click', () => {
+                    currentRating = index + 1;
+                    // Reset all stars
+                    stars.forEach(s => {
+                        s.classList.remove('active-star');
+                        s.style.color = '#ccc';
+                    });
+                    // Set active stars up to the clicked one
+                    for (let i = 0; i <= index; i++) {
+                        stars[i].classList.add('active-star');
+                        stars[i].style.color = '#ffc107'; // yellow color
+                    }
+                });
+            });
+
+            const anonCheckbox = document.querySelector('.anonymous-checkbox');
+            const icon = anonCheckbox.querySelector('i');
+            let isAnon = true;
+            anonCheckbox.addEventListener('click', () => {
+                isAnon = !isAnon;
+                if (isAnon) {
+                    icon.classList.remove('fa-circle');
+                    icon.classList.add('fa-circle-check');
+                    icon.style.color = '#06A0E2';
+                } else {
+                    icon.classList.remove('fa-circle-check');
+                    icon.classList.add('fa-circle');
+                    icon.style.color = '#ccc';
+                }
+            });
+
+            // Submit review
+            const submitBtn = document.querySelector('.submit-review-btn');
+            submitBtn.addEventListener('click', () => {
+                const text = document.querySelector('.review-textarea').value;
+                if (!text.trim()) {
+                    alert('Vui lòng nhập nội dung đánh giá!');
+                    return;
+                }
+
+                // Create new review object
+                const newReview = {
+                    bus: "Khang Limousine",
+                    stars: currentRating === 0 ? 5 : currentRating, // default 5 if not clicked
+                    text: text,
+                    date: "13/04/2026"
+                };
+
+                // Get existing from localStorage
+                let reviews = JSON.parse(localStorage.getItem('evaluatedReviews'));
+                if (!reviews) {
+                    reviews = [
+                        {
+                            bus: "Khang Limousine",
+                            stars: 5,
+                            text: "Tài xế thân thiện, mình được đón tận nhà. Xe chạy đúng giờ. Ghế ngồi thoải mái",
+                            date: "05/04/2026"
+                        },
+                        {
+                            bus: "Khang Limousine",
+                            stars: 5,
+                            text: "Dịch vụ tốt, xe chạy êm, thái độ tài xế tốt",
+                            date: "10/04/2026"
+                        }
+                    ];
+                }
+
+                // Add new review
+                reviews.push(newReview);
+
+                // Save back to localStorage
+                localStorage.setItem('evaluatedReviews', JSON.stringify(reviews));
+
+                // Redirect to Đã đánh giá page
+                window.location.href = 'dadanhgia.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

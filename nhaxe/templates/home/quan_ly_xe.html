@@ -1,0 +1,303 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý phương tiện - Vexeapp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/quanly_phuongtien.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-car"></i> Quản lý phương tiện
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- LIST VIEW -->
+            <div id="listView" class="view-container">
+                <div class="content-header">
+                    <h2 class="page-title">Quản lý xe</h2>
+                    <button class="btn-add" onclick="showAddView()">
+                        <i class="fa-solid fa-plus"></i> Thêm mới xe
+                    </button>
+                </div>
+
+                <div id="vehicleList" class="vehicle-list">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+            <!-- EDIT/ADD VIEW -->
+            <div id="editView" class="view-container" style="display: none;">
+                <h2 class="page-title" id="formTitle">Thông tin xe</h2>
+
+                <form id="vehicleForm" class="vehicle-form">
+                    <input type="hidden" id="vehicleId">
+                    <div class="form-layout">
+                        <div class="form-left">
+                            <div class="form-group">
+                                <label for="plate">Biển số</label>
+                                <input type="text" id="plate" placeholder="75H - 868686" required>
+                                <div class="error-msg" id="plateError">*Vui lòng nhập Biển số.</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="type">Loại xe</label>
+                                <input type="text" id="type" placeholder="Limousine" required>
+                                <div class="error-msg" id="typeError">*Vui lòng nhập loại xe.</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="seats">Số ghế</label>
+                                <div class="seats-input-wrapper">
+                                    <input type="number" id="seats" value="30" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-right">
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <div id="statusBadge" class="status-badge status-active">Đang hoạt động</div>
+                                <select id="statusSelect" class="status-select" style="display: none;">
+                                    <option value="Đang hoạt động">Đang hoạt động</option>
+                                    <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                                    <option value="Bảo trì">Bảo trì</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-save" onclick="saveVehicle()">Lưu</button>
+                        <button type="button" class="btn-cancel" onclick="showListView()">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer Banner -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        const STATIC_XE1 = "{% static 'img/xe1.jpg' %}";
+        const STATIC_XE2 = "{% static 'img/xe2.jpg' %}";
+        const STATIC_XE3 = "{% static 'img/xe3.jpg' %}";
+
+        const DEFAULT_VEHICLES = [
+            { id: 1, plate: '75H1-868686', route: 'Huế-Đà Nẵng', seats: 3, type: 'xe 4 chỗ', status: 'Đang hoạt động', image: STATIC_XE1 },
+            { id: 2, plate: '43H1-123456', route: 'Huế-Đà Nẵng', seats: 3, type: 'xe 4 chỗ', status: 'Ngừng hoạt động', image: STATIC_XE2 },
+            { id: 3, plate: '75D1-67890', route: 'Huế-Đà Nẵng', seats: 3, type: 'xe 4 chỗ', status: 'Bảo trì', image: STATIC_XE3 }
+        ];
+
+        let vehicles = JSON.parse(localStorage.getItem('app_vehicles')) || DEFAULT_VEHICLES;
+
+        function saveToStorage() {
+            localStorage.setItem('app_vehicles', JSON.stringify(vehicles));
+        }
+
+        function renderList() {
+            const listContainer = document.getElementById('vehicleList');
+            listContainer.innerHTML = '';
+
+            vehicles.forEach(v => {
+                const statusClass = v.status === 'Đang hoạt động' ? 'status-active' :
+                    v.status === 'Ngừng hoạt động' ? 'status-inactive' : 'status-maintenance';
+
+                const item = document.createElement('div');
+                item.className = 'vehicle-item';
+                item.innerHTML = `
+                    <div class="vehicle-img">
+                        <img src="${v.image || STATIC_XE1}" alt="Vehicle">
+                    </div>
+                    <div class="vehicle-info">
+                        <div class="vehicle-main-details">
+                            <span class="vehicle-plate">${v.plate}</span>
+                            <span class="vehicle-route">${v.route}</span>
+                        </div>
+                        <div class="vehicle-specs">
+                            <span>Số ghế: ${v.seats} ghế</span>
+                            <span>Loại xe: ${v.type}</span>
+                        </div>
+                    </div>
+                    <div class="vehicle-status">
+                        <span class="status-badge-list ${statusClass}">${v.status}</span>
+                        <div class="item-actions">
+                            <button class="btn-item-edit" onclick="showEditView(${v.id})">Chỉnh sửa</button>
+                            <button class="btn-item-delete" onclick="deleteVehicle(${v.id})">Xóa</button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function showListView() {
+            document.getElementById('listView').style.display = 'block';
+            document.getElementById('editView').style.display = 'none';
+            renderList();
+        }
+
+        function showAddView() {
+            document.getElementById('listView').style.display = 'none';
+            document.getElementById('editView').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Thông tin nhà xe';
+
+            document.getElementById('vehicleId').value = '';
+            document.getElementById('plate').value = '';
+            document.getElementById('type').value = 'Limousine';
+            document.getElementById('seats').value = 30;
+            document.getElementById('statusBadge').className = 'status-badge status-active';
+            document.getElementById('statusBadge').textContent = 'Đang hoạt động';
+
+            document.getElementById('plateError').style.display = 'none';
+            document.getElementById('typeError').style.display = 'none';
+        }
+
+        function showEditView(id) {
+            const v = vehicles.find(x => x.id === id);
+            if (!v) return;
+
+            document.getElementById('listView').style.display = 'none';
+            document.getElementById('editView').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Thông tin xe';
+
+            document.getElementById('vehicleId').value = v.id;
+            document.getElementById('plate').value = v.plate;
+            document.getElementById('type').value = v.type;
+            document.getElementById('seats').value = v.seats;
+
+            const statusClass = v.status === 'Đang hoạt động' ? 'status-active' :
+                v.status === 'Ngừng hoạt động' ? 'status-inactive' : 'status-maintenance';
+            document.getElementById('statusBadge').className = 'status-badge ' + statusClass;
+            document.getElementById('statusBadge').textContent = v.status;
+
+            document.getElementById('plateError').style.display = 'none';
+            document.getElementById('typeError').style.display = 'none';
+        }
+
+        function saveVehicle() {
+            const id = document.getElementById('vehicleId').value;
+            const plate = document.getElementById('plate').value.trim();
+            const type = document.getElementById('type').value.trim();
+            const seats = document.getElementById('seats').value;
+
+            let hasError = false;
+            if (!plate) {
+                document.getElementById('plateError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('plateError').style.display = 'none';
+            }
+
+            if (!type) {
+                document.getElementById('typeError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('typeError').style.display = 'none';
+            }
+
+            if (hasError) return;
+
+            if (id) {
+                const idx = vehicles.findIndex(x => x.id == id);
+                if (idx !== -1) {
+                    vehicles[idx].plate = plate;
+                    vehicles[idx].type = type;
+                    vehicles[idx].seats = seats;
+                }
+            } else {
+                const newId = vehicles.length > 0 ? Math.max(...vehicles.map(x => x.id)) + 1 : 1;
+                vehicles.push({
+                    id: newId,
+                    plate: plate,
+                    route: 'Huế-Đà Nẵng',
+                    seats: seats,
+                    type: type,
+                    status: 'Đang hoạt động',
+                    image: "{% static 'img/xe1.jpg' %}"
+                });
+            }
+
+            saveToStorage();
+            showListView();
+        }
+
+        function deleteVehicle(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa phương tiện này?')) {
+                vehicles = vehicles.filter(x => x.id !== id);
+                saveToStorage();
+                renderList();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
+
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
+            }
+
+            showListView();
+        });
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

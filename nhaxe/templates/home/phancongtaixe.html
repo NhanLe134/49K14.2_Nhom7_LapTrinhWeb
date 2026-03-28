@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách tài xế - Phân công</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/phancongtaixe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content-pctx">
+            <h2 class="section-title">Danh sách tài xế</h2>
+
+            <div class="driver-list">
+                <div class="driver-card" onclick="openConfirmPopup('Huy Phong')">
+                    <i class="fa-regular fa-user passenger-icon"></i>
+                    <div class="driver-info">Huy Phong</div>
+                    <div class="driver-contact">
+                        <p>SĐT: 0123456789</p>
+                        <p>2 năm</p>
+                        <p>1 Hùng Vương, Đà Nẵng</p>
+                    </div>
+                </div>
+
+                <div class="driver-card" onclick="openConfirmPopup('Thanh Nhã')">
+                    <i class="fa-regular fa-user passenger-icon"></i>
+                    <div class="driver-info">Thanh Nhã</div>
+                    <div class="driver-contact">
+                        <p>SĐT: 0123456789</p>
+                        <p>1 năm</p>
+                        <p>1 Tố Hữu, Đà Nẵng</p>
+                    </div>
+                </div>
+
+                <div class="driver-card" onclick="openConfirmPopup('Quang Khôi')">
+                    <i class="fa-regular fa-user passenger-icon"></i>
+                    <div class="driver-info">Quang Khôi</div>
+                    <div class="driver-contact">
+                        <p>SĐT: 0123456789</p>
+                        <p>2 năm</p>
+                        <p>25 Phan Thanh, Đà Nẵng</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirm Popup -->
+    <div class="popup-overlay" id="confirmPopup">
+        <div class="popup-box confirm-box">
+            <div class="popup-title">Thông báo</div>
+            <div class="popup-message">Bạn có muốn phân công tài xế <br> <b id="driverNameSpan"></b> không?</div>
+            <div class="popup-actions">
+                <button class="btn-no" onclick="closeConfirm()">Không</button>
+                <button class="btn-yes" onclick="processAssign()">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Popup -->
+    <div class="popup-overlay" id="successPopup">
+        <div class="popup-box">
+            <div class="popup-title" style="margin-bottom: 20px;">Thông báo</div>
+            <div class="popup-message" style="margin-bottom: 10px;">Bạn đã phân công tài xế</div>
+            <button class="btn-yes" style="margin-top: 10px;" onclick="finishAssign()">Đồng ý</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+            });
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const tripId = urlParams.get('id');
+        let selectedDriver = '';
+
+        const confirmPopupElem = document.getElementById('confirmPopup');
+        const successPopupElem = document.getElementById('successPopup');
+        const driverNameSpan = document.getElementById('driverNameSpan');
+
+        function openConfirmPopup(driverName) {
+            selectedDriver = driverName;
+            driverNameSpan.textContent = driverName;
+            confirmPopupElem.classList.add('active');
+        }
+
+        function closeConfirm() {
+            confirmPopupElem.classList.remove('active');
+        }
+
+        function processAssign() {
+            closeConfirm();
+
+            if (tripId) {
+                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                const idx = trips.findIndex(t => t.id === tripId);
+                if (idx !== -1) {
+                    trips[idx].driver = selectedDriver;
+                    localStorage.setItem('app_trips', JSON.stringify(trips));
+                }
+            }
+
+            successPopupElem.innerHTML = `
+                <div class="popup-box">
+                    <i class="fa-regular fa-circle-check popup-icon"></i>
+                    <div class="popup-message">Phân công tài xế thành công</div>
+                </div>
+            `;
+            successPopupElem.classList.add('active');
+
+            setTimeout(() => {
+                window.location.href = URL_QUANLYCHUYENXE;
+            }, 1500);
+        }
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

@@ -1,0 +1,438 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tài xế - Vexeapp</title>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Base styling -->
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <!-- Page specific styling -->
+    <link rel="stylesheet" href="{% static 'css/quanlytaixe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">Quản lý tài khoản</a>
+                <a href="{% url 'index' %}" class="dropdown-item">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-users"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- LIST VIEW -->
+            <div id="driverListView">
+                <!-- Content Header -->
+                <div class="content-header">
+                    <i class="fa-regular fa-calendar-days"></i> Theo dõi lịch làm việc <i
+                        class="fa-solid fa-arrow-right-long arrow"></i>
+                </div>
+
+                <!-- Driver Grid -->
+                <div class="driver-grid" id="driverGrid">
+                    <!-- Drivers will be rendered here by JS -->
+                </div>
+
+                <div class="action-container">
+                    <button class="btn-create" onclick="openCreateModal()">+ Tạo tài khoản</button>
+                </div>
+            </div>
+
+            <!-- DETAILS VIEW -->
+            <div id="driverDetailsView" class="driver-details" style="display: none;">
+                <div style="width: 100%;">
+                    <div class="details-title">Thông tin tài xế</div>
+
+                    <div class="details-container">
+                        <div class="details-left">
+                            <img src="{% static 'img/3.jpg' %}" id="detailAvatar" alt="Avatar" class="details-avatar"
+                                onerror="this.src='https://ui-avatars.com/api/?name=Nguyễn+Tuấn+Anh&background=random'">
+                            <div class="details-buttons">
+                                <button class="btn-close" onclick="hideDriverDetails()">Đóng</button>
+                                <button class="btn-edit" id="btnEdit" onclick="openEditModal()"><i
+                                        class="fa-solid fa-pen"></i> Chỉnh sửa</button>
+                            </div>
+                        </div>
+
+                        <div class="details-right">
+                            <div class="form-group">
+                                <label class="form-label">Họ tên tài xế</label>
+                                <input type="text" class="form-input" id="detailName" value="Nguyễn Tuấn Anh" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Số điện thoại <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="detailPhone" value="05671111289" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Số CCCD</label>
+                                <input type="text" class="form-input" id="detailCCCD" value="049206004552" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Số bằng lái <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="detailLicense" value="8123456789" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Loại bằng lái <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="detailLicenseType" value="B" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Ngày hết hạn bằng lái <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="detailLicenseExpiry" value="12/31/2027"
+                                    disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script src="{% static 'js/common.js' %}"></script>
+    <!-- SCRIPT -->
+    <script>
+        const defaultDrivers = [
+            { id: 1, avatar: "{% static 'img/1.jpg' %}", name: 'Lê Văn Huy', phone: '0567856789', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 2, avatar: "{% static 'img/2.jpg' %}", name: 'Lưu Tuệ Tâm', phone: '0987546362', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 3, avatar: "{% static 'img/3.jpg' %}", name: 'Nguyễn Tuấn Anh', phone: '05671111289', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 4, avatar: "{% static 'img/4.jpg' %}", name: 'Lê Công Tuấn', phone: '0987656782', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 5, avatar: "{% static 'img/5.jpg' %}", name: 'Trần Anh Minh', phone: '0987654333', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 6, avatar: "{% static 'img/6.jpg' %}", name: 'Phan Thành Đạt', phone: '0867110985', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 7, avatar: "{% static 'img/7.jpg' %}", name: 'Võ Thiên Tú', phone: '0834226789', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 8, avatar: "{% static 'img/8.jpg' %}", name: 'Nguyễn Hữu Tài', phone: '0267854321', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
+            { id: 9, avatar: "{% static 'img/9.jpg' %}", name: 'Cao Phúc Đạt', phone: '0389790101', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' }
+        ];
+
+        // Use local storage for drivers to persist changes
+        let drivers = JSON.parse(localStorage.getItem('drivers')) || defaultDrivers;
+        let selectedDriverId = null;
+
+        function saveToStorage() {
+            localStorage.setItem('drivers', JSON.stringify(drivers));
+        }
+
+        function renderDrivers() {
+            const grid = document.getElementById('driverGrid');
+            grid.innerHTML = '';
+            
+            drivers.forEach(driver => {
+                const item = document.createElement('div');
+                item.className = 'driver-item';
+                item.onclick = () => showDriverDetails(driver.id);
+                item.innerHTML = `
+                    <img src="${driver.avatar}" alt="Avatar" class="driver-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=random'">
+                    <div class="driver-info">
+                        <div class="driver-name">${driver.name}</div>
+                        <div class="driver-phone">${driver.phone}</div>
+                    </div>
+                    <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal(${driver.id})">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function showDriverDetails(id) {
+            const driver = drivers.find(d => d.id === id);
+            if (!driver) return;
+            
+            selectedDriverId = id;
+            document.getElementById('detailAvatar').src = driver.avatar;
+            document.getElementById('detailName').value = driver.name;
+            document.getElementById('detailPhone').value = driver.phone;
+            document.getElementById('detailCCCD').value = driver.cccd;
+            document.getElementById('detailLicense').value = driver.license;
+            document.getElementById('detailLicenseType').value = driver.licenseType;
+            document.getElementById('detailLicenseExpiry').value = driver.licenseExpiry;
+
+            document.getElementById('driverListView').style.display = 'none';
+            document.getElementById('driverDetailsView').style.display = 'flex';
+        }
+
+        function hideDriverDetails() {
+            document.getElementById('driverListView').style.display = 'block';
+            document.getElementById('driverDetailsView').style.display = 'none';
+            renderDrivers();
+        }
+
+        function openCreateModal() {
+            document.getElementById('createModal').style.display = 'flex';
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+
+        function submitCreateForm() {
+            const name = document.getElementById('createName').value.trim();
+            const phone = document.getElementById('createPhone').value.trim();
+            
+            if (!name || !phone) {
+                alert('Vui lòng điền họ tên và số điện thoại');
+                return;
+            }
+
+            const newId = drivers.length > 0 ? Math.max(...drivers.map(d => d.id)) + 1 : 1;
+            const newDriver = {
+                id: newId,
+                name: name,
+                phone: phone,
+                avatar: document.getElementById('createAvatarPreview').src,
+                cccd: document.getElementById('createCCCD').value || 'Chưa cập nhật',
+                license: document.getElementById('createLicense').value || 'Chưa cập nhật',
+                licenseType: document.getElementById('createLicenseType').value || 'B',
+                licenseExpiry: document.getElementById('createLicenseExpiry').value || 'N/A'
+            };
+
+            drivers.push(newDriver);
+            saveToStorage();
+            closeCreateModal();
+            renderDrivers();
+            showSuccess('Tạo tài khoản thành công!');
+        }
+
+        function openEditModal() {
+            const driver = drivers.find(d => d.id === selectedDriverId);
+            if (!driver) return;
+
+            document.getElementById('editName').value = driver.name;
+            document.getElementById('editPhone').value = driver.phone;
+            document.getElementById('editCCCD').value = driver.cccd;
+            document.getElementById('editLicense').value = driver.license;
+            document.getElementById('editLicenseType').value = driver.licenseType;
+            document.getElementById('editLicenseExpiry').value = driver.licenseExpiry;
+            document.getElementById('editAvatarPreview').src = driver.avatar;
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveEditModal() {
+            const driver = drivers.find(d => d.id === selectedDriverId);
+            if (!driver) return;
+
+            driver.name = document.getElementById('editName').value;
+            driver.phone = document.getElementById('editPhone').value;
+            driver.cccd = document.getElementById('editCCCD').value;
+            driver.license = document.getElementById('editLicense').value;
+            driver.licenseType = document.getElementById('editLicenseType').value;
+            driver.licenseExpiry = document.getElementById('editLicenseExpiry').value;
+            driver.avatar = document.getElementById('editAvatarPreview').src;
+
+            saveToStorage();
+            closeEditModal();
+            showDriverDetails(selectedDriverId);
+            showSuccess('Cập nhật thông tin thành công!');
+        }
+
+        let driverToDelete = null;
+        function showDeleteModal(id) {
+            driverToDelete = id;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        function confirmDelete() {
+            drivers = drivers.filter(d => d.id !== driverToDelete);
+            saveToStorage();
+            closeDeleteModal();
+            renderDrivers();
+            showSuccess('Xóa tài khoản thành công!');
+        }
+
+        function showSuccess(msg) {
+            const popup = document.getElementById('successPopup');
+            document.getElementById('successText').textContent = msg;
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDrivers();
+        });
+    </script>
+
+    <!-- Create Modal -->
+    <div id="createModal" class="create-modal-overlay">
+        <div class="create-modal-box">
+            <div class="create-modal-header">
+                <span class="create-modal-title">Tạo tài khoản tài xế</span>
+                <button class="modal-close-icon" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <div class="create-modal-body">
+                <div class="create-modal-col">
+                    <div class="form-group">
+                        <label class="form-label">Họ tên tài xế <span class="required">*</span></label>
+                        <input type="text" id="createName" class="form-input editable" placeholder="Nhập họ tên">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại <span class="required">*</span></label>
+                        <input type="text" id="createPhone" class="form-input editable" placeholder="Nhập số điện thoại">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số CCCD</label>
+                        <input type="text" id="createCCCD" class="form-input editable" placeholder="Nhập số CCCD">
+                    </div>
+                </div>
+                <div class="create-modal-col">
+                    <div class="form-group">
+                        <label class="form-label">Số bằng lái</label>
+                        <input type="text" id="createLicense" class="form-input editable" placeholder="Nhập số bằng lái">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Loại bằng lái</label>
+                        <select id="createLicenseType" class="form-input editable">
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày hết hạn bằng lái</label>
+                        <input type="date" id="createLicenseExpiry" class="form-input editable">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ảnh đại diện</label>
+                        <img id="createAvatarPreview" class="create-avatar-preview" src="{% static 'img/3.jpg' %}" alt="Preview">
+                    </div>
+                </div>
+            </div>
+            <div class="create-modal-footer">
+                <button class="btn-create-submit" onclick="submitCreateForm()">Tạo tài khoản</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="edit-modal-overlay">
+        <div class="edit-modal-box">
+            <div class="edit-modal-title">Chỉnh sửa thông tin tài xế</div>
+            <div class="edit-modal-body">
+                <div class="edit-modal-left">
+                    <img id="editAvatarPreview" class="edit-avatar" src="" alt="Avatar">
+                    <button class="btn-change-photo">Đổi ảnh</button>
+                </div>
+                <div class="edit-modal-right">
+                    <div class="form-group">
+                        <label class="form-label">Họ tên tài xế</label>
+                        <input type="text" id="editName" class="form-input editable">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" id="editPhone" class="form-input editable">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số CCCD</label>
+                        <input type="text" id="editCCCD" class="form-input editable">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số bằng lái</label>
+                        <input type="text" id="editLicense" class="form-input editable">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Loại bằng lái</label>
+                        <input type="text" id="editLicenseType" class="form-input editable">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày hết hạn</label>
+                        <input type="text" id="editLicenseExpiry" class="form-input editable">
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-actions">
+                <button class="btn-close" onclick="closeEditModal()">Hủy</button>
+                <button class="btn-save-modal" onclick="saveEditModal()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="delete-modal-overlay">
+        <div class="delete-modal-box">
+            <i class="fa-solid fa-circle-exclamation delete-modal-icon"></i>
+            <div class="delete-modal-title">Xác nhận xóa</div>
+            <div class="delete-modal-msg">Bạn có chắc chắn muốn xóa tài khoản tài xế này khỏi hệ thống?</div>
+            <div class="delete-modal-actions">
+                <button class="btn-delete-cancel" onclick="closeDeleteModal()">Hủy</button>
+                <button class="btn-delete-confirm" onclick="confirmDelete()">Xác nhận xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Popup -->
+    <div id="successPopup" class="success-popup-overlay">
+        <div class="success-popup-box">
+            <i class="fa-solid fa-circle-check success-icon"></i>
+            <div id="successText" class="success-text">Thành công!</div>
+        </div>
+    </div>
+
+</body>
+
+</html>

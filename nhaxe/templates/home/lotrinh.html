@@ -1,0 +1,215 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Màn hình quản lý chuyến xe - Lộ trình</title>
+    <!-- Use FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/lotrinh.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content-lotrinh">
+            <div class="lotrinh-container">
+                <div class="map-section">
+                    <iframe
+                        src="https://maps.google.com/maps?saddr=1+Tố+Hữu,+Thừa+Thiên+Huế&daddr=25+Bà+Triệu,+Thừa+Thiên+Huế+to:1+Nguyễn+Huệ,+Thừa+Thiên+Huế+to:1+Hùng+Vương,+Đà+Nẵng+to:1+Tố+Hữu,+Đà+Nẵng+to:25+Phan+Thanh,+Đà+Nẵng&output=embed"
+                        width="100%" height="400"
+                        style="border:0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <button class="btn-complete" onclick="openCompletePopup()">Hoàn thành</button>
+                </div>
+
+                <div class="list-section">
+                    <h3 class="list-title">Danh sách điểm đón</h3>
+                    <div class="pickup-list">
+
+                        <!-- Passenger 1 -->
+                        <div class="pickup-card">
+                            <div class="pickup-header">
+                                <strong>Phan Thị Quỳnh Trâm</strong>
+                            </div>
+                            <div class="pickup-details">
+                                <p>Ghế: <span class="seat-text">A1</span></p>
+                                <p>0123456789</p>
+                                <div class="loc-row loc-up">
+                                    <i class="fa-solid fa-location-dot"></i> Lên:
+                                    <span class="loc-text">1 Tố Hữu, Thành Phố Huế</span>
+                                </div>
+                                <div class="loc-row loc-down">
+                                    <i class="fa-solid fa-location-dot"></i> Xuống:
+                                    <span class="loc-text">1 Hùng Vương, Đà Nẵng</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passenger 2 -->
+                        <div class="pickup-card">
+                            <div class="pickup-header">
+                                <strong>Lê Văn Hùng</strong>
+                            </div>
+                            <div class="pickup-details">
+                                <p>Ghế: <span class="seat-text">A2</span></p>
+                                <p>0123456789</p>
+                                <div class="loc-row loc-up">
+                                    <i class="fa-solid fa-location-dot"></i> Lên:
+                                    <span class="loc-text">25 Bà Triệu, Thành Phố Huế</span>
+                                </div>
+                                <div class="loc-row loc-down">
+                                    <i class="fa-solid fa-location-dot"></i> Xuống:
+                                    <span class="loc-text">1 Tố Hữu, Đà Nẵng</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passenger 3 -->
+                        <div class="pickup-card">
+                            <div class="pickup-header">
+                                <strong>Vương Tuệ Nhi</strong>
+                            </div>
+                            <div class="pickup-details">
+                                <p>Ghế: <span class="seat-text">A3</span></p>
+                                <p>0123456789</p>
+                                <div class="loc-row loc-up">
+                                    <i class="fa-solid fa-location-dot"></i> Lên:
+                                    <span class="loc-text">1 Nguyễn Huệ, Thành Phố Huế</span>
+                                </div>
+                                <div class="loc-row loc-down">
+                                    <i class="fa-solid fa-location-dot"></i> Xuống:
+                                    <span class="loc-text">25 Phan Thanh, Đà Nẵng</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Complete Popup -->
+    <div class="popup-overlay" id="completePopup"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
+        <div class="popup-box"
+            style="background: white; padding: 40px 60px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); text-align: center; min-width: 400px;">
+            <div class="popup-title" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #111;">Xác
+                nhận hoàn thành chuyến</div>
+            <div class="popup-message" style="font-size: 1.1rem; color: #222; margin-bottom: 30px; font-weight: bold;">
+                Bạn có muốn xác nhận hoàn thành chuyến</div>
+            <div class="popup-actions" style="display: flex; justify-content: center; gap: 60px;">
+                <button class="btn-no-comp" onclick="closeCompletePopup()"
+                    style="padding: 10px 40px; border: none; background: #d1d5db; color: #fff; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Không</button>
+                <button class="btn-yes-comp" onclick="confirmComplete()"
+                    style="padding: 10px 40px; border: none; background: #16a34a; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Đồng
+                    ý</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+            });
+        });
+
+        function openCompletePopup() {
+            document.getElementById('completePopup').style.opacity = '1';
+            document.getElementById('completePopup').style.pointerEvents = 'auto';
+        }
+
+        function closeCompletePopup() {
+            document.getElementById('completePopup').style.opacity = '0';
+            document.getElementById('completePopup').style.pointerEvents = 'none';
+        }
+
+        function confirmComplete() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tripId = urlParams.get('id');
+            if (tripId) {
+                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                const idx = trips.findIndex(t => t.id === tripId);
+                if (idx !== -1) {
+                    trips[idx].status = 'completed';
+                    localStorage.setItem('app_trips', JSON.stringify(trips));
+                }
+            }
+            window.location.href = URL_QUANLYCHUYENXE;
+        }
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

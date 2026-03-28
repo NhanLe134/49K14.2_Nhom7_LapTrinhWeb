@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin tài khoản - Tài xế</title>
+
+    {% load static %}
+
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/taixe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/taixe_thongtin_style.css' %}">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_taixe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="tx-layout-main">
+        <aside class="tx-sidebar">
+            <ul class="tx-menu">
+                <li class="tx-menu-item" onclick="window.location.href='{% url 'taixe' %}'"><i class="fa-solid fa-house" style="margin-right: 10px;"></i> Trang chủ</li>
+                <li class="tx-menu-item" onclick="window.location.href='{% url 'taixe_quanlychuyenxe' %}'"><i class="fa-solid fa-map" style="margin-right: 10px;"></i> Quản lý chuyến xe</li>
+                <li class="tx-menu-item active"><i class="fa-solid fa-gear" style="margin-right: 10px;"></i> Thông tin tài khoản</li>
+                <li class="tx-menu-item" onclick="window.location.href='{% url 'index' %}'"><i class="fa-solid fa-arrow-right-from-bracket" style="margin-right: 10px;"></i> Đăng xuất</li>
+            </ul>
+        </aside>
+
+        <section class="tx-content-area">
+            <div class="profile-card-full">
+                <div class="avatar-section">
+                    <div class="avatar-circle">
+                        <img src="{% static 'img/driver.jpg' %}" alt="Driver Avatar" onerror="this.style.display='none'">
+                        <svg class="placeholder-svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <h2 class="driver-name-top">Nguyễn Văn An</h2>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-block">
+                        <h3 class="block-title">Thông tin cá nhân</h3>
+                        <div class="info-item">
+                            <span class="label">Số điện thoại:</span>
+                            <span class="value">0916441979</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Ngày sinh:</span>
+                            <span class="value">20/11/2004</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Số CCCD:</span>
+                            <span class="value">034576758234</span>
+                        </div>
+                    </div>
+
+                    <div class="info-block">
+                        <h3 class="block-title">Giấy phép lái xe</h3>
+                        <div class="info-item">
+                            <span class="label">Số bằng lái:</span>
+                            <span class="value">991170000734</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Loại bằng lái:</span>
+                            <span class="value badge-blue">B1</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Ngày hết hạn:</span>
+                            <span class="value highlight-red">25/12/2039</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
+
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
+            }
+        });
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+</html>

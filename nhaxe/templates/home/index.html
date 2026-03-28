@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Vexeapp</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div class="main-content">
+        <div class="logo-container">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo Vexeapp" id="logo-img">
+        </div>
+
+        <div class="login-form">
+            <form id="loginForm" novalidate>
+                <div class="form-group">
+                    <label for="username">Tên đăng nhập</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="username" required>
+                        <span class="custom-placeholder" id="user-placeholder">Tên đăng nhập <span
+                                class="required-star">*</span></span>
+                    </div>
+                    <div class="input-error" id="username-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" required>
+                        <span class="custom-placeholder" id="pass-placeholder">Mật khẩu <span
+                                class="required-star">*</span></span>
+                    </div>
+                    <div class="input-error" id="password-error"></div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'dangky_khachhang' %}">Đăng ký Khách hàng</a>
+                    <a href="{% url 'dangky_nhaxe' %}">Đăng ký Nhà xe</a>
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit" class="btn-login">Đăng nhập</button>
+                </div>
+
+                <div class="forgot-pass">
+                    <a href="{% url 'quen_mat_khau' %}">Quên mật khẩu?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer">
+        KẾT NỐI HÀNH TRÌNH DI SẢN
+    </div>
+
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script>
+        const URL_NHAXE = "{% url 'nhaxe' %}";
+        const URL_TAIXE = "{% url 'taixe' %}";
+        const URL_KHACHHANG = "{% url 'khachhang' %}";
+
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const usernameError = document.getElementById('username-error');
+            const passwordError = document.getElementById('password-error');
+            
+            usernameError.textContent = '';
+            passwordError.textContent = '';
+            
+            if (!username) { usernameError.textContent = 'Vui lòng nhập tên đăng nhập'; return; }
+            if (!password) { passwordError.textContent = 'Vui lòng nhập mật khẩu'; return; }
+
+            // Explicit roles: admin/nx -> nhaxe, taixe/tx -> taixe, kh -> khachhang
+            if (username === 'admin' || username === 'nx') {
+                window.location.href = URL_NHAXE;
+            } else if (username === 'taixe' || username === 'tx') {
+                window.location.href = URL_TAIXE;
+            } else if (username === 'kh' || username === 'khachhang') {
+                window.location.href = URL_KHACHHANG;
+            } else {
+                // Default to customer interface for other users
+                window.location.href = URL_KHACHHANG;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,180 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 15px;
+}
+
+.logo-container {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.login-form {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    color: #0581B8;
+    font-weight: 700;
+    margin-bottom: 10px;
+    font-size: 1.15rem;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s;
+    background: transparent;
+    position: relative;
+    z-index: 2;
+}
+
+.input-wrapper input:focus {
+    border-color: #0581B8;
+}
+
+/* Custom placeholder to allow red asterisk */
+.custom-placeholder {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0a0a0;
+    font-size: 1rem;
+    z-index: 1;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.input-wrapper input:focus+.custom-placeholder,
+.input-wrapper input:valid+.custom-placeholder {
+    opacity: 0;
+}
+
+.required-star {
+    color: #ff3b3b;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 0 5px;
+}
+
+.form-actions a {
+    color: #0581B8;
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+.form-actions a:hover {
+    text-decoration: underline;
+}
+
+.input-error {
+    color: #cc0000;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 5px;
+    font-style: italic;
+    display: none;
+}
+
+.input-wrapper.error input {
+    border-color: #cc0000;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-login {
+    background-color: #06A0E2;
+    color: white;
+    border: none;
+    padding: 12px 45px;
+    border-radius: 6px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-login:hover {
+    background-color: #0581B8;
+}
+
+.footer {
+    background-color: #06A0E2;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.forgot-pass {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.forgot-pass a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.forgot-pass a:hover {
+    color: #0581B8;
+    text-decoration: underline;
+}

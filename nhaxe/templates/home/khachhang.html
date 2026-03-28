@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ Khách hàng - Vexeapp</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Nhà xe Đà Nẵng_Huế</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'khachhang' %}" class="sidebar-item active">
+                <i class="fa-solid fa-house" style="color: #06A0E2;"></i> Trang chủ
+            </a>
+            <a href="{% url 'timkiem' %}" class="sidebar-item">
+                <i class="fa-solid fa-magnifying-glass" style="color: #444;"></i> Tìm kiếm vé
+            </a>
+            <a href="{% url 'quanlyve' %}" class="sidebar-item">
+                <i class="fa-solid fa-ticket" style="color: #444;"></i> Vé của tôi
+            </a>
+            <a href="{% url 'danhgiachuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-comments" style="color: #444;"></i> Đánh giá chuyến xe
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="content-section">
+                <h2 class="section-title">Thông tin mới</h2>
+                <div class="carousel-container">
+                    <div class="image-card">
+                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&auto=format&fit=crop"
+                            alt="Thông tin 1">
+                    </div>
+                    <div class="image-card">
+                        <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&auto=format&fit=crop"
+                            alt="Thông tin 2">
+                    </div>
+                    <div class="image-card">
+                        <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=500&auto=format&fit=crop"
+                            alt="Thông tin 3">
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2 class="section-title">Ưu đãi nổi bật</h2>
+                <div class="carousel-container">
+                    <div class="image-card offer-card">
+                        <span class="discount-badge">-20%</span>
+                        <img src="https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=500&auto=format&fit=crop"
+                            alt="Ưu đãi 1">
+                    </div>
+                    <div class="image-card offer-card">
+                        <span class="discount-badge">-30%</span>
+                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&auto=format&fit=crop"
+                            alt="Ưu đãi 2">
+                    </div>
+                    <div class="image-card offer-card">
+                        <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=500&auto=format&fit=crop"
+                            alt="Ưu đãi 3">
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+            });
+        });
+    </script>
+</body>
+
+</html>

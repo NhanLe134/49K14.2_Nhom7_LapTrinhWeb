@@ -1,0 +1,147 @@
+/* CSS for Chi tiết chuyến xe */
+
+.main-content-ctcx {
+    flex: 1;
+    padding: 30px 40px;
+    background-color: #fcfcfc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.section-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #222;
+    margin-bottom: 25px;
+    text-align: center;
+    width: 100%;
+}
+
+.trip-detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 15px;
+}
+
+.trip-detail-card img {
+    width: 180px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.detail-route {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #111;
+    flex: 1;
+    text-align: center;
+}
+
+.detail-stats {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #777;
+    font-size: 1.05rem;
+}
+
+.detail-badge {
+    background: #F8FDE9;
+    color: #C0CD1C;
+    padding: 8px 15px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.action-row {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 40px;
+}
+
+.btn-assign {
+    background-color: #12b7f5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(18, 183, 245, 0.2);
+}
+
+.btn-assign:hover {
+    background-color: #0fa1db;
+}
+
+.passenger-list {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.passenger-card {
+    background: white;
+    border-radius: 25px;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    border: 1px solid #eee;
+}
+
+.passenger-icon {
+    font-size: 2rem;
+    color: #7BDCFD;
+    margin-right: 40px;
+}
+
+.passenger-name {
+    flex: 1;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #222;
+}
+
+.passenger-contact {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.passenger-seat {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #F85A5A;
+    margin-left: 20px;
+}
+
+.page-footer-ctcx {
+    background-color: #7BE4FF;
+    color: white;
+    text-align: center;
+    padding: 25px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    width: 100%;
+    margin-top: auto;
+}

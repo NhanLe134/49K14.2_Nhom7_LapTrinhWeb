@@ -1,0 +1,770 @@
+/* Styling specific to the Driver Management Page */
+
+/* The content header title */
+.content-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.content-header i.fa-calendar-days {
+    margin-right: 15px;
+    font-size: 1.8rem;
+}
+
+.content-header .arrow {
+    margin-left: 10px;
+    font-size: 1.4rem;
+}
+
+/* Override sidebar active state to match the image */
+.sidebar-item.active {
+    margin: 5px 15px 5px 15px !important;
+    border-radius: 8px !important;
+    border-left: none !important;
+    padding: 12px 15px !important;
+}
+
+.sidebar-item.active {
+    background-color: #e5f5fb !important;
+    color: #15baf6 !important;
+}
+
+.sidebar-item.active i {
+    color: #15baf6 !important;
+}
+
+/* Driver Grid Layout */
+.driver-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 80px;
+    row-gap: 30px;
+    margin-bottom: 50px;
+    width: 100%;
+}
+
+/* Individual Driver Item */
+.driver-item {
+    display: flex;
+    align-items: center;
+    padding-bottom: 5px;
+    border-bottom: 1.5px solid #eaeaea;
+}
+
+.driver-avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 20px;
+    /* Optional shadow */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.driver-info {
+    flex-grow: 1;
+}
+
+.driver-name {
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 5px;
+}
+
+.driver-phone {
+    font-size: 0.95rem;
+    color: #777;
+    font-weight: 500;
+}
+
+.driver-action {
+    color: #ff3b3b;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.15s ease-in-out;
+    padding: 10px;
+}
+
+.driver-action:hover {
+    color: #d11a2a;
+}
+
+/* Button Container */
+.action-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.btn-create {
+    background-color: #15baf6;
+    color: white;
+    border: none;
+    padding: 14px 60px;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    /* Slight shadow like the image */
+    box-shadow: 0 4px 6px rgba(21, 186, 246, 0.2);
+}
+
+.btn-create:hover {
+    background-color: #10a3dd;
+}
+
+
+
+/* Driver Details View */
+.driver-details {
+    display: flex;
+    margin-top: 10px;
+}
+
+.details-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #111;
+}
+
+.details-container {
+    display: flex;
+    gap: 50px;
+}
+
+.details-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 250px;
+}
+
+.details-avatar {
+    width: 230px;
+    height: 230px;
+    border-radius: 40px;
+    object-fit: cover;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.details-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    padding: 0 10px;
+    margin-top: auto;
+}
+
+.btn-close {
+    background-color: #ededed;
+    color: #444;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.btn-close:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-edit {
+    background-color: #15baf6;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+    background-color: #10a3dd;
+}
+
+.btn-save {
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-save:hover {
+    background-color: #16a34a;
+}
+
+.btn-cancel-edit {
+    background-color: #f87171;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-cancel-edit:hover {
+    background-color: #ef4444;
+}
+
+/* Input in edit mode */
+.form-input:not(:disabled) {
+    background-color: #fff;
+    border: 1.5px solid #15baf6;
+    color: #222;
+    cursor: text;
+}
+
+.details-right {
+    flex-grow: 1;
+    border-left: 2px solid #f0f0f0;
+    padding-left: 50px;
+}
+
+.form-group {
+    margin-bottom: 22px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+    font-size: 1rem;
+}
+
+.form-label .required {
+    color: red;
+}
+
+.form-input {
+    width: 100%;
+    max-width: 450px;
+    padding: 12px 15px;
+    background-color: #f6f6f6;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    color: #777;
+    font-size: 1rem;
+    outline: none;
+}
+
+.form-input:disabled {
+    cursor: not-allowed;
+}
+
+/* Custom Footer strictly for this page */
+.footer-banner.custom-footer {
+    background-color: #7bd2fa !important;
+    /* Light bright cyan/blue */
+    color: white !important;
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+    padding: 30px 0 !important;
+    border: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .details-container {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .details-right {
+        border-left: none;
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .driver-grid {
+        grid-template-columns: 1fr;
+        column-gap: 0;
+        row-gap: 20px;
+        padding-left: 0;
+    }
+
+    .content-header {
+        font-size: 1.3rem;
+    }
+
+    .btn-create {
+        padding: 14px 40px;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .details-avatar {
+        width: 180px;
+        height: 180px;
+    }
+
+    .details-left {
+        width: 100%;
+    }
+
+    .details-buttons {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+}
+
+/* ===================== EDIT MODAL ===================== */
+
+.edit-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.edit-modal-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 36px;
+    width: 620px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+    animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.edit-modal-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 24px;
+}
+
+.edit-modal-body {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* Left column: avatar */
+.edit-modal-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    min-width: 130px;
+}
+
+.edit-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    background: #eee;
+}
+
+.btn-change-photo {
+    background: #ededed;
+    color: #444;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-change-photo:hover {
+    background: #ddd;
+}
+
+/* Right column: form */
+.edit-modal-right {
+    flex: 1;
+}
+
+.edit-modal-right .form-input {
+    max-width: 100%;
+}
+
+/* Editable fields in modal */
+.edit-modal-right .form-input.editable {
+    background: #fff;
+    border: 1.5px solid #ccc;
+    color: #222;
+    cursor: text;
+}
+
+.edit-modal-right .form-input.editable:focus {
+    border-color: #15baf6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(21, 186, 246, 0.12);
+}
+
+/* Action buttons row */
+.edit-modal-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.edit-modal-actions .btn-close {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+}
+
+.btn-save-modal {
+    flex: 1;
+    background-color: #15baf6;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-save-modal:hover {
+    background-color: #10a3dd;
+}
+
+@media (max-width: 540px) {
+    .edit-modal-body {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .edit-modal-box {
+        padding: 24px 18px;
+    }
+}
+
+/* ===================== SUCCESS POPUP ===================== */
+
+.success-popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.success-popup-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.13);
+    animation: successFadeIn 0.25s ease;
+    min-width: 380px;
+}
+
+@keyframes successFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.success-icon {
+    font-size: 3.5rem;
+    color: #22c55e;
+    line-height: 1;
+}
+
+.success-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #111;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* ===================== DELETE CONFIRM MODAL ===================== */
+
+.delete-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-modal-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px 40px;
+    width: 420px;
+    max-width: 92vw;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+    animation: modalFadeIn 0.2s ease;
+    text-align: center;
+}
+
+.delete-modal-icon {
+    font-size: 2.6rem;
+    color: #f97316;
+    margin-bottom: 14px;
+}
+
+.delete-modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 14px;
+}
+
+.delete-modal-msg {
+    font-size: 0.97rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.delete-modal-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+}
+
+.btn-delete-cancel {
+    flex: 1;
+    max-width: 140px;
+    background: #ededed;
+    color: #444;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-delete-cancel:hover {
+    background: #ddd;
+}
+
+.btn-delete-confirm {
+    flex: 1;
+    max-width: 140px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-delete-confirm:hover {
+    background: #dc2626;
+}
+
+
+
+/* ===================== CREATE MODAL ===================== */
+
+.create-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.create-modal-box {
+    background: #fff;
+    border-radius: 12px;
+    width: 820px;
+    max-width: 95vw;
+    padding: 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.25s ease;
+    overflow: hidden;
+}
+
+.create-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+}
+
+.create-modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.modal-close-icon {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #444;
+    line-height: 1;
+}
+
+.create-modal-body {
+    padding: 0 30px 20px 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.create-modal-col {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pass-input-wrapper {
+    position: relative;
+}
+
+.pass-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.avatar-upload-row {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-upload-avatar {
+    background: #eee;
+    border: 1px solid #ccc;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.btn-upload-avatar:hover {
+    background: #e0e0e0;
+}
+
+.create-avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 10px;
+    border: 1px solid #eee;
+}
+
+.create-modal-footer {
+    padding: 20px 30px 40px 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-create-submit {
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    padding: 14px 0;
+    width: 450px;
+    max-width: 100%;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-create-submit:hover {
+    background: #0284c7;
+}
+
+@media (max-width: 768px) {
+    .create-modal-body {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .create-modal-box {
+        width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}

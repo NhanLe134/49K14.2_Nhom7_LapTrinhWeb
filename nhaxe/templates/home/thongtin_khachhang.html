@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin tài khoản - Khách hàng</title>
+
+    {% load static %}
+
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
+    <link rel="stylesheet" href="{% static 'css/khachhang_thongtin_style.css' %}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Nhà xe Đà Nẵng_Huế</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="kh-layout-main">
+        <aside class="kh-sidebar">
+            <ul class="kh-menu">
+                <li class="kh-menu-item" onclick="window.location.href='{% url 'khachhang' %}'"><i
+                        class="fa-solid fa-house" style="margin-right: 10px;"></i> Trang chủ</li>
+                <li class="kh-menu-item active"><i class="fa-solid fa-gear" style="margin-right: 10px;"></i> Thông tin
+                    tài khoản</li>
+                <li class="kh-menu-item" onclick="window.location.href='{% url 'index' %}'"><i
+                        class="fa-solid fa-arrow-right-from-bracket" style="margin-right: 10px;"></i> Đăng xuất</li>
+            </ul>
+        </aside>
+
+        <section class="kh-content-area">
+            <div class="profile-card-full">
+                <h2 class="profile-page-title" id="page-title">Thông tin tài khoản</h2>
+
+                <div class="profile-main-section">
+                    <div class="avatar-col">
+                        <div class="avatar-display-section">
+                            <div class="avatar-circle-display" id="avatar-preview">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" id="avatar-icon-placeholder">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <img src="" alt="Avatar" class="avatar-image-hidden" id="avatar-image-display">
+                            </div>
+
+                            <div class="upload-controls hidden" id="upload-controls-section">
+                                <button type="button" class="btn-upload-trigger" id="fake-upload-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    Tải ảnh lên
+                                </button>
+                                <input type="file" id="real-file-input" accept="image/*" class="file-input-hidden">
+                                <p class="upload-note">Tải lên file ảnh có kích thước tối đa 2Mb</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-col">
+                        <form id="formThongTin">
+                            <div class="info-row">
+                                <label class="info-label">Họ và tên:</label>
+                                <div class="info-value-wrapper">
+                                    <span class="info-text" id="view-hoten">Nguyễn Văn An</span>
+                                    <input type="text" class="info-input hidden" id="edit-hoten" value="Nguyễn Văn An">
+                                    <span class="error-text" id="err-hoten"></span>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <label class="info-label">Số điện thoại:</label>
+                                <div class="info-value-wrapper">
+                                    <span class="info-text">0916441979</span>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <label class="info-label">Ngày sinh:</label>
+                                <div class="info-value-wrapper">
+                                    <span class="info-text" id="view-ngaysinh">20/11/2004</span>
+                                    <input type="date" class="info-input hidden" id="edit-ngaysinh" value="2004-11-20">
+                                    <span class="error-text" id="err-ngaysinh"></span>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons view-mode" id="action-view">
+                                <button type="button" class="btn-edit-full" onclick="switchToEditMode()">Chỉnh sửa
+                                    &#x270E;</button>
+                            </div>
+
+                            <div class="action-buttons edit-mode hidden" id="action-edit">
+                                <button type="button" class="btn-grey" onclick="showConfirmCancelModal()">Hủy</button>
+                                <button type="submit" class="btn-blue">Lưu</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <div id="confirmCancelModal" class="kh-modal-overlay">
+        <div class="kh-modal-box new-alert-modal">
+            <div class="alert-title-wrapper">
+                <svg viewBox="0 0 24 24" fill="#F61313" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                    <path
+                        d="M12 2L1 21H23L12 2ZM12 16C11.448 16 11 15.552 11 15V10C11 9.448 11.448 9 12 9C12.552 9 13 9.448 13 10V15C13 15.552 12.552 16 12 16ZM13 19H11V17H13V19Z" />
+                </svg>
+                <h3>Xác nhận huỷ thao tác</h3>
+            </div>
+            <p class="new-alert-message">Bạn có chắc chắn muốn dừng việc chỉnh sửa?<br>Hành động này không thể hoàn tác
+            </p>
+            <div class="new-alert-actions">
+                <button class="btn-grey" onclick="closeConfirmModal()">Không</button>
+                <button class="btn-red" onclick="cancelEdit()">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="successModal" class="kh-modal-overlay">
+        <div class="kh-modal-box new-success-alert">
+            <div class="new-success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <p class="new-success-message">Cập nhật thông tin khách hàng<br>thành công</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
+
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
+            }
+        });
+
+        document.getElementById('fake-upload-btn').addEventListener('click', function () {
+            document.getElementById('real-file-input').click();
+        });
+
+        document.getElementById('real-file-input').addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert("Kích thước file quá lớn (tối đa 2Mb)!");
+                    this.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatar-icon-placeholder').classList.add('avatar-image-hidden');
+                    document.getElementById('avatar-image-display').src = e.target.result;
+                    document.getElementById('avatar-image-display').classList.remove('avatar-image-hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function switchToEditMode() {
+            document.getElementById('page-title').textContent = "Chỉnh sửa thông tin tài khoản";
+
+            document.getElementById('view-hoten').classList.add('hidden');
+            document.getElementById('edit-hoten').classList.remove('hidden');
+
+            document.getElementById('view-ngaysinh').classList.add('hidden');
+            document.getElementById('edit-ngaysinh').classList.remove('hidden');
+
+            document.getElementById('action-view').classList.add('hidden');
+            document.getElementById('action-edit').classList.remove('hidden');
+
+            document.getElementById('upload-controls-section').classList.remove('hidden');
+        }
+
+        function switchToViewMode() {
+            document.getElementById('page-title').textContent = "Thông tin tài khoản";
+
+            document.getElementById('view-hoten').classList.remove('hidden');
+            document.getElementById('edit-hoten').classList.add('hidden');
+            document.getElementById('err-hoten').classList.remove('show-error');
+            document.getElementById('edit-hoten').classList.remove('input-error');
+
+            document.getElementById('view-ngaysinh').classList.remove('hidden');
+            document.getElementById('edit-ngaysinh').classList.add('hidden');
+            document.getElementById('err-ngaysinh').classList.remove('show-error');
+            document.getElementById('edit-ngaysinh').classList.remove('input-error');
+
+            document.getElementById('action-view').classList.remove('hidden');
+            document.getElementById('action-edit').classList.add('hidden');
+
+            document.getElementById('upload-controls-section').classList.add('hidden');
+        }
+
+        function showConfirmCancelModal() {
+            document.getElementById('confirmCancelModal').classList.add('show-modal');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmCancelModal').classList.remove('show-modal');
+        }
+
+        function cancelEdit() {
+            closeConfirmModal();
+            document.getElementById('edit-hoten').value = document.getElementById('view-hoten').textContent;
+            switchToViewMode();
+        }
+
+        document.getElementById('formThongTin').addEventListener('submit', function (e) {
+            e.preventDefault();
+            let isValid = true;
+
+            const nameInput = document.getElementById('edit-hoten');
+            const nameError = document.getElementById('err-hoten');
+            const nameValue = nameInput.value.trim();
+
+            if (nameValue === "") {
+                nameInput.classList.add('input-error');
+                nameError.textContent = "*Vui lòng nhập Họ và tên";
+                nameError.classList.add('show-error');
+                isValid = false;
+            } else {
+                const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+                if (specialCharRegex.test(nameValue)) {
+                    nameInput.classList.add('input-error');
+                    nameError.textContent = "*Họ tên không chứa kí tự đặc biệt";
+                    nameError.classList.add('show-error');
+                    isValid = false;
+                } else {
+                    nameInput.classList.remove('input-error');
+                    nameError.classList.remove('show-error');
+                }
+            }
+
+            const dobInput = document.getElementById('edit-ngaysinh');
+            const dobError = document.getElementById('err-ngaysinh');
+            if (dobInput.value === "") {
+                dobInput.classList.add('input-error');
+                dobError.textContent = "*Vui lòng nhập Ngày sinh";
+                dobError.classList.add('show-error');
+                isValid = false;
+            } else {
+                dobInput.classList.remove('input-error');
+                dobError.classList.remove('show-error');
+            }
+
+            if (isValid) {
+                document.getElementById('view-hoten').textContent = nameValue;
+                const dateParts = dobInput.value.split('-');
+                document.getElementById('view-ngaysinh').textContent = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+                switchToViewMode();
+                showSuccess();
+            }
+        });
+
+        function showSuccess() {
+            const modal = document.getElementById('successModal');
+            modal.classList.add('show-modal');
+            setTimeout(() => {
+                modal.classList.remove('show-modal');
+            }, 2500);
+        }
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

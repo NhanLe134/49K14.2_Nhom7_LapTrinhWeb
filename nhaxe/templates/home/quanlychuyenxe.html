@@ -1,0 +1,180 @@
+{% load static %}
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý chuyến xe - Vexeapp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content-qlcx">
+            <div class="top-actions">
+                <button class="btn-add-trip" onclick="window.location.href='{% url 'themchuyenxe' %}'">Thêm chuyến
+                    xe</button>
+            </div>
+
+            <div class="trip-list">
+                <!-- Trips are dynamically generated in JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+            });
+
+            // Lấy danh sách chuyến xe mới tạo từ localStorage
+            const tripList = document.querySelector('.trip-list');
+            if (tripList) {
+                let savedTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+
+                // Initialize default trips if none exist, mapping hardcoded ones into storage
+                const now = new Date();
+                const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+                const defaultTrip1 = {
+                    id: 'D001',
+                    route: 'Huế-Đà Nẵng',
+                    date: todayStr,
+                    time: '6h00',
+                    carType: 'xe 4 chỗ',
+                    image: '{% static 'img/xe1.jpg' %}'
+            };
+            const defaultTrip2 = {
+                id: 'D002',
+                route: 'Huế-Đà Nẵng',
+                date: tomorrowStr,
+                time: '6h00',
+                carType: 'xe 4 chỗ',
+                image: '{% static 'img/xe2.jpg' %}'
+        };
+
+        let updated = false;
+        if (!savedTrips.some(t => t.id === 'D001')) {
+            savedTrips.unshift(defaultTrip1);
+            updated = true;
+        } else {
+            let t = savedTrips.find(t => t.id === 'D001');
+            if (!t.date) { t.date = todayStr; updated = true; }
+        }
+
+        if (!savedTrips.some(t => t.id === 'D002')) {
+            const d1Idx = savedTrips.findIndex(t => t.id === 'D001');
+            const insertIdx = d1Idx !== -1 ? d1Idx + 1 : 0;
+            savedTrips.splice(insertIdx, 0, defaultTrip2);
+            updated = true;
+        } else {
+            let t = savedTrips.find(t => t.id === 'D002');
+            if (!t.date) { t.date = tomorrowStr; updated = true; }
+        }
+
+        if (updated) {
+            localStorage.setItem('app_trips', JSON.stringify(savedTrips));
+        }
+
+        tripList.innerHTML = '';
+        savedTrips.forEach(trip => {
+            const tripHtml = `
+                        <div class="trip-card" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id=${trip.id}'" style="cursor: pointer;">
+                            <img class="trip-image" src="${trip.image}" alt="xe">
+                            <div class="trip-info-main">
+                                <div class="trip-title">
+                                    <strong>${trip.id}</strong>
+                                    <p>${trip.route}</p>
+                                </div>
+                                <div class="trip-details">
+                                    <p>Giờ xuất phát: ${trip.time}</p>
+                                    <p>Loại xe: ${trip.carType}</p>
+                                </div>
+                            </div>
+                            <div class="trip-actions">
+                                ${trip.status === 'completed'
+                    ? '<span class="status-badge" style="background-color: #DCFCE7; color: #16a34a;">Hoàn thành</span>'
+                    : '<span class="status-badge">Chưa hoàn thành</span>'
+                }
+                                <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' %}?id=${trip.id}'">Chỉnh sửa</button>
+                            </div>
+                        </div>
+                    `;
+            tripList.insertAdjacentHTML('beforeend', tripHtml);
+        });
+            }
+        });
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

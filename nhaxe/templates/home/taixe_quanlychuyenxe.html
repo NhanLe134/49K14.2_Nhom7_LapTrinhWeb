@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý chuyến xe Tài xế - Vexeapp</title>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {% load static %}
+    <!-- FIX ĐƯỜNG DẪN -->
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_taixe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <div class="main-wrapper">
+        <aside class="sidebar">
+            <a href="{% url 'taixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house"></i> Trang chủ
+            </a>
+            <a href="{% url 'taixe_quanlychuyenxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-map"></i> Quản lý chuyến xe
+            </a>
+        </aside>
+
+        <main class="main-content-qlcx">
+            <div class="trip-list" style="margin-top: 20px;"></div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tripList = document.querySelector('.trip-list');
+            if (tripList) {
+                let savedTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+
+                const now = new Date();
+                const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+                const defaultTrip1 = {
+                    id: 'D001',
+                    route: 'Huế-Đà Nẵng',
+                    date: todayStr,
+                    time: '6h00',
+                    carType: 'xe 4 chỗ',
+                    image: "{% static 'img/xe1.jpg' %}",
+                    driver: true
+                };
+
+                const defaultTrip2 = {
+                    id: 'D002',
+                    route: 'Huế-Đà Nẵng',
+                    date: tomorrowStr,
+                    time: '6h00',
+                    carType: 'xe 4 chỗ',
+                    image: "{% static 'img/xe2.jpg' %}",
+                    driver: true
+                };
+
+                let updated = false;
+
+                const urlParams = new URLSearchParams(window.location.search);
+
+                if (!savedTrips.some(t => t.id === 'D001')) {
+                    savedTrips.unshift(defaultTrip1);
+                    updated = true;
+                }
+
+                if (!savedTrips.some(t => t.id === 'D002')) {
+                    savedTrips.splice(1, 0, defaultTrip2);
+                    updated = true;
+                }
+
+                if (updated) {
+                    localStorage.setItem('app_trips', JSON.stringify(savedTrips));
+                }
+
+                tripList.innerHTML = '';
+                const myTrips = savedTrips.filter(t => t.driver);
+
+                if (myTrips.length === 0) {
+                    tripList.innerHTML = '<p style="text-align:center; padding: 20px; color: #666;">Chưa có chuyến xe nào được phân công.</p>';
+                } else {
+                    myTrips.forEach(trip => {
+                        const html = `
+                        <div class="trip-card" onclick="window.location.href='{% url 'taixe_chitietchuyenxe' %}?id=${trip.id}'" style="cursor: pointer;">
+                            <img class="trip-image" src="${trip.image}" alt="xe">
+                            <div class="trip-info-main">
+                                <div class="trip-title">
+                                    <strong>${trip.id}</strong>
+                                    <p>${trip.route}</p>
+                                </div>
+                                <div class="trip-details">
+                                    <p>Giờ xuất phát: ${trip.time}</p>
+                                    <p>Loại xe: ${trip.carType}</p>
+                                </div>
+                            </div>
+                            <div class="trip-actions">
+                                ${trip.status === 'completed' 
+                                    ? '<span class="status-badge" style="background-color: #DCFCE7; color: #16a34a;">Hoàn thành</span>' 
+                                    : '<span class="status-badge">Đang chờ</span>'
+                                }
+                            </div>
+                        </div>`;
+                        tripList.insertAdjacentHTML('beforeend', html);
+                    });
+                }
+            }
+        });
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+</html>

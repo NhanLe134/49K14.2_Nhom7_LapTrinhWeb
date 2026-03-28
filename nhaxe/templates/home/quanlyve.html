@@ -1,0 +1,950 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý vé - Vexeapp</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/quanlyve.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Nhà xe Hùng Cường</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'timkiem' %}" class="sidebar-item">
+                <i class="fa-solid fa-magnifying-glass" style="color: #444;"></i> Tìm kiếm vé
+            </a>
+            <a href="{% url 'quanlyve' %}" class="sidebar-item active">
+                <i class="fa-solid fa-ticket" style="color: #06A0E2;"></i> Vé của tôi
+            </a>
+            <a href="{% url 'danhgiachuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-comments" style="color: #444;"></i> Đánh giá chuyến xe
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="padding: 0;">
+            <!-- Tabs -->
+            <div class="ticket-tabs">
+                <div class="tab-item active">Đã đặt</div>
+                <div class="tab-item">Đã đi</div>
+                <div class="tab-item">Đã hủy</div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="ticket-container">
+                <div id="view-booked">
+                    <h2 class="ticket-section-title">Danh sách vé đã đặt</h2>
+
+                    <div class="ticket-grid">
+                        <!-- Ticket Card 1 -->
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">07:00</div>
+                                    <div class="ticket-date">26/02/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Đà Nẵng - Huế</div>
+                                    <div class="ticket-bus">Long Hùng</div>
+                                    <div class="ticket-qty">Số lượng ghế: 2</div>
+                                    <div class="ticket-seats">Mã số ghế: B6, B7</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancel">Hủy</button>
+                        </div>
+
+                        <!-- Ticket Card 2 -->
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">09:00</div>
+                                    <div class="ticket-date">26/02/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Hội An - Huế</div>
+                                    <div class="ticket-bus">Châu Thanh</div>
+                                    <div class="ticket-qty">Số lượng ghế: 1</div>
+                                    <div class="ticket-seats">Mã số ghế: B4</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancel">Hủy</button>
+                        </div>
+
+                        <!-- Ticket Card 3 -->
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">11:00</div>
+                                    <div class="ticket-date">24/02/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Huế - Đà Nẵng</div>
+                                    <div class="ticket-bus">Châu Thanh</div>
+                                    <div class="ticket-qty">Số lượng ghế: 3</div>
+                                    <div class="ticket-seats">Mã số ghế: A1 - A2 - A3</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancel">Hủy</button>
+                        </div>
+
+                        <!-- Ticket Card 4 -->
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">22:00</div>
+                                    <div class="ticket-date">21/01/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Huế - Đà Nẵng</div>
+                                    <div class="ticket-bus">Đà Nẵng - Huế</div>
+                                    <div class="ticket-qty">Số lượng ghế: 2</div>
+                                    <div class="ticket-seats">Mã số ghế: C1 - C2</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancel">Hủy</button>
+                        </div>
+
+                        <!-- Ticket Card 5 -->
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">08:00</div>
+                                    <div class="ticket-date">25/02/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Hội An - Huế</div>
+                                    <div class="ticket-bus">Long Hùng</div>
+                                    <div class="ticket-qty">Số lượng ghế: 1</div>
+                                    <div class="ticket-seats">Mã số ghế: B5</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancel">Hủy</button>
+                        </div>
+
+                        <!-- Ticket Card 6 -->
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">16:00</div>
+                                    <div class="ticket-date">10/01/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Đà Nẵng - Huế</div>
+                                    <div class="ticket-bus">Long Hùng</div>
+                                    <div class="ticket-qty">Số lượng ghế: 1</div>
+                                    <div class="ticket-seats">Mã số ghế: A2</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancel">Hủy</button>
+                        </div>
+                    </div>
+                </div> <!-- End view-booked -->
+
+                <!-- Completed Tickets View -->
+                <div id="view-completed" style="display: none;">
+                    <h2 class="ticket-section-title">Danh sách vé đã đi</h2>
+                    <div class="ticket-grid">
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">15:15</div>
+                                    <div class="ticket-date">07/01/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Đà Nẵng - Huế</div>
+                                    <div class="ticket-bus">Long Hùng</div>
+                                    <div class="ticket-qty">Số lượng ghế: 02</div>
+                                    <div class="ticket-seats">Mã số ghế: C6 - C7</div>
+                                </div>
+                            </div>
+                            <button class="btn-completed">Đã hoàn thành</button>
+                        </div>
+
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">11:15</div>
+                                    <div class="ticket-date">01/11/2025</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Đà Nẵng - Huế</div>
+                                    <div class="ticket-bus">Đà Nẵng - Huế</div>
+                                    <div class="ticket-qty">Số lượng ghế: 01</div>
+                                    <div class="ticket-seats">Mã số ghế: B3</div>
+                                </div>
+                            </div>
+                            <button class="btn-completed">Đã hoàn thành</button>
+                        </div>
+
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">10:20</div>
+                                    <div class="ticket-date">01/01/2026</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Huế - Đà Nẵng</div>
+                                    <div class="ticket-bus">Châu Thanh</div>
+                                    <div class="ticket-qty">Số lượng ghế: 03</div>
+                                    <div class="ticket-seats">Mã số ghế: A1 - A2 - A3</div>
+                                </div>
+                            </div>
+                            <button class="btn-completed">Đã hoàn thành</button>
+                        </div>
+
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">07:10</div>
+                                    <div class="ticket-date">27/10/2025</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Hội An - Huế</div>
+                                    <div class="ticket-bus">Long Hùng</div>
+                                    <div class="ticket-qty">Số lượng ghế: 04</div>
+                                    <div class="ticket-seats">Mã số ghế: C2 - C3 - C7 - C8</div>
+                                </div>
+                            </div>
+                            <button class="btn-completed">Đã hoàn thành</button>
+                        </div>
+
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">16:00</div>
+                                    <div class="ticket-date">15/12/2025</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Hội An - Huế</div>
+                                    <div class="ticket-bus">Phương Trang</div>
+                                    <div class="ticket-qty">Số lượng ghế: 01</div>
+                                    <div class="ticket-seats">Mã số ghế: A1</div>
+                                </div>
+                            </div>
+                            <button class="btn-completed">Đã hoàn thành</button>
+                        </div>
+
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">10:00</div>
+                                    <div class="ticket-date">17/10/2025</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Huế - Đà Nẵng</div>
+                                    <div class="ticket-bus">Phương Trang</div>
+                                    <div class="ticket-qty">Số lượng ghế: 04</div>
+                                    <div class="ticket-seats">Mã số ghế: C1 - C3 - C7 - C8</div>
+                                </div>
+                            </div>
+                            <button class="btn-completed">Đã hoàn thành</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancelled Tickets View -->
+                <div id="view-cancelled" style="display: none;">
+                    <h2 class="ticket-section-title">Danh sách vé đã hủy</h2>
+                    <div class="ticket-grid">
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">12:30</div>
+                                    <div class="ticket-date">26/11/2025</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Đà Nẵng - Huế</div>
+                                    <div class="ticket-bus">Phương Trang</div>
+                                    <div class="ticket-qty">Số lượng ghế: 01</div>
+                                    <div class="ticket-seats">Mã số ghế: C6</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancelled">Đã hủy</button>
+                        </div>
+
+                        <div class="ticket-card">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">09:25</div>
+                                    <div class="ticket-date">20/11/2025</div>
+                                </div>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">Đà Nẵng - Huế</div>
+                                    <div class="ticket-bus">Long Hùng</div>
+                                    <div class="ticket-qty">Số lượng ghế: 03</div>
+                                    <div class="ticket-seats">Mã số ghế: A1 - A2 - A3</div>
+                                </div>
+                            </div>
+                            <button class="btn-cancelled">Đã hủy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Details View -->
+                <div id="view-payment" style="display: none; padding-top: 40px;">
+                    <div class="payment-container" style="margin: 0 auto;">
+                        <div class="payment-page-title-wrap" style="margin-bottom: 25px;">
+                            <h2 class="payment-page-title" style="margin-bottom: 5px;">
+                                <i class="fa-solid fa-arrow-left" id="btnBackToTickets"
+                                    style="cursor:pointer; color: #666; font-size: 1.25rem; margin-right: 15px;"></i>
+                                Thanh toán vé xe
+                            </h2>
+                            <div class="payment-status-wait" id="paymentStatusWait"
+                                style="display: none; font-size: 0.95rem; color: #d97706; font-weight: 600; margin-left: 35px;">
+                                <i class="fa-solid fa-hourglass-half" style="margin-right: 5px;"></i> Chờ thanh toán
+                            </div>
+                        </div>
+
+                        <div class="payment-summary-box">
+                            <div class="ps-row"><span class="ps-label">Mã vé</span><span class="ps-val"
+                                    id="payId">VX2026001</span></div>
+                            <div class="ps-row"><span class="ps-label">Tuyến</span><span class="ps-val" id="payRoute">Đà
+                                    Nẵng <i class="fa-solid fa-arrow-right"
+                                        style="margin: 0 5px; font-size: 0.8rem"></i> Huế</span></div>
+                            <div class="ps-row"><span class="ps-label">Ngày khởi hành</span><span class="ps-val"
+                                    id="payDate">Chủ Nhật, 1 tháng 3, 2026</span></div>
+                            <div class="ps-row"><span class="ps-label">Giờ khởi hành</span><span class="ps-val"
+                                    id="payTime">08:00</span></div>
+                            <div class="ps-row"><span class="ps-label">Số ghế</span><span class="ps-val"
+                                    id="paySeats">A1, A2</span></div>
+                            <div class="ps-row ps-total"><span class="ps-label">Tổng tiền</span><span
+                                    class="ps-val ps-total-val" id="payTotal">300.000 đ</span></div>
+                        </div>
+
+                        <div id="paymentStep1">
+                            <h3 class="payment-method-title">Chọn phương thức thanh toán</h3>
+
+                            <div class="payment-methods">
+                                <label class="pm-option active">
+                                    <input type="radio" name="paymentMethod" value="transfer" checked>
+                                    <div class="pm-icon"><i class="fa-solid fa-building-columns"></i></div>
+                                    <div class="pm-text">
+                                        <div class="pm-name">Chuyển khoản</div>
+                                        <div class="pm-desc">Thanh toán QR Code ngân hàng</div>
+                                    </div>
+                                </label>
+
+                                <label class="pm-option">
+                                    <input type="radio" name="paymentMethod" value="cash">
+                                    <div class="pm-icon"><i class="fa-solid fa-wallet"></i></div>
+                                    <div class="pm-text">
+                                        <div class="pm-name">Tiền mặt</div>
+                                        <div class="pm-desc">Thanh toán trực tiếp với tài xế</div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="cash-warning" id="cashWarning" style="display: none;">
+                                <strong>Lưu ý:</strong> Vui lòng chuẩn bị đủ tiền mặt để thanh toán cho tài xế khi lên
+                                xe. Vé sẽ được xác nhận đã thanh toán sau khi tài xế xác nhận đã nhận tiền.
+                            </div>
+
+                            <div class="payment-actions">
+                                <button class="btn-pm-cancel" id="btnCancelPayment">Hủy</button>
+                                <button class="btn-pm-confirm" id="btnConfirmPayment">Xác nhận</button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: QR Code view for Transfer -->
+                        <div id="paymentStep2QR" style="display: none; text-align: center;">
+                            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; color: #111;">Quét mã
+                                để thanh toán</h3>
+                            <div style="color: #ef4444; font-size: 0.95rem; margin-bottom: 25px; font-weight: 500;">Hết
+                                hạn sau: <span id="qrCountdown">60s</span></div>
+
+                            <div class="qr-box"
+                                style="width: 220px; height: 220px; margin: 0 auto 30px; padding: 15px; border: 2px dashed #818cf8; border-radius: 12px; background-color: white;">
+                                <img src="{% static 'img/QRCODE.png' %}"
+                                    style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
+
+                            <div class="payment-actions">
+                                <button class="btn-pm-cancel" id="btnCancelQR">Hủy</button>
+                                <button class="btn-pm-confirm" id="btnConfirmQR">Xác nhận thanh toán</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div class="modal-overlay" id="ticketDetailModal">
+        <div class="modal-content ticket-detail-modal">
+            <span class="modal-close" id="closeTicketModal">&times;</span>
+            <h2 class="detail-title">Thông tin chuyến xe</h2>
+            <div class="detail-id">VN001328</div>
+            <div class="detail-divider"></div>
+
+            <div class="detail-row">
+                <span class="detail-label">Khách hàng:</span>
+                <span class="detail-value">Lê Thị Thanh Nhàn</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Ngày khởi hành:</span>
+                <span class="detail-value">26/02/2026</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Giờ khởi hành:</span>
+                <span class="detail-value">07h00</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Số lượng ghế:</span>
+                <span class="detail-value">02</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Mã số ghế:</span>
+                <span class="detail-value">B1, B7</span>
+            </div>
+
+            <div class="detail-divider"></div>
+
+            <div class="detail-price-row">
+                <span class="detail-label-light">Giá vé:</span>
+                <span class="detail-price-value">360.000 vnđ</span>
+            </div>
+            <div class="detail-price-row">
+                <span class="detail-label-light">Tổng tiền:</span>
+                <span class="detail-price-value">360.000 vnđ</span>
+            </div>
+
+            <div class="detail-action">
+                <button class="btn-checkout">Thanh toán</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal-overlay" id="cancelConfirmModal" style="display: none; z-index: 1050;">
+        <div class="confirm-modal-content">
+            <h2 class="confirm-title">Thông báo</h2>
+            <div class="confirm-text">Bạn có muốn hủy vé đã đặt này không?</div>
+            <div class="confirm-actions">
+                <button class="btn-confirm-yes" id="btnConfirmYes">Đồng ý</button>
+                <button class="btn-confirm-no" id="btnConfirmNo">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Info Modal -->
+    <div class="modal-overlay" id="refundInfoModal" style="display: none; z-index: 1060;">
+        <div class="refund-modal-content">
+            <h2 class="refund-title">Điền thông tin thanh toán</h2>
+
+            <div class="refund-form-group">
+                <label>Họ & tên</label>
+                <input type="text" placeholder="Nhập họ tên chủ tài khoản" class="refund-input">
+            </div>
+
+            <div class="refund-form-group">
+                <label>Số tài khoản</label>
+                <input type="text" placeholder="Nhập số tài khoản" class="refund-input">
+            </div>
+
+            <div class="refund-form-group">
+                <label>Ngân hàng</label>
+                <input type="text" placeholder="Nhập tên ngân hàng" class="refund-input">
+            </div>
+
+            <div class="refund-actions">
+                <button class="btn-refund-cancel" id="btnRefundCancel">Hủy</button>
+                <button class="btn-refund-confirm" id="btnRefundConfirm">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Success Modal -->
+
+    <div class="modal-overlay" id="cancelSuccessModal" style="display: none; z-index: 1060;">
+        <div class="success-modal-content">
+            <div class="success-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div class="success-text">Hủy vé thành công</div>
+        </div>
+    </div>
+
+    <!-- Refund Success Modal -->
+    <div class="modal-overlay" id="refundSuccessModal" style="display: none; z-index: 1060;">
+        <div class="success-modal-content">
+            <div class="success-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div class="success-text" style="margin-bottom: -15px;">Hủy vé thành công</div>
+            <div class="success-subtext">Yêu cầu hoàn tiền đang được xử lý</div>
+        </div>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div class="modal-overlay" id="paymentSuccessModal" style="display: none; z-index: 1060;">
+        <div class="success-modal-content">
+            <div class="success-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div class="success-text">Thanh toán thành công</div>
+        </div>
+    </div>
+
+    <!-- Payment Error Modal -->
+    <div class="modal-overlay" id="paymentErrorModal" style="display: none; z-index: 1060;">
+        <div class="success-modal-content">
+            <div class="error-icon">
+                <i class="fa-solid fa-exclamation"></i>
+            </div>
+            <div class="success-text" style="line-height: 1.5; font-size: 1.25rem;">Thanh toán không thành công.<br>Vui
+                lòng thử lại.</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner"
+        style="background-color: #000 !important; color: #999 !important; text-align: center !important; padding: 15px 0 !important; font-size: 0.85rem !important; line-height: 1.6 !important; width: 100% !important; margin-top: auto !important;">
+        <div style="margin-bottom: 5px;">Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+            });
+
+            // Tab routing
+            const tabs = document.querySelectorAll('.tab-item');
+            const viewBooked = document.getElementById('view-booked');
+            const viewCompleted = document.getElementById('view-completed');
+            const viewCancelled = document.getElementById('view-cancelled');
+
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => {
+                    // deactivate all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // set clicked tab to active
+                    tab.classList.add('active');
+
+                    // hide all views
+                    if (viewBooked) viewBooked.style.display = 'none';
+                    if (viewCompleted) viewCompleted.style.display = 'none';
+                    if (viewCancelled) viewCancelled.style.display = 'none';
+
+                    // toggle view based on index
+                    if (index === 0 && viewBooked) {
+                        viewBooked.style.display = 'block';
+                    } else if (index === 1 && viewCompleted) {
+                        viewCompleted.style.display = 'block';
+                    } else if (index === 2 && viewCancelled) {
+                        viewCancelled.style.display = 'block';
+                    }
+                });
+            });
+
+            // Ticket Detail Modal Logic
+            const bookedCards = document.querySelectorAll('#view-booked .ticket-card');
+            const ticketModal = document.getElementById('ticketDetailModal');
+            const closeTicketModal = document.getElementById('closeTicketModal');
+
+            // Mock detail logic to simulate Paid/Unpaid invoice states across the 6 tickets
+            const mockDetails = [
+                { id: 'VN001328', name: 'Lê Thị Thanh Nhàn', price: '180.000 vnđ', total: '360.000 vnđ', status: 'unpaid' },
+                { id: 'VN001220', name: 'Cao Xuân Hùng', price: '120.000 vnđ', total: '120.000 vnđ', status: 'unpaid' },
+                { id: 'VN001123', name: 'Nguyễn Thị Quỳnh Trang', price: '85.000 vnđ', total: '255.000 vnđ', status: 'paid' },
+                { id: 'VN001099', name: 'Vũ Quốc Anh', price: '150.000 vnđ', total: '300.000 vnđ', status: 'paid' },
+                { id: 'VN001050', name: 'Nguyễn Huy Tưởng', price: '120.000 vnđ', total: '120.000 vnđ', status: 'unpaid' },
+                { id: 'VN001011', name: 'Đỗ Hà Mi', price: '180.000 vnđ', total: '180.000 vnđ', status: 'paid' }
+            ];
+
+            let currentViewingDetails = null;
+            let currentViewingDate = '';
+            let currentViewingTime = '';
+            let currentViewingSeats = '';
+            let currentViewingRoute = '';
+
+            if (bookedCards && ticketModal && closeTicketModal) {
+                bookedCards.forEach((card, index) => {
+                    card.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('btn-cancel')) return;
+
+                        const time = card.querySelector('.ticket-time').textContent;
+                        const date = card.querySelector('.ticket-date').textContent;
+                        const qtyText = card.querySelector('.ticket-qty').textContent;
+                        const qty = qtyText.split(':')[1].trim();
+                        const seatsText = card.querySelector('.ticket-seats').textContent;
+                        const seats = seatsText.split(':')[1].trim();
+                        const route = card.querySelector('.ticket-route').textContent;
+
+                        const details = mockDetails[index] || mockDetails[0];
+
+                        // Cache active state for checkout piping
+                        currentViewingDetails = details;
+                        currentViewingDate = date;
+                        currentViewingTime = time.replace(':', 'h');
+                        currentViewingSeats = seats;
+                        currentViewingRoute = route;
+
+                        // Populate modal DOM
+                        document.querySelector('.detail-id').textContent = details.id;
+                        const modalValues = document.querySelectorAll('.detail-value');
+                        modalValues[0].textContent = details.name;
+                        modalValues[1].textContent = date;
+                        modalValues[2].textContent = time.replace(':', 'h');
+                        modalValues[3].textContent = qty.padStart(2, '0');
+                        modalValues[4].textContent = seats;
+
+                        const priceValues = document.querySelectorAll('.detail-price-value');
+                        priceValues[0].textContent = details.price;
+                        priceValues[1].textContent = details.total;
+
+                        const actionBtn = document.querySelector('.detail-action button');
+                        if (details.status === 'paid') {
+                            actionBtn.textContent = 'Đã thanh toán';
+                            actionBtn.className = 'btn-paid';
+                        } else {
+                            actionBtn.textContent = 'Thanh toán';
+                            actionBtn.className = 'btn-checkout';
+                        }
+
+                        ticketModal.style.display = 'flex';
+                    });
+                });
+
+                // Close modal on X click
+                closeTicketModal.addEventListener('click', () => {
+                    ticketModal.style.display = 'none';
+                });
+
+                // Close modal on outside click
+                window.addEventListener('click', (e) => {
+                    if (e.target === ticketModal) {
+                        ticketModal.style.display = 'none';
+                    }
+                });
+            }
+
+            // Cancel Confirmation Modal Logic
+            function moveToCancelled(card) {
+                if (!card) return;
+                const clone = card.cloneNode(true);
+                const btn = clone.querySelector('.btn-cancel');
+                if (btn) {
+                    btn.className = 'btn-cancelled';
+                    btn.textContent = 'Đã hủy';
+                }
+                const cancelledGrid = document.querySelector('#view-cancelled .ticket-grid');
+                if (cancelledGrid) {
+                    cancelledGrid.insertAdjacentElement('afterbegin', clone);
+                }
+                card.remove();
+            }
+
+            const cancelConfirmModal = document.getElementById('cancelConfirmModal');
+            const cancelSuccessModal = document.getElementById('cancelSuccessModal');
+            const refundInfoModal = document.getElementById('refundInfoModal');
+            const btnConfirmYes = document.getElementById('btnConfirmYes');
+            const btnConfirmNo = document.getElementById('btnConfirmNo');
+            let cardToCancel = null;
+            let cardToCancelIndex = -1;
+
+            const cancelButtons = document.querySelectorAll('#view-booked .btn-cancel');
+            cancelButtons.forEach((btn, idx) => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    cardToCancel = btn.closest('.ticket-card');
+                    cardToCancelIndex = idx;
+                    cancelConfirmModal.style.display = 'flex';
+                });
+            });
+
+            if (btnConfirmNo && btnConfirmYes) {
+                btnConfirmNo.addEventListener('click', () => {
+                    cancelConfirmModal.style.display = 'none';
+                    cardToCancel = null;
+                });
+
+                btnConfirmYes.addEventListener('click', () => {
+                    cancelConfirmModal.style.display = 'none';
+
+                    const details = mockDetails[cardToCancelIndex] || mockDetails[0];
+                    if (details.status === 'paid') {
+                        // Display refund form for paid tickets
+                        if (refundInfoModal) {
+                            refundInfoModal.style.display = 'flex';
+                        }
+                    } else {
+                        // Unpaid, bypass directly to cancellation
+                        moveToCancelled(cardToCancel);
+                        cardToCancel = null;
+
+                        if (cancelSuccessModal) {
+                            cancelSuccessModal.style.display = 'flex';
+                            setTimeout(() => {
+                                cancelSuccessModal.style.display = 'none';
+                            }, 2000);
+                        }
+                    }
+                });
+            }
+
+            // Refund Info Modal Handlers
+            const btnRefundCancel = document.getElementById('btnRefundCancel');
+            const btnRefundConfirm = document.getElementById('btnRefundConfirm');
+            const refundSuccessModal = document.getElementById('refundSuccessModal');
+
+            if (btnRefundCancel && btnRefundConfirm) {
+                btnRefundCancel.addEventListener('click', () => {
+                    if (refundInfoModal) refundInfoModal.style.display = 'none';
+                    cardToCancel = null;
+                });
+
+                btnRefundConfirm.addEventListener('click', () => {
+                    if (refundInfoModal) refundInfoModal.style.display = 'none';
+
+                    moveToCancelled(cardToCancel);
+                    cardToCancel = null;
+
+                    if (refundSuccessModal) {
+                        refundSuccessModal.style.display = 'flex';
+                        setTimeout(() => {
+                            refundSuccessModal.style.display = 'none';
+                        }, 2500);
+                    }
+                });
+            }
+
+            // Close cancel modals on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target === cancelConfirmModal) {
+                    cancelConfirmModal.style.display = 'none';
+                    cardToCancel = null;
+                }
+                if (cancelSuccessModal && e.target === cancelSuccessModal) {
+                    cancelSuccessModal.style.display = 'none';
+                }
+                if (refundSuccessModal && e.target === refundSuccessModal) {
+                    refundSuccessModal.style.display = 'none';
+                }
+                if (refundInfoModal && e.target === refundInfoModal) {
+                    refundInfoModal.style.display = 'none';
+                    cardToCancel = null;
+                }
+                if (paymentErrorModal && e.target === paymentErrorModal) {
+                    paymentErrorModal.style.display = 'none';
+                }
+            });
+
+            // View Payment UI Toggling Logic
+            const viewPayment = document.getElementById('view-payment');
+            const ticketTabsContainer = document.querySelector('.ticket-tabs');
+            const btnBackToTickets = document.getElementById('btnBackToTickets');
+            const btnCancelPayment = document.getElementById('btnCancelPayment');
+            const btnConfirmPayment = document.getElementById('btnConfirmPayment');
+
+            const actionBtn = document.querySelector('.detail-action button');
+
+            if (actionBtn && viewPayment) {
+                actionBtn.addEventListener('click', () => {
+                    if (actionBtn.classList.contains('btn-checkout')) {
+                        ticketModal.style.display = 'none';
+
+                        if (viewBooked) viewBooked.style.display = 'none';
+                        if (viewCompleted) viewCompleted.style.display = 'none';
+                        if (viewCancelled) viewCancelled.style.display = 'none';
+                        if (ticketTabsContainer) ticketTabsContainer.style.display = 'none';
+
+                        const details = currentViewingDetails;
+                        if (details) {
+                            document.getElementById('payId').textContent = details.id;
+                            document.getElementById('payDate').textContent = currentViewingDate;
+                            document.getElementById('payTime').textContent = currentViewingTime;
+                            document.getElementById('paySeats').textContent = currentViewingSeats;
+                            document.getElementById('payTotal').textContent = details.total;
+
+                            document.getElementById('payRoute').innerHTML = currentViewingRoute
+                                ? currentViewingRoute.replace(' - ', ' <i class="fa-solid fa-arrow-right" style="margin: 0 5px; font-size: 0.8rem"></i> ')
+                                : 'Đà Nẵng <i class="fa-solid fa-arrow-right" style="margin: 0 5px; font-size: 0.8rem"></i> Huế';
+                        }
+
+                        viewPayment.style.display = 'block';
+                    }
+                });
+            }
+
+            function backToTickets() {
+                viewPayment.style.display = 'none';
+                if (document.getElementById('paymentStep1')) document.getElementById('paymentStep1').style.display = 'block';
+                if (document.getElementById('paymentStep2QR')) document.getElementById('paymentStep2QR').style.display = 'none';
+                if (document.getElementById('paymentStatusWait')) document.getElementById('paymentStatusWait').style.display = 'none';
+                if (typeof countdownInterval !== 'undefined' && countdownInterval) clearInterval(countdownInterval);
+
+                if (ticketTabsContainer) ticketTabsContainer.style.display = 'flex';
+                const activeTab = document.querySelector('.tab-item.active');
+                if (activeTab && activeTab.textContent.includes('Đã đặt') && viewBooked) viewBooked.style.display = 'block';
+                else if (activeTab && activeTab.textContent.includes('Đã đi') && viewCompleted) viewCompleted.style.display = 'block';
+                else if (activeTab && activeTab.textContent.includes('Đã hủy') && viewCancelled) viewCancelled.style.display = 'block';
+            }
+
+            if (btnBackToTickets) btnBackToTickets.addEventListener('click', backToTickets);
+            if (btnCancelPayment) btnCancelPayment.addEventListener('click', backToTickets);
+
+            const paymentSuccessModal = document.getElementById('paymentSuccessModal');
+            const paymentErrorModal = document.getElementById('paymentErrorModal');
+            const paymentStep1 = document.getElementById('paymentStep1');
+            const paymentStep2QR = document.getElementById('paymentStep2QR');
+            const paymentStatusWait = document.getElementById('paymentStatusWait');
+            const qrCountdown = document.getElementById('qrCountdown');
+            let countdownInterval = null;
+
+            function startQRCountdown() {
+                let timeLeft = 60;
+                if (qrCountdown) qrCountdown.textContent = timeLeft + 's';
+                if (countdownInterval) clearInterval(countdownInterval);
+
+                countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    if (qrCountdown) qrCountdown.textContent = timeLeft + 's';
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        if (paymentErrorModal) {
+                            paymentErrorModal.style.display = 'flex';
+                            setTimeout(() => {
+                                paymentErrorModal.style.display = 'none';
+                                backToTickets();
+                            }, 3000);
+                        } else {
+                            backToTickets();
+                        }
+                    }
+                }, 1000);
+            }
+
+            if (btnConfirmPayment) {
+                btnConfirmPayment.addEventListener('click', () => {
+                    const isCash = document.querySelector('input[name="paymentMethod"]:checked')?.value === 'cash';
+
+                    if (isCash) {
+                        if (paymentSuccessModal) {
+                            const textEl = paymentSuccessModal.querySelector('.success-text');
+                            if (textEl) {
+                                textEl.innerHTML = 'Vui lòng thanh toán cho tài xế<br>khi lên xe';
+                                textEl.style.lineHeight = '1.5';
+                            }
+                            paymentSuccessModal.style.display = 'flex';
+                            setTimeout(() => {
+                                paymentSuccessModal.style.display = 'none';
+                                backToTickets();
+                            }, 2500);
+                        }
+                    } else {
+                        // Show QR step
+                        if (paymentStep1) paymentStep1.style.display = 'none';
+                        if (paymentStep2QR) paymentStep2QR.style.display = 'block';
+                        if (paymentStatusWait) paymentStatusWait.style.display = 'block';
+                        startQRCountdown();
+                    }
+                });
+            }
+
+            const btnCancelQR = document.getElementById('btnCancelQR');
+            const btnConfirmQR = document.getElementById('btnConfirmQR');
+
+            if (btnCancelQR) {
+                btnCancelQR.addEventListener('click', backToTickets);
+            }
+
+            if (btnConfirmQR) {
+                btnConfirmQR.addEventListener('click', () => {
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    if (paymentSuccessModal) {
+                        const textEl = paymentSuccessModal.querySelector('.success-text');
+                        if (textEl) {
+                            textEl.innerHTML = 'Thanh toán thành công';
+                            textEl.style.lineHeight = 'normal';
+                        }
+                        paymentSuccessModal.style.display = 'flex';
+                        setTimeout(() => {
+                            paymentSuccessModal.style.display = 'none';
+                            backToTickets();
+                        }, 2000);
+                    }
+                });
+            }
+
+            const pmOptions = document.querySelectorAll('.pm-option');
+            const cashWarning = document.getElementById('cashWarning');
+            pmOptions.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    pmOptions.forEach(o => o.classList.remove('active'));
+                    opt.classList.add('active');
+                    const radio = opt.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        if (radio.value === 'cash') {
+                            if (cashWarning) cashWarning.style.display = 'block';
+                        } else {
+                            if (cashWarning) cashWarning.style.display = 'none';
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,272 @@
+{% load static %}
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Màn hình quản lý chuyến xe - Chi tiết</title>
+    <!-- Use FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Nhà xe Đà Nẵng_Huế</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content-ctcx">
+            <h2 class="section-title">Thông tin chuyến xe</h2>
+
+            <div class="trip-detail-card" id="tripDetailBox">
+                <!-- Dynamically populated or fallback -->
+                <img src="{% static 'img/xe2.jpg' %}" alt="xe" id="detailImage">
+                <div class="detail-route" id="detailRoute">...</div>
+                <div class="detail-stats">
+                    <p>Giờ xuất phát: <span id="detailTime">...</span></p>
+                    <p>Tổng số ghế: <span id="detailTotalSeats">...</span></p>
+                    <p>Ghế trống: <span id="detailEmptySeats">...</span></p>
+                </div>
+                <div class="status-dropdown" style="position: relative; display: inline-block; cursor: pointer;">
+                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none;">
+                        Chưa hoàn thành</div>
+                    <div id="statusMenu" class="status-menu"
+                        style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; flex-direction: column; gap: 5px; z-index: 10;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn-assign" id="btnAssignDriver" style="display: none;">Phân công tài xế</button>
+            </div>
+
+            <h2 class="section-title">Danh sách hành khách</h2>
+
+            <div class="passenger-list">
+                <div class="passenger-card">
+                    <i class="fa-regular fa-user passenger-icon"></i>
+                    <div class="passenger-name">Phan Thị Quỳnh Trâm</div>
+                    <div class="passenger-contact">
+                        <p>SĐT: 0123456789</p>
+                        <p>Điểm đón: 1 Tố Hữu, Thành Phố Huế</p>
+                        <p>Điểm trả: 1 Hùng Vương, Đà Nẵng</p>
+                    </div>
+                    <div class="passenger-seat">A1</div>
+                </div>
+
+                <div class="passenger-card">
+                    <i class="fa-regular fa-user passenger-icon"></i>
+                    <div class="passenger-name">Lê Văn Hùng</div>
+                    <div class="passenger-contact">
+                        <p>SĐT: 0123456789</p>
+                        <p>Điểm đón: 25 Bà Triệu, Thành Phố Huế</p>
+                        <p>Điểm trả: 1 Tố Hữu, Đà Nẵng</p>
+                    </div>
+                    <div class="passenger-seat">A2</div>
+                </div>
+
+                <div class="passenger-card">
+                    <i class="fa-regular fa-user passenger-icon"></i>
+                    <div class="passenger-name">Vương Tuệ Nhi</div>
+                    <div class="passenger-contact">
+                        <p>SĐT: 0123456789</p>
+                        <p>Điểm đón: 1 Nguyễn Huệ, Thành Phố Huế</p>
+                        <p>Điểm trả: 25 Phan Thanh, Đà Nẵng</p>
+                    </div>
+                    <div class="passenger-seat">A3</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirm Status Popup -->
+    <div class="popup-overlay" id="statusPopup"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
+        <div class="popup-box confirm-box"
+            style="background: white; padding: 40px 60px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); text-align: center; min-width: 400px;">
+            <div class="popup-title" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #111;">Xác
+                nhận chuyển trạng thái</div>
+            <div class="popup-message" style="font-size: 1.1rem; color: #222; margin-bottom: 30px; font-weight: bold;">
+                Bạn có muốn xác nhận chuyển trạng thái</div>
+            <div class="popup-actions" style="display: flex; justify-content: center; gap: 60px;">
+                <button onclick="closeStatusPopup()"
+                    style="padding: 10px 40px; border: none; background: #d1d5db; color: #fff; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Không</button>
+                <button onclick="confirmStatusChange()"
+                    style="padding: 10px 40px; border: none; background: #16a34a; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Đồng
+                    ý</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        // Lưu URL Django để dùng trong JS
+        const URL_LOTRINH = "{% url 'lotrinh' %}";
+        const URL_PHANCONGTAIXE = "{% url 'phancongtaixe' %}";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+            });
+
+            // Load trip data
+            const urlParams = new URLSearchParams(window.location.search);
+            const tripId = urlParams.get('id');
+            const btnAssign = document.getElementById('btnAssignDriver');
+
+            if (tripId) {
+                let sortedTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                const trip = sortedTrips.find(t => t.id === tripId);
+
+                if (trip) {
+                    document.getElementById('detailImage').src = trip.image || "{% static 'img/xe1.jpg' %}";
+                    document.getElementById('detailRoute').textContent = trip.route;
+                    document.getElementById('detailTime').textContent = trip.time;
+
+                    const seats = trip.carType.includes('4') ? 4 : (trip.carType.includes('7') ? 7 : 9);
+                    document.getElementById('detailTotalSeats').textContent = seats;
+                    document.getElementById('detailEmptySeats').textContent = seats - 3;
+
+                    updateBadgeUI(trip.status || 'pending');
+
+                    if (trip.driver) {
+                        btnAssign.style.display = 'block';
+                        btnAssign.textContent = 'Hiển thị lộ trình';
+                        btnAssign.onclick = () => {
+                            window.location.href = URL_LOTRINH + '?id=' + trip.id;
+                        };
+                    } else {
+                        btnAssign.style.display = 'block';
+                        btnAssign.onclick = () => {
+                            window.location.href = URL_PHANCONGTAIXE + '?id=' + trip.id;
+                        };
+                    }
+                }
+            }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const globalTripId = urlParams.get('id');
+        let pendingStatusChange = null;
+
+        function toggleStatusMenu() {
+            const menu = document.getElementById('statusMenu');
+            menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function selectStatus(newStatus) {
+            document.getElementById('statusMenu').style.display = 'none';
+            if (globalTripId) {
+                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                const trip = trips.find(t => t.id === globalTripId);
+                const currentStatus = trip.status || 'pending';
+                if (currentStatus !== newStatus) {
+                    pendingStatusChange = newStatus;
+                    document.getElementById('statusPopup').style.opacity = '1';
+                    document.getElementById('statusPopup').style.pointerEvents = 'auto';
+                }
+            }
+        }
+
+        function closeStatusPopup() {
+            document.getElementById('statusPopup').style.opacity = '0';
+            document.getElementById('statusPopup').style.pointerEvents = 'none';
+            pendingStatusChange = null;
+        }
+
+        function confirmStatusChange() {
+            if (globalTripId && pendingStatusChange) {
+                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                const idx = trips.findIndex(t => t.id === globalTripId);
+                if (idx !== -1) {
+                    trips[idx].status = pendingStatusChange;
+                    localStorage.setItem('app_trips', JSON.stringify(trips));
+                    updateBadgeUI(pendingStatusChange);
+                }
+            }
+            closeStatusPopup();
+        }
+
+        function updateBadgeUI(status) {
+            const badgeElem = document.getElementById('detailBadge');
+            const menuElem = document.getElementById('statusMenu');
+            const styleTemplate = `border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1);`;
+
+            if (status === 'completed') {
+                badgeElem.textContent = 'Hoàn thành';
+                badgeElem.style.backgroundColor = '#DCFCE7';
+                badgeElem.style.color = '#16a34a';
+                menuElem.innerHTML = `<div class="status-option" style="${styleTemplate} background: #F8FDE9; color: #C0CD1C;" onclick="selectStatus('pending')">Chưa hoàn thành</div>`;
+            } else {
+                badgeElem.textContent = 'Chưa hoàn thành';
+                badgeElem.style.backgroundColor = '#F8FDE9';
+                badgeElem.style.color = '#C0CD1C';
+                menuElem.innerHTML = `<div class="status-option" style="${styleTemplate} background: #DCFCE7; color: #16a34a;" onclick="selectStatus('completed')">Hoàn thành</div>`;
+            }
+        }
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

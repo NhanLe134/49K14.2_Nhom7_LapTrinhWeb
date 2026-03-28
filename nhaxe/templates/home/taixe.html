@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ Tài xế - Vexeapp</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/taixe.css' %}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+            
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thongtin_taixe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'taixe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'taixe_quanlychuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h2 class="page-title">Lịch trình tuần</h2>
+
+            <div class="schedule-row" id="scheduleRow"></div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <i class="fa-regular fa-calendar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tổng chuyến tuần</div>
+                        <div class="stat-value">8</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tổng chuyến hôm nay</div>
+                        <div class="stat-value">2</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Số chuyến đã chạy</div>
+                        <div class="stat-value">27</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            generateSchedule();
+        });
+
+        function generateSchedule() {
+            const row = document.getElementById('scheduleRow');
+            if (!row) return;
+            
+            row.innerHTML = '';
+            
+            const now = new Date();
+            let dayOfWeek = now.getDay();
+            let diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - diff);
+            
+            const dowNames = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
+            
+            const appTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+            const myTrips = appTrips.filter(t => t.driver);
+            
+            let totalTripsWeek = 0;
+            let totalTripsToday = 0;
+            
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(monday);
+                currentDate.setDate(monday.getDate() + i);
+                
+                const isToday = (currentDate.getDate() === now.getDate() && 
+                                 currentDate.getMonth() === now.getMonth() && 
+                                 currentDate.getFullYear() === now.getFullYear());
+                                 
+                const dateStr = String(currentDate.getDate()).padStart(2, '0') + '-' + 
+                                String(currentDate.getMonth() + 1).padStart(2, '0');
+                const fullDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+                                
+                const trips = myTrips.filter(t => t.date === fullDateStr);
+                totalTripsWeek += trips.length;
+                if (isToday) totalTripsToday += trips.length;
+                
+                let cardHTML = `<div class="day-card ${isToday ? 'today' : (trips.length === 0 ? 'empty' : '')}">
+                    <div class="day-header">
+                        <span class="dow">${dowNames[i]}</span>
+                        <span class="date">${dateStr}</span>
+                        ${isToday ? '<span class="today-badge">Hôm nay</span>' : ''}
+                    </div>
+                `;
+                
+                if (trips.length === 0) {
+                    cardHTML += `<div class="empty-text">Không có chuyến</div>`;
+                } else {
+                    trips.forEach(trip => {
+                        cardHTML += `
+                            <div class="trip-card">
+                                <i class="fa-regular fa-clock"></i>
+                                <div class="trip-info">
+                                    <div class="time">${trip.time}</div>
+                                    <div class="route">${trip.route}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                cardHTML += `</div>`;
+                row.insertAdjacentHTML('beforeend', cardHTML);
+            }
+            
+            const statValues = document.querySelectorAll('.stat-card .stat-value');
+            if(statValues.length >= 2) {
+                statValues[0].textContent = totalTripsWeek;
+                statValues[1].textContent = totalTripsToday;
+            }
+        }
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

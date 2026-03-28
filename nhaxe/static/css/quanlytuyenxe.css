@@ -1,0 +1,475 @@
+/* ===================== PAGE HEADER & BUTTONS ===================== */
+
+.content-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.btn-add-route {
+    background: #fff;
+    color: #0ea5e9;
+    border: 1px solid #0ea5e9;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-add-route:hover {
+    background: #f0f9ff;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+}
+
+/* ===================== ROUTE GRID ===================== */
+
+.route-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.route-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #f1f5f9;
+}
+
+.route-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.route-card-header {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 18px;
+}
+
+/* Route Path (Icon -> Arrow -> Icon) */
+.route-locations {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.loc-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+.loc-icon {
+    color: #3b82f6;
+    font-size: 1.1rem;
+}
+
+.route-arrow {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+/* Distance & Time Boxes */
+.route-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.detail-box {
+    background: #f0f7ff;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* ===================== MODAL SYSTEM ===================== */
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 40px 30px;
+    width: 420px;
+    max-width: 90vw;
+    text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+    animation: modalSlideUp 0.3s ease;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 20px;
+}
+
+.modal-msg {
+    font-size: 1.05rem;
+    color: #333;
+    margin-bottom: 35px;
+    line-height: 1.6;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.btn-modal-primary {
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.btn-modal-primary:hover {
+    background: #0284c7;
+}
+
+.btn-modal-secondary {
+    background: #fff;
+    color: #0ea5e9;
+    border: 1px solid #0ea5e9;
+    padding: 12px 35px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.btn-modal-secondary:hover {
+    background: #f0f9ff;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Status & Vehicles Row */
+.route-info-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.status-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+.status-badge.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.vehicle-types {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* Action Buttons */
+.route-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 18px;
+}
+
+.btn-action-edit,
+.btn-action-delete {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-action-edit {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.btn-action-edit:hover {
+    background: #dbeafe;
+}
+
+.btn-action-delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.btn-action-delete:hover {
+    background: #fee2e2;
+}
+
+@media (max-width: 992px) {
+    .route-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===================== ADD ROUTE VIEW ===================== */
+
+.add-route-container {
+    background: #fff;
+    border-radius: 24px;
+    padding: 40px 60px;
+    max-width: 900px;
+    margin: 20px auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    animation: fadeInView 0.4s ease;
+}
+
+@keyframes fadeInView {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.add-route-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 35px;
+    text-align: center;
+}
+
+.add-route-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.add-route-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.field-input,
+.field-input-disabled {
+    padding: 14px 20px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    font-size: 1rem;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.field-input:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.field-input-disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+    text-align: left;
+}
+
+.field-input.error {
+    border-color: #ef4444 !important;
+}
+
+.error-msg {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    font-weight: 500;
+    min-height: 1.25em;
+    text-align: left;
+}
+
+.google-map-note {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    text-align: center;
+    margin: 10px 0 20px;
+    font-style: italic;
+}
+
+.add-route-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 10px;
+}
+
+.btn-cancel-add-route,
+.btn-save-add-route {
+    padding: 12px 60px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-cancel-add-route {
+    background: #a1a1aa;
+    color: #fff;
+}
+
+.btn-cancel-add-route:hover {
+    background: #71717a;
+}
+
+.btn-save-add-route {
+    background: #0ea5e9;
+    color: #fff;
+}
+
+.btn-save-add-route:hover {
+    background: #0284c7;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 640px) {
+    .add-route-container {
+        padding: 30px 20px;
+    }
+
+    .btn-cancel-add-route,
+    .btn-save-add-route {
+        padding: 12px 0;
+        flex: 1;
+    }
+}
+
+/* ===================== SUCCESS POPUP ===================== */
+
+.success-popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.success-popup-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.13);
+    animation: successFadeIn 0.25s ease;
+    min-width: 380px;
+}
+
+@keyframes successFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.success-icon {
+    font-size: 3.5rem;
+    color: #22c55e;
+    line-height: 1;
+}
+
+.success-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #111;
+    text-align: center;
+    line-height: 1.5;
+}

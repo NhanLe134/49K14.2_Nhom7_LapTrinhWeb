@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm chuyến xe - Vexeapp</title>
+    <!-- Use FontAwesome for icons -->
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/themchuyenxe.css' %}">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
+                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content-form">
+            <div class="form-container">
+                <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
+
+                <form id="tripForm">
+                    <!-- Tên tuyến xe -->
+                    <div class="form-group">
+                        <label for="route">Tên tuyến xe</label>
+                        <select id="route" class="form-control" required>
+                            <option value="hue-danang">Huế - Đà Nẵng</option>
+                            <option value="danang-hue">Đà Nẵng - Huế</option>
+                        </select>
+                    </div>
+
+                    <!-- Ngày chạy -->
+                    <div class="form-group">
+                        <label for="date">Ngày chạy</label>
+                        <input type="date" id="date" class="form-control" placeholder="Vui lòng nhập ngày chạy"
+                            required>
+                    </div>
+
+                    <!-- Giờ xuất phát -->
+                    <div class="form-group">
+                        <label for="time">Giờ xuất phát</label>
+                        <select id="time" class="form-control" required>
+                            <option value="" disabled selected>Chọn giờ xuất phát</option>
+                            <!-- JS will populate from 4h00 to 22h00 -->
+                        </select>
+                    </div>
+
+                    <!-- Loại xe -->
+                    <div class="form-group">
+                        <label for="carType">Loại xe</label>
+                        <select id="carType" class="form-control" required>
+                            <option value="" disabled selected>Chọn loại xe</option>
+                            <option value="4">xe 4 chỗ</option>
+                            <option value="7">xe 7 chỗ</option>
+                            <option value="limousine">xe limousine</option>
+                        </select>
+                        <div id="priceDisplay" class="price-display"></div>
+                    </div>
+
+                    <!-- Nút bấm -->
+                    <div class="form-buttons">
+                        <button type="button" class="btn-cancel"
+                            onclick="window.location.href='{% url 'nhaxe' %}'">Hủy</button>
+                        <button type="submit" class="btn-submit">Xác nhận</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Popup -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-box">
+            <i class="fa-regular fa-circle-check popup-icon"></i>
+            <div class="popup-message">Tạo chuyến xe thành công</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dropdown menu logic
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                userMenu.classList.remove('show');
+            });
+
+            const timeSelect = document.getElementById('time');
+            const dateInput = document.getElementById('date');
+
+            // Set min date to today for "Ngày chạy"
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            dateInput.min = todayStr;
+
+            // Populate time options from 4h to 22h, restrict past hours if today
+            const populateTimeOptions = () => {
+                const selectedDate = dateInput.value;
+                const isToday = selectedDate === todayStr;
+                const currentHour = new Date().getHours();
+
+                timeSelect.innerHTML = '<option value="" disabled selected>Chọn giờ xuất phát</option>';
+                for (let i = 4; i <= 22; i++) {
+                    const hourStr = i + 'h00';
+                    const option = document.createElement('option');
+                    option.value = hourStr;
+                    option.textContent = hourStr;
+
+                    if (isToday && i <= currentHour) {
+                        option.disabled = true;
+                        option.style.color = '#ccc';
+                    }
+
+                    timeSelect.appendChild(option);
+                }
+            };
+
+            dateInput.addEventListener('change', populateTimeOptions);
+            // Initial population
+            populateTimeOptions();
+
+            // Handle price display on car type change
+            const carTypeSelect = document.getElementById('carType');
+            const priceDisplay = document.getElementById('priceDisplay');
+
+            const prices = {
+                '4': '150.000 VNĐ',     // 150k
+                '7': '180.000 VNĐ',     // 180k
+                'limousine': '200.000 VNĐ' // 200k
+            };
+
+            carTypeSelect.addEventListener('change', (e) => {
+                const selectedVal = e.target.value; // '4', '7', 'limousine'
+                const vehicles = JSON.parse(localStorage.getItem('app_vehicle_types') || '[]');
+                
+                // Map '4', '7', 'limousine' to vehicle ids or names
+                // In quanly_loaixe.html, IDs are 'type-a', 'type-b', 'type-c'
+                let v = null;
+                if (selectedVal === '4') v = vehicles.find(x => x.id === 'type-a');
+                else if (selectedVal === '7') v = vehicles.find(x => x.id === 'type-b');
+                else if (selectedVal === 'limousine') v = vehicles.find(x => x.id === 'type-c');
+
+                if (v && v.price) {
+                    const priceFormatted = new Intl.NumberFormat('vi-VN').format(v.price) + ' VNĐ';
+                    priceDisplay.textContent = `Giá vé: ${priceFormatted}`;
+                    priceDisplay.classList.add('visible');
+                    // Store numeric price for easier saving
+                    priceDisplay.setAttribute('data-price', v.price);
+                } else if (prices[selectedVal]) {
+                    // Fallback to static if not set in Management
+                    priceDisplay.textContent = `Giá vé: ${prices[selectedVal]}`;
+                    priceDisplay.classList.add('visible');
+                    priceDisplay.setAttribute('data-price', prices[selectedVal].replace(/\D/g, ''));
+                } else {
+                    priceDisplay.classList.remove('visible');
+                    priceDisplay.removeAttribute('data-price');
+                }
+            });
+
+            // Form Submit Logic
+            const tripForm = document.getElementById('tripForm');
+            const popupOverlay = document.getElementById('popupOverlay');
+
+            tripForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // Collect form data
+                const routeElem = document.getElementById('route');
+                const timeElem = document.getElementById('time');
+                const dateElem = document.getElementById('date');
+                const carTypeElem = document.getElementById('carType');
+
+                const routeText = routeElem.options[routeElem.selectedIndex].text;
+                const timeText = timeElem.value;
+                const dateText = dateElem.value;
+                const carTypeText = carTypeElem.options[carTypeElem.selectedIndex].text;
+
+                // Create trip object
+                const nextId = 'D00' + (Math.floor(Math.random() * 7) + 3); // D003 - D009
+                const priceValue = priceDisplay.getAttribute('data-price') || '0';
+                
+                const newTrip = {
+                    id: nextId,
+                    route: routeText,
+                    date: dateText,
+                    time: timeText,
+                    carType: carTypeText,
+                    type: carTypeText, // For compatibility with timkiem.html
+                    price: priceValue,
+                    image: "{% static 'img/xe1.jpg' %}", // Using xe1.jpg as requested
+                    driver: true // Added for visibility in driver dashboard
+                };
+
+                // Save to localStorage
+                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
+                trips.push(newTrip);
+                localStorage.setItem('app_trips', JSON.stringify(trips));
+
+                // Show popup
+                popupOverlay.classList.add('active');
+
+                // Redirect back to Trips list
+                setTimeout(() => {
+                    window.location.href = '{% url 'quanlychuyenxe' %}';
+                }, 1500);
+            });
+        });
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

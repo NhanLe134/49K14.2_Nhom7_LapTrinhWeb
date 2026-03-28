@@ -1,0 +1,294 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khách hàng</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="{% static 'css/quanly_khachhang.css' %}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                </a>
+                <a href="{% url 'index' %}" class="dropdown-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+            </a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            </a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            </a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            </a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            </a>
+            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item active">
+                <i class="fa-solid fa-user-group" style="color: #06A0E2;"></i> Quản lý khách hàng
+            </a>
+        </aside>
+
+        <!-- Right Content Area -->
+        <main class="content" id="main-content">
+
+            <!-- ===== VIEW 1: Thông tin tài khoản ===== -->
+            <div id="view-account" class="view-step active">
+                <div class="page-title">THÔNG TIN TÀI KHOẢN</div>
+
+                <div class="form-group">
+                    <label class="form-label">Họ và tên</label>
+                    <input type="text" id="name-input" class="form-input" value="Huan Nguyen" readonly>
+                </div>
+
+                <div class="form-group" id="phone-group">
+                    <label class="form-label">Số điện thoại</label>
+                    <div style="position: relative; display: flex; align-items: center; gap: 8px;">
+                        <input type="tel" id="phone-input" class="form-input" value="0905312312" readonly maxlength="10"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div id="phone-error" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px; display: none;">Số
+                        điện thoại phải bắt đầu bằng số 0 và đủ 10 chữ số</div>
+                    <div id="phone-otp-hint" style="color: #0ea5e9; font-size: 0.8rem; margin-top: 4px; display: none;">
+                        ⚠️ Thay đổi số điện thoại yêu cầu xác minh OTP</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày sinh</label>
+                    <input type="text" id="dob-input" class="form-input" value="12-07-2005" readonly>
+                </div>
+
+                <div class="bottom-actions">
+                    <hr class="divider" />
+                    <button class="btn-save enabled" id="action-btn" onclick="handleAction()">Chỉnh sửa</button>
+                </div>
+            </div>
+
+            <!-- ===== VIEW 2: Xác thực OTP ===== -->
+            <div id="view-otp" class="view-step">
+                <div class="page-title-left">XÁC THỰC OTP</div>
+
+                <div class="card">
+                    <div class="card-header">Nhập mã OTP</div>
+                    <div class="otp-group">
+                        <label class="otp-label">Nhập mã OTP</label>
+                        <input type="text" class="otp-input" placeholder="OTP" id="otp-input-field" maxlength="6"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,''); onOTPInput()">
+                        <div class="otp-instruction">Vui lòng nhập mã OTP đã được gửi đến số điện thoại <strong
+                                id="otp-phone-display"></strong>.</div>
+                        <div class="otp-error-msg" id="otp-error-msg">Mã OTP không đúng. Vui lòng thử lại.</div>
+                        <div class="otp-timer" id="otp-countdown">Gửi lại mã sau 59s</div>
+                    </div>
+                    <button class="btn-confirm" id="btn-otp" onclick="submitOTP()">XÁC NHẬN</button>
+                </div>
+
+                <div class="bottom-actions" style="margin-top: 40px; width: 100%; max-width: 650px;">
+                    <hr class="divider" />
+                    <button class="btn-save" disabled>Lưu</button>
+                </div>
+            </div>
+
+            <!-- ===== VIEW 3: Thành công ===== -->
+            <div id="view-success" class="view-step">
+                <div class="page-title-left">THÔNG TIN TÀI KHOẢN</div>
+
+                <div class="card" style="padding: 48px 32px;">
+                    <i class="fa-regular fa-circle-check success-icon"></i>
+                    <div class="success-text">Cập nhật số điện thoại thành công.</div>
+                </div>
+
+                <div class="bottom-actions" style="margin-top: 40px; width: 100%; max-width: 650px;">
+                    <hr class="divider" />
+                    <button class="btn-save" onclick="backToAccount()"
+                        style="background-color: var(--primary-color); cursor: pointer;">Về trang tài khoản</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-banner">
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+    </footer>
+
+    <script>
+        let isEditing = false;
+        let originalPhone = '';
+        let otpTimer = null;
+        const MOCK_OTP = '123456';
+
+        const inputs = [
+            document.getElementById('name-input'),
+            document.getElementById('phone-input'),
+            document.getElementById('dob-input')
+        ];
+        const actionBtn = document.getElementById('action-btn');
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-step').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+
+            const mainContent = document.getElementById('main-content');
+            if (viewId === 'view-otp' || viewId === 'view-success') {
+                mainContent.classList.add('content-otp');
+            } else {
+                mainContent.classList.remove('content-otp');
+            }
+        }
+
+        function handleAction() {
+            if (!isEditing) {
+                isEditing = true;
+                originalPhone = document.getElementById('phone-input').value;
+                inputs.forEach(i => i.removeAttribute('readonly'));
+                actionBtn.textContent = 'Lưu';
+                document.getElementById('phone-input').addEventListener('input', onPhoneInput);
+            } else {
+                const phone = document.getElementById('phone-input').value;
+                const phoneRegex = /^0\d{9}$/;
+
+                if (!phoneRegex.test(phone)) {
+                    document.getElementById('phone-group').classList.add('error');
+                    document.getElementById('phone-error').style.display = 'block';
+                    return;
+                }
+
+                if (phone !== originalPhone) {
+                    document.getElementById('otp-phone-display').textContent = phone;
+                    document.getElementById('otp-input-field').value = '';
+                    document.getElementById('otp-error-msg').style.display = 'none';
+                    document.getElementById('btn-otp').textContent = 'XÁC NHẬN';
+                    startOTPCountdown();
+                    showView('view-otp');
+                } else {
+                    saveChanges();
+                }
+            }
+        }
+
+        function onPhoneInput(e) {
+            const val = e.target.value;
+            const phoneRegex = /^0\d{9}$/;
+            const error = document.getElementById('phone-error');
+            const group = document.getElementById('phone-group');
+            const hint = document.getElementById('phone-otp-hint');
+
+            if (!phoneRegex.test(val)) {
+                group.classList.add('error');
+                error.style.display = 'block';
+                hint.style.display = 'none';
+            } else {
+                group.classList.remove('error');
+                error.style.display = 'none';
+                hint.style.display = (val !== originalPhone) ? 'block' : 'none';
+            }
+        }
+
+        function saveChanges() {
+            isEditing = false;
+            inputs.forEach(i => i.setAttribute('readonly', true));
+            actionBtn.textContent = 'Chỉnh sửa';
+            document.getElementById('phone-error').style.display = 'none';
+            document.getElementById('phone-otp-hint').style.display = 'none';
+            document.getElementById('phone-group').classList.remove('error');
+            originalPhone = document.getElementById('phone-input').value;
+            document.getElementById('phone-input').removeEventListener('input', onPhoneInput);
+        }
+
+        function onOTPInput() {
+            const val = document.getElementById('otp-input-field').value;
+            document.getElementById('btn-otp').textContent = val.length > 0 ? 'XÁC THỰC OTP' : 'XÁC NHẬN';
+        }
+
+        function submitOTP() {
+            const entered = document.getElementById('otp-input-field').value;
+            if (entered.trim() === '') {
+                alert('Bạn cần phải nhập mã OTP!');
+                return;
+            }
+            if (entered === MOCK_OTP) {
+                clearInterval(otpTimer);
+                saveChanges();
+                showView('view-success');
+            } else {
+                document.getElementById('otp-error-msg').style.display = 'block';
+            }
+        }
+
+        function startOTPCountdown() {
+            let seconds = 59;
+            const countdownEl = document.getElementById('otp-countdown');
+            countdownEl.textContent = `Gửi lại mã sau ${seconds}s`;
+            countdownEl.style.cursor = 'default';
+            countdownEl.onclick = null;
+            clearInterval(otpTimer);
+            otpTimer = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(otpTimer);
+                    countdownEl.textContent = 'Gửi lại mã OTP';
+                    countdownEl.style.cursor = 'pointer';
+                    countdownEl.onclick = () => startOTPCountdown();
+                } else {
+                    countdownEl.textContent = `Gửi lại mã sau ${seconds}s`;
+                }
+            }, 1000);
+        }
+
+        function backToAccount() {
+            showView('view-account');
+        }
+
+        const dropBtn = document.getElementById('userDropdownBtn');
+        if (dropBtn) {
+            dropBtn.addEventListener('click', () => {
+                document.getElementById('userMenu').classList.toggle('show');
+            });
+        }
+    </script>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

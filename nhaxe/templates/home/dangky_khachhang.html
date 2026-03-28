@@ -1,0 +1,255 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký tài khoản khách hàng</title>
+    <link rel="stylesheet" href="{% static 'css/khachhang_dangky_style.css' %}">
+</head>
+
+<body>
+
+    <header class="kh-header">
+        <a href="{% url 'index' %}" class="back-button">&lt;</a>
+        <h1 class="kh-header-title">Đăng ký tài khoản khách hàng</h1>
+    </header>
+
+    <div class="registration-container">
+        <main class="kh-main-content">
+            <form id="formDangKyKhachHang">
+
+                <div class="input-group">
+                    <label for="hoVaTen">Họ và tên</label>
+                    <input type="text" id="hoVaTen" name="hoVaTen" placeholder="Vui lòng nhập họ và tên">
+                    <span class="error-text" id="err-hoVaTen"></span>
+                </div>
+
+                <div class="input-group">
+                    <label for="ngaySinh">Ngày sinh</label>
+                    <input type="date" id="ngaySinh" name="ngaySinh">
+                    <span class="error-text" id="err-ngaySinh"></span>
+                </div>
+
+                <div class="input-group">
+                    <label for="username">Tên đăng nhập</label>
+                    <input type="text" id="username" name="username" placeholder="Vui lòng nhập tên đăng nhập">
+                    <span class="error-text" id="err-username"></span>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" placeholder="Vui lòng nhập mật khẩu">
+                    <span class="error-text" id="err-password"></span>
+                </div>
+
+                <div class="input-group">
+                    <label for="rePassword">Nhập lại mật khẩu</label>
+                    <input type="password" id="rePassword" name="rePassword" placeholder="Vui lòng nhập lại mật khẩu">
+                    <span class="error-text" id="err-rePassword"></span>
+                </div>
+
+                <div class="input-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Vui lòng số điện thoại" maxlength="10">
+                    <span class="error-text" id="err-phone"></span>
+                </div>
+
+                <div class="kh-footer">
+                    <button type="button" class="btn-cancel">Hủy</button>
+                    <button type="submit" class="btn-submit">Xác thực</button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <div id="otpModal" class="modal-overlay">
+        <div class="otp-container">
+            <div class="otp-header">
+                <button type="button" class="btn-close-otp">
+                    <span class="close-icon-x">&times;</span>
+                </button>
+            </div>
+            <div class="otp-content">
+                <div class="otp-logo-placeholder">Logo<br>App</div>
+                <h3 class="otp-title">Nhập mã OTP</h3>
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                </div>
+                <span class="error-text otp-error-msg" id="err-otp">Mã xác thực không đúng</span>
+                <div class="otp-actions">
+                    <button type="button" class="btn-resend">Gửi lại mã</button>
+                    <button type="button" class="btn-complete">Hoàn thành</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal-overlay">
+        <div class="alert-modal-container">
+            <h3 class="alert-title">Thông báo</h3>
+            <p class="alert-message">Bạn chắc chắn muốn hủy đăng ký tài khoản?</p>
+            <div class="alert-actions">
+                <button type="button" class="btn-outline" id="btnKhongHuy">Không</button>
+                <button type="button" class="btn-fill" id="btnDongYHuy">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorModal" class="modal-overlay">
+        <div class="alert-modal-container">
+            <div class="alert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+            <p class="alert-message" style="margin-bottom: 0;">Hệ thống lỗi, vui lòng thử lại sau!</p>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal-overlay">
+        <div class="alert-modal-container">
+            <div class="alert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <p class="alert-message" style="margin-bottom: 0;">Tạo tài khoản thành công</p>
+        </div>
+    </div>
+
+    <script>
+        const URL_INDEX = "{% url 'index' %}";
+
+        document.getElementById('formDangKyKhachHang').addEventListener('submit', function (event) {
+            event.preventDefault();
+            let isValid = true;
+
+            function checkEmpty(inputId, errorMsgName) {
+                const input = document.getElementById(inputId);
+                const errorSpan = document.getElementById('err-' + inputId);
+                input.classList.remove('input-error');
+                errorSpan.classList.remove('show-error');
+                if (input.value.trim() === '') {
+                    input.classList.add('input-error');
+                    errorSpan.textContent = `*Vui lòng nhập ${errorMsgName}`;
+                    errorSpan.classList.add('show-error');
+                    isValid = false;
+                    return false;
+                }
+                return true;
+            }
+
+            const isHoTenValid = checkEmpty('hoVaTen', 'họ và tên');
+            const isNgaySinhValid = checkEmpty('ngaySinh', 'ngày sinh');
+            const isUserValid = checkEmpty('username', 'tên đăng nhập');
+            const isPassValid = checkEmpty('password', 'mật khẩu');
+            const isRePassValid = checkEmpty('rePassword', 'lại mật khẩu');
+            const isPhoneValid = checkEmpty('phone', 'số điện thoại');
+
+            const passInput = document.getElementById('password');
+            const rePassInput = document.getElementById('rePassword');
+            const passError = document.getElementById('err-password');
+            const rePassError = document.getElementById('err-rePassword');
+
+            if (isPassValid) {
+                const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                if (!strongPasswordRegex.test(passInput.value)) {
+                    passInput.classList.add('input-error');
+                    passError.textContent = '*Mật khẩu phải từ 8 ký tự, gồm chữ hoa, thường, số và ký tự đặc biệt';
+                    passError.classList.add('show-error');
+                    isValid = false;
+                }
+            }
+
+            if (isRePassValid) {
+                if (passInput.value !== rePassInput.value) {
+                    rePassInput.classList.add('input-error');
+                    rePassError.textContent = '*Mật khẩu nhập lại không khớp';
+                    rePassError.classList.add('show-error');
+                    isValid = false;
+                }
+            }
+
+            if (!isHoTenValid || !isNgaySinhValid || !isUserValid || !isPhoneValid) {
+                isValid = false;
+            }
+
+            if (isValid) {
+                document.getElementById('otpModal').classList.add('show-modal');
+            }
+        });
+
+        document.querySelector('.btn-close-otp').addEventListener('click', function () {
+            document.getElementById('otpModal').classList.remove('show-modal');
+        });
+
+        const otpBoxes = document.querySelectorAll('.otp-box');
+        otpBoxes.forEach((box, index) => {
+            box.addEventListener('input', function () {
+                if (this.value.length === 1 && index < otpBoxes.length - 1) {
+                    otpBoxes[index + 1].focus();
+                }
+            });
+            box.addEventListener('keydown', function (e) {
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    otpBoxes[index - 1].focus();
+                }
+            });
+        });
+
+        document.querySelector('.btn-complete').addEventListener('click', function () {
+            let otpValue = "";
+            otpBoxes.forEach(box => { otpValue += box.value; });
+            const otpErrorSpan = document.getElementById('err-otp');
+
+            if (otpValue.length < 6) {
+                otpErrorSpan.textContent = 'Vui lòng nhập đủ 6 số OTP';
+                otpErrorSpan.classList.add('show-otp-err');
+            } else if (otpValue !== "123456") {
+                otpErrorSpan.textContent = 'Mã xác thực không đúng';
+                otpErrorSpan.classList.add('show-otp-err');
+            } else {
+                otpErrorSpan.classList.remove('show-otp-err');
+                document.getElementById('otpModal').classList.remove('show-modal');
+                document.getElementById('successModal').classList.add('show-modal');
+                setTimeout(function () {
+                    document.getElementById('successModal').classList.remove('show-modal');
+                }, 3000);
+            }
+        });
+
+        document.querySelector('.btn-cancel').addEventListener('click', function () {
+            document.getElementById('confirmModal').classList.add('show-modal');
+        });
+        document.getElementById('btnKhongHuy').addEventListener('click', function () {
+            document.getElementById('confirmModal').classList.remove('show-modal');
+        });
+        document.getElementById('btnDongYHuy').addEventListener('click', function () {
+            window.location.href = URL_INDEX;
+        });
+        function showError() {
+            document.getElementById('errorModal').classList.add('show-modal');
+            setTimeout(function () {
+                document.getElementById('errorModal').classList.remove('show-modal');
+            }, 3000);
+        }
+    </script>
+
+    <div class="footer">
+        KẾT NỐI HÀNH TRÌNH DI SẢN
+    </div>
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

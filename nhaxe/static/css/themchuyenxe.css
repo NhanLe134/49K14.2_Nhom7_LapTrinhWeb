@@ -1,0 +1,175 @@
+/* Styles for Thêm chuyến xe form */
+.main-content-form {
+    flex: 1;
+    padding: 40px 60px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 650px;
+    margin-top: 10px;
+}
+
+.form-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #000;
+    margin-bottom: 40px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1.15rem;
+    color: #555;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1.1rem;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: auto;
+}
+
+.form-control:focus {
+    border-color: #06A0E2;
+}
+
+.form-control::placeholder {
+    color: #aaa;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+input[type="date"].form-control {
+    color: #777;
+}
+
+input[type="date"].form-control:valid {
+    color: #333;
+}
+
+/* Price Display Area */
+.price-display {
+    margin-top: 10px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #d9534f;
+    display: none; /* Hidden by default */
+}
+
+.price-display.visible {
+    display: block;
+}
+
+/* Form Buttons */
+.form-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 150px;
+    margin-top: 40px;
+}
+
+.btn-cancel {
+    background-color: #f4f4f4;
+    color: #888;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-submit {
+    background-color: #38bdf8;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+    background-color: #0ea5e9;
+}
+
+/* Popup overlay */
+.popup-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.popup-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.popup-box {
+    background: white;
+    padding: 40px 50px;
+    border-radius: 16px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+    text-align: center;
+    min-width: 350px;
+}
+
+.popup-icon {
+    color: #22c55e;
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.popup-message {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #111;
+}
+
+/* Footer override to perfectly match image */
+.page-footer {
+    background-color: #06A0E2;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    width: 100%;
+    margin-top: auto;
+}

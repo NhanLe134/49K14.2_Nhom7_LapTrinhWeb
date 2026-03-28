@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quên mật khẩu</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'css/quen_mat_khau.css' %}">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-logo">
+                <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+                <h1>Nhà xe Đà Nẵng - Huế</h1>
+            </div>
+        </header>
+
+        <!-- Main Wrapper -->
+        <main class="main-wrapper">
+
+            <!-- Step 1: Quên mật khẩu (Input Email/Phone) -->
+            <div id="step-1" class="view-step active">
+                <div class="auth-card">
+                    <div class="card-title">Quên mật khẩu</div>
+
+                    <div class="form-group">
+                        <label>Email / Số điện thoại</label>
+                        <div class="input-with-icon">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="text" id="contact-input" placeholder="Nhập email hoặc số điện thoại">
+                        </div>
+                    </div>
+
+                    <p class="sub-text" style="align-self: flex-start; margin-bottom: 24px;">Nhập email hoặc số điện
+                        thoại để nhận mã xác thực</p>
+
+                    <button class="btn-primary" onclick="goToStep(2)">Gửi mã xác thực</button>
+                    <a href="{% url 'index' %}" class="link-back">Quay lại đăng nhập</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Nhập OTP -->
+            <div id="step-2" class="view-step">
+                <div class="auth-card">
+                    <div class="card-title">Nhập mã OTP</div>
+
+                    <div class="form-group">
+                        <label>Nhập mã OTP</label>
+                        <input type="text" class="form-control" placeholder="Nhập mã OTP">
+                        <p class="sub-text">Vui lòng nhập mã OTP đã được gửi đến qua email của bạn.</p>
+                        <p class="timer-text">Gửi lại mã sau 59s</p>
+                    </div>
+
+                    <button class="btn-primary" onclick="goToStep(3)">Xác nhận</button>
+                    <a href="{% url 'index' %}" class="link-back">Quay lại đăng nhập</a>
+                </div>
+            </div>
+
+            <!-- Step 3: Đổi mật khẩu mới -->
+            <div id="step-3" class="view-step">
+                <div class="auth-card">
+                    <div class="card-title">Đổi mật khẩu</div>
+
+                    <div class="form-group">
+                        <label>Mật khẩu mới</label>
+                        <input type="password" class="form-control" placeholder="Nhập mật khẩu mới">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nhập lại mật khẩu mới</label>
+                        <input type="password" class="form-control" placeholder="Nhập lại mật khẩu mới">
+                    </div>
+
+                    <button class="btn-primary" onclick="goToStep(4)">Đổi mật khẩu</button>
+                    <a href="{% url 'index' %}" class="link-back">Quay lại đăng nhập</a>
+                </div>
+            </div>
+
+            <!-- Step 4: Thành công -->
+            <div id="step-4" class="view-step">
+                <div class="auth-card" style="padding: 60px 40px; justify-content: center;">
+                    <i class="fa-regular fa-circle-check success-icon"></i>
+                    <p class="success-text">Đổi mật khẩu thành công. Xin<br>vui lòng đăng nhập lại.</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <div class="footer">
+            KẾT NỐI HÀNH TRÌNH DI SẢN
+        </div>
+    </div>
+
+    <!-- Script to handle transitions -->
+    <script>
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.view-step').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Show requested step
+            const targetStep = document.getElementById('step-' + step);
+            if (targetStep) {
+                targetStep.classList.add('active');
+            }
+        }
+    </script>
+
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+
+</html>

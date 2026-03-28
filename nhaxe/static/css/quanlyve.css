@@ -1,0 +1,929 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f7fbff;
+}
+
+/* Header */
+.header {
+    background-color: #06A0E2;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+    height: 75px;
+    flex-shrink: 0;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-logo img {
+    height: 55px;
+    width: 55px;
+    background-color: white;
+    border-radius: 50%;
+    object-fit: contain;
+    padding: 3px;
+}
+
+.header-logo h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    position: relative;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #06A0E2;
+    font-size: 1.6rem;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #333;
+    border-radius: 8px;
+    min-width: 220px;
+    display: none;
+    flex-direction: column;
+    padding: 10px 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #555;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.dropdown-item i {
+    font-size: 1.2rem;
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-item:hover {
+    background-color: #06A0E2;
+    color: white;
+}
+
+/* Main Layout Structure */
+.main-wrapper {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background-color: white;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+    padding: 20px 0;
+    flex-shrink: 0;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 25px;
+    color: #444;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-bottom: 5px;
+    border-left: 5px solid transparent;
+}
+
+.sidebar-item:hover {
+    background-color: #f6f6f6;
+}
+
+.sidebar-item.active {
+    background-color: #EBF8FF;
+    color: #06A0E2;
+    border-left-color: #06A0E2;
+}
+
+.sidebar-item i {
+    width: 30px;
+    font-size: 1.35rem;
+    margin-right: 15px;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    padding: 0;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.content-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 20px;
+}
+
+.carousel-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 15px;
+}
+
+.carousel-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.carousel-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.carousel-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.carousel-container::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+.image-card {
+    min-width: 320px;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.image-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.image-card:hover img {
+    transform: scale(1.05);
+}
+
+.discount-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #FF1046;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 5px 15px;
+    border-radius: 20px;
+    z-index: 10;
+}
+
+/* Footer */
+.footer-banner {
+    background-color: #000 !important;
+    color: #999 !important;
+    text-align: center !important;
+    padding: 15px 0 !important;
+    font-size: 0.85rem !important;
+    line-height: 1.6 !important;
+    width: 100% !important;
+    margin-top: auto !important;
+}
+
+/* Ticket Management Styles */
+.ticket-tabs {
+    display: flex;
+    border-bottom: 2px solid #eaeaea;
+}
+
+.tab-item {
+    flex: 1;
+    text-align: center;
+    padding: 20px 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-item:nth-child(2) {
+    border-left: 2px solid #eaeaea;
+    border-right: 2px solid #eaeaea;
+}
+
+.tab-item:hover {
+    background-color: #f9f9f9;
+}
+
+.tab-item.active {
+    font-weight: 700;
+    color: #333;
+}
+
+.ticket-container {
+    padding: 30px 45px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.ticket-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ticket-container::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+
+.ticket-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 25px;
+}
+
+.ticket-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+    padding-bottom: 20px;
+}
+
+.ticket-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ticket-card-content {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+.ticket-time-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 85px;
+}
+
+.ticket-time {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #000;
+}
+
+.ticket-date {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+.ticket-divider {
+    width: 1px;
+    background-color: #eee;
+    margin: 0 5px;
+}
+
+.ticket-info-col {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.ticket-route {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.ticket-bus {
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.ticket-qty {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.ticket-seats {
+    font-size: 0.9rem;
+    color: #10B981;
+    font-weight: 700;
+}
+
+.btn-cancel {
+    width: 100%;
+    background-color: #ed1c24;
+    color: white;
+    border: none;
+    padding: 14px 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #d11219;
+}
+
+.btn-completed {
+    width: 100%;
+    background-color: #f4c10f;
+    color: white;
+    border: none;
+    padding: 14px 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: default;
+}
+
+.btn-cancelled {
+    width: 100%;
+    background-color: #06A0E2;
+    color: white;
+    border: none;
+    padding: 14px 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: default;
+}
+
+/* Make Booked Tickets Clickable */
+#view-booked .ticket-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#view-booked .ticket-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Ticket Detail Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.ticket-detail-modal {
+    background-color: white;
+    width: 580px;
+    border-radius: 8px;
+    padding: 30px 45px;
+    position: relative;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #111;
+}
+
+.detail-title {
+    color: #06A0E2;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.detail-id {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 20px;
+}
+
+.detail-divider {
+    height: 1px;
+    background-color: #777;
+    margin: 20px 0;
+}
+
+.detail-row {
+    margin-bottom: 18px;
+    font-size: 1.1rem;
+}
+
+.detail-label {
+    font-weight: 800;
+    color: #000;
+    margin-right: 8px;
+}
+
+.detail-value {
+    color: #111;
+}
+
+.detail-price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.detail-label-light {
+    color: #444;
+}
+
+.detail-price-value {
+    color: #FACC15;
+    font-weight: 600;
+}
+
+.detail-action {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 25px;
+}
+
+.btn-checkout {
+    background-color: #06A0E2;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-checkout:hover {
+    background-color: #0488c2;
+}
+
+.btn-paid {
+    background-color: #facc15;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: default;
+}
+
+/* Cancel Confirmation Modal */
+.confirm-modal-content {
+    background-color: white;
+    width: 450px;
+    border-radius: 8px;
+    padding: 35px 30px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 25px;
+}
+
+.confirm-text {
+    font-size: 1.15rem;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-confirm-yes {
+    background-color: #21b6ff;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 110px;
+    transition: background-color 0.2s;
+}
+
+.btn-confirm-yes:hover {
+    background-color: #0284c7;
+}
+
+.btn-confirm-no {
+    background-color: white;
+    color: #21b6ff;
+    border: 1px solid #21b6ff;
+    padding: 10px 30px;
+    border-radius: 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 110px;
+    transition: background-color 0.2s;
+}
+
+.btn-confirm-no:hover {
+    background-color: #f0f9ff;
+}
+
+/* Success Modal */
+.success-modal-content {
+    background-color: white;
+    width: 420px;
+    border-radius: 8px;
+    padding: 40px 30px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+}
+
+.success-icon {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    border: 3px solid #22c55e;
+    color: #22c55e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.2rem;
+}
+
+.error-icon {
+    width: 65px;
+    height: 65px;
+    background-color: #f04e30;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.4rem;
+    margin: 0 auto 20px;
+}
+
+.success-text {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #111;
+}
+
+.success-subtext {
+    font-size: 1.15rem;
+    color: #333;
+    font-weight: 400;
+}
+
+/* Refund Info Modal */
+.refund-modal-content {
+    background-color: white;
+    width: 480px;
+    border-radius: 8px;
+    padding: 35px 40px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.refund-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.refund-form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.refund-form-group label {
+    display: block;
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.refund-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.refund-input:focus {
+    border-color: #06A0E2;
+}
+
+.refund-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.refund-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 35px;
+}
+
+.btn-refund-cancel {
+    background-color: #9ca3af;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 130px;
+    transition: background-color 0.2s;
+}
+
+.btn-refund-cancel:hover {
+    background-color: #6b7280;
+}
+
+.btn-refund-confirm {
+    background-color: #0ea5e9;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 130px;
+    transition: background-color 0.2s;
+}
+
+.btn-refund-confirm:hover {
+    background-color: #0284c7;
+}
+
+/* Payment View Interface */
+.payment-container {
+    background-color: white;
+    width: 650px;
+    border-radius: 12px;
+    padding: 35px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.08);
+}
+
+.payment-page-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.payment-summary-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    background-color: #f9fafb;
+}
+
+.ps-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.ps-row:last-child {
+    margin-bottom: 0;
+}
+
+.ps-label {
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.ps-val {
+    font-weight: 700;
+    color: #111;
+}
+
+.ps-total {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px dashed #d1d5db;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.ps-total-val {
+    color: #06A0E2;
+    font-size: 1.25rem;
+}
+
+.payment-method-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #111;
+}
+
+.pm-option {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 18px 25px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: white;
+}
+
+.pm-option.active {
+    border-color: #06A0E2;
+    background-color: #f7fcff;
+}
+
+.pm-option input[type="radio"] {
+    display: none;
+}
+
+.pm-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.25rem;
+    margin-right: 20px;
+}
+
+.pm-option:nth-child(2) .pm-icon {
+    background-color: #fce7f3;
+    color: #be185d;
+}
+
+.pm-text {
+    flex-grow: 1;
+}
+
+.pm-name {
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: #111;
+}
+
+.pm-desc {
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+.cash-warning {
+    background-color: #fffdf0;
+    border: 1px solid #fde047;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    color: #a16207;
+    line-height: 1.5;
+}
+
+.cash-warning strong {
+    color: #d97706;
+}
+
+.payment-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    gap: 20px;
+}
+
+.btn-pm-cancel {
+    background-color: #b0b0b0;
+    color: white;
+    border: none;
+    padding: 14px 0;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1.15rem;
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s;
+}
+
+.btn-pm-confirm {
+    background-color: #06A0E2;
+    color: white;
+    border: none;
+    padding: 14px 0;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1.15rem;
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s;
+}
+
+.btn-pm-cancel:hover {
+    background-color: #999;
+}
+
+.btn-pm-confirm:hover {
+    background-color: #0488c2;
+}
