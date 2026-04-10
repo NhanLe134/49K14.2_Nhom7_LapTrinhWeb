@@ -1,261 +1,169 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
+# 1. Bảng Khách Hàng
+class KhachHang(models.Model):
+    KhachHangID = models.CharField(max_length=10, primary_key=True)
+    Email = models.EmailField(max_length=100, unique=True, null=True, blank=True)
+    NgayDangKy = models.DateTimeField(auto_now_add=True)
+    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
 
-# 3.1 Bảng Nhà xe
-class NhaXe(models.Model):
+    def __str__(self):
+        return self.KhachHangID
+
+# 2. Bảng Nhà Xe
+class Nhaxe(models.Model):
     NhaxeID = models.CharField(max_length=10, primary_key=True)
-    Hoten = models.CharField(max_length=200)
-    Email = models.CharField(max_length=100)
-    NgayDangKy = models.DateTimeField(null=True, blank=True)
-    AnhDaiDienURL = models.CharField(max_length=100, null=True, blank=True)
-    DiaChiTruSo = models.CharField(max_length=200, null=True, blank=True)
-    SoDienThoai = models.CharField(max_length=12, unique=True)
-
-    class Meta:
-        db_table = 'NhaXe'
+    Email = models.EmailField(max_length=100, unique=True)
+    NgayDangKy = models.DateTimeField(auto_now_add=True)
+    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    DiaChiTruSo = models.TextField(max_length=200, null=True, blank=True)
+    SoDienThoai = models.CharField(
+        max_length=10,
+        unique=True,
+        validators=[RegexValidator(regex=r'^0\d{9,}$', message="Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số")]
+    )
 
     def __str__(self):
-        return self.Hoten
+        return self.NhaxeID
 
 
-# 3.2 Bảng Tài xế
-class TaiXe(models.Model):
+
+# 4. Bảng Tài Xế
+class Taixe(models.Model):
     TaixeID = models.CharField(max_length=10, primary_key=True)
-    NhaxeID = models.ForeignKey(
-        NhaXe, on_delete=models.CASCADE,
-        db_column='NhaxeID'
+    HinhAnhURL = models.CharField(max_length=255, null=True, blank=True)
+    SoBangLai = models.CharField(max_length=20, unique=True)
+    soCCCD = models.CharField(
+        max_length=12,
+        unique=True,
+        validators=[RegexValidator(regex=r'^\d{12}$', message="CCCD phải có đúng 12 chữ số")]
     )
-    HoTen = models.CharField(max_length=200)
-    SoCCCD = models.CharField(max_length=12, null=True, blank=True)
     LoaiBangLai = models.CharField(max_length=20, null=True, blank=True)
-    NgayHetHanBangLai = models.DateTimeField(null=True, blank=True)
-    HinhAnhURL = models.CharField(max_length=100, null=True, blank=True)
-    SoBangLai = models.CharField(max_length=20, null=True, blank=True)
-
-    class Meta:
-        db_table = 'TaiXe'
+    NgayHetHanBangLai = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return self.HoTen
+        return self.TaixeID
 
-
-# 3.3 Bảng Tuyến xe
-class TuyenXe(models.Model):
-    TuyenXeID = models.CharField(max_length=10, primary_key=True)
-    NhaxeID = models.ForeignKey(
-        NhaXe, on_delete=models.CASCADE,
-        db_column='NhaxeID'
-    )
-    TenTuyen = models.CharField(max_length=500)
-    DiemDi = models.CharField(max_length=500)
-    DiemDen = models.CharField(max_length=500)
-    QuangDuong = models.CharField(max_length=500, null=True, blank=True)
-    DiemTrungGian = models.CharField(max_length=500, null=True, blank=True)
+# 5. Bảng Chi Tiết Tài Xế (Trung gian Nhà xe - Tài xế)
+class CHITIETTAIXE(models.Model):
+    Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
+    Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE)
+    HoTen = models.CharField(max_length=200, null=True, blank=True)
+    Tennhaxe = models.CharField(max_length=200, null=True, blank=True)
+    NgayBatDau = models.DateField()
+    NgayKetThuc = models.DateField()
 
     class Meta:
-        db_table = 'TuyenXe'
+        unique_together = ('Nhaxe', 'Taixe')
 
-    def __str__(self):
-        return self.TenTuyen
-
-
-# 3.4 Bảng Loại xe
-class LoaiXe(models.Model):
-    LoaiXeID = models.CharField(max_length=10, primary_key=True)
-    NhaxeID = models.ForeignKey(
-        NhaXe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='NhaxeID'
-    )
-    TenLoaiXe = models.CharField(max_length=50)
-    SoCho = models.IntegerField(validators=[MinValueValidator(1)])
-    SoDoGheNgoiURL = models.CharField(max_length=100, null=True, blank=True)
-    GiaVe = models.DecimalField(
-        max_digits=15, decimal_places=2,
-        null=True, blank=True,
-        validators=[MinValueValidator(0)]
-    )
+# 6. Bảng Loại Xe
+class Loaixe(models.Model):
+    LoaixeID = models.CharField(max_length=10, primary_key=True)
     NgayCapNhatGia = models.DateField(null=True, blank=True)
-
-    class Meta:
-        db_table = 'LoaiXe'
+    SoCho = models.IntegerField(validators=[MinValueValidator(1)])
+    SoDoGheNgoiURL = models.CharField(max_length=255, null=True, blank=True)
+    GiaVe = models.DecimalField(max_digits=10, decimal_places=0)
 
     def __str__(self):
-        return self.TenLoaiXe
+        return self.LoaixeID
 
+# 7. Bảng Chi Tiết Loại Xe (Trung gian Nhà xe - Loại xe)
+class CHITIETLOAIXE(models.Model):
+    Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
+    Loaixe = models.ForeignKey(Loaixe, on_delete=models.CASCADE)
+    TenLoaiXe = models.CharField(max_length=50, null=True, blank=True)
+    Tennhaxe = models.CharField(max_length=200, null=True, blank=True)
 
-# 3.5 Bảng Xe
+    class Meta:
+        unique_together = ('Nhaxe', 'Loaixe')
+
+# 8. Bảng Xe
 class Xe(models.Model):
     XeID = models.CharField(max_length=10, primary_key=True)
-    NhaxeID = models.ForeignKey(
-        NhaXe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='NhaxeID'
-    )
-    BienSoXe = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
+    Loaixe = models.ForeignKey(Loaixe, on_delete=models.CASCADE)
     TrangThai = models.CharField(max_length=20, null=True, blank=True)
-    SoGhe = models.CharField(max_length=10, null=True, blank=True)
-
-    class Meta:
-        db_table = 'Xe'
+    SoGhe = models.IntegerField(null=True, blank=True)
+    BienSoXe = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
-        return self.XeID
+        return self.BienSoXe
 
+# 9. Bảng Tuyến Xe
+class TuyenXe(models.Model):
+    tuyenXeID = models.CharField(max_length=10, primary_key=True)
+    nhaXe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
+    tenTuyen = models.CharField(max_length=500, null=True, blank=True)
+    diemDi = models.CharField(max_length=500, default='Đà Nẵng')
+    diemDen = models.CharField(max_length=500, default='Huế')
+    QuangDuong = models.CharField(max_length=100, null=True, blank=True)
+    DiemTrungGian = models.CharField(max_length=500, null=True, blank=True)
 
-# 3.6 Bảng Chuyến xe
+    def __str__(self):
+        return self.tenTuyen or self.tuyenXeID
+
+# 10. Bảng Chuyến Xe
 class ChuyenXe(models.Model):
     ChuyenXeID = models.CharField(max_length=10, primary_key=True)
-    XeID = models.ForeignKey(
-        Xe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='XeID'
-    )
-    TuyenXeID = models.ForeignKey(
-        TuyenXe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='TuyenXeID'
-    )
-    TaixeID = models.ForeignKey(
-        TaiXe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='TaixeID'
-    )
-    NgayKhoiHanh = models.DateTimeField()
-    GioDi = models.DateTimeField(null=True, blank=True)
-    GioDen = models.DateTimeField(null=True, blank=True)
+    Xe = models.ForeignKey(Xe, on_delete=models.SET_NULL, null=True, blank=True)
+    TuyenXe = models.ForeignKey(TuyenXe, on_delete=models.CASCADE)
+    Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE)
+    NgayKhoiHanh = models.DateField(null=True, blank=True)
+    GioDi = models.TimeField(null=True, blank=True)
+    GioDen = models.TimeField(null=True, blank=True)
     TrangThai = models.CharField(max_length=10, null=True, blank=True)
-
-    class Meta:
-        db_table = 'ChuyenXe'
 
     def __str__(self):
         return self.ChuyenXeID
 
-
-# 3.7 Bảng Ghế ngồi
+# 11. Bảng Ghế Ngồi
 class GheNgoi(models.Model):
-    GheID = models.CharField(max_length=10, primary_key=True)
-    XeID = models.ForeignKey(
-        Xe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='XeID'
-    )
-    ChuyenXeID = models.ForeignKey(
-        ChuyenXe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='ChuyenXeID'
-    )
-    SoGhe = models.CharField(max_length=5)
-    TrangThai = models.CharField(max_length=20, null=True, blank=True)
-
-    class Meta:
-        db_table = 'GheNgoi'
+    gheID = models.CharField(max_length=10, primary_key=True)
+    ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE)
+    soGhe = models.CharField(max_length=5, null=True, blank=True)
+    trangThai = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
-        return self.GheID
+        return f"{self.soGhe} - {self.ChuyenXe.ChuyenXeID}"
 
-
-# 3.8 Bảng Khách hàng
-class KhachHang(models.Model):
-    KhachHangID = models.CharField(max_length=10, primary_key=True)
-    HoTen = models.CharField(max_length=200)
-    Email = models.CharField(max_length=100, null=True, blank=True)
-    NgayDangKy = models.DateTimeField(null=True, blank=True)
-    AnhDaiDienURL = models.CharField(max_length=100, null=True, blank=True)
-
-    class Meta:
-        db_table = 'KhachHang'
-
-    def __str__(self):
-        return self.HoTen
-
-
-# 3.9 Bảng Vé
+# 12. Bảng Vé
 class Ve(models.Model):
     VeID = models.CharField(max_length=10, primary_key=True)
-    KhachHangID = models.ForeignKey(
-        KhachHang, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='KhachHangID'
+    KhachHang = models.ForeignKey(KhachHang, on_delete=models.CASCADE)
+    ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE)
+    Ghe = models.ForeignKey(GheNgoi, on_delete=models.CASCADE)
+    SoDienThoai = models.CharField(
+        max_length=10,
+        validators=[RegexValidator(regex=r'^0\d{9,}$', message="Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số")]
     )
-    ChuyenXeID = models.ForeignKey(
-        ChuyenXe, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='ChuyenXeID'
-    )
-    GheID = models.ForeignKey(
-        GheNgoi, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='GheID'
-    )
-    TenHanhKhach = models.CharField(max_length=200)
-    SoDienThoai = models.CharField(max_length=10, null=True, blank=True)
-    NgayDat = models.DateTimeField(null=True, blank=True)
-    GiaVe = models.DecimalField(
-        max_digits=15, decimal_places=2,
-        null=True, blank=True,
-        validators=[MinValueValidator(0)]
-    )
+    NgayDat = models.DateTimeField(auto_now_add=True)
+    GiaVe = models.DecimalField(max_digits=10, decimal_places=0)
     TrangThaiThanhToan = models.CharField(max_length=20, null=True, blank=True)
-    DiemDon = models.CharField(max_length=150, null=True, blank=True)
-    DiemTra = models.CharField(max_length=150, null=True, blank=True)
-
-    class Meta:
-        db_table = 'Ve'
 
     def __str__(self):
         return self.VeID
 
-
-# 3.10 Bảng Thanh toán
+# 13. Bảng Thanh Toán
 class ThanhToan(models.Model):
     ThanhToanID = models.CharField(max_length=10, primary_key=True)
-    VeID = models.ForeignKey(
-        Ve, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='VeID'
-    )
-    SoTien = models.DecimalField(
-        max_digits=15, decimal_places=2,
-        null=True, blank=True,
-        validators=[MinValueValidator(0)]
-    )
+    Ve = models.OneToOneField(Ve, on_delete=models.CASCADE)
+    SoTien = models.DecimalField(max_digits=19, decimal_places=4)
     PhuongThucTT = models.CharField(max_length=20, null=True, blank=True)
-    TrangThaiThanhToan = models.CharField(max_length=20, null=True, blank=True)
-    NgayThanhToan = models.DateTimeField(null=True, blank=True)
-    MaGiaoDich = models.CharField(max_length=10, null=True, blank=True)
-
-    class Meta:
-        db_table = 'ThanhToan'
+    NgayThanhToan = models.DateTimeField(auto_now_add=True)
+    MaGiaoDich = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.ThanhToanID
 
-
-# 3.11 Bảng Đánh giá
+# 14. Bảng Đánh Giá
 class DanhGia(models.Model):
     DanhGiaID = models.CharField(max_length=10, primary_key=True)
-    VeID = models.ForeignKey(
-        Ve, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='VeID'
-    )
-    KhachHangID = models.ForeignKey(
-        KhachHang, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='KhachHangID'
-    )
-    DiemSo = models.IntegerField(
-        null=True, blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
-    )
-    NhanXet = models.CharField(max_length=500, null=True, blank=True)
-    NgayDanhGia = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        db_table = 'DanhGia'
+    Ve = models.OneToOneField(Ve, on_delete=models.CASCADE)
+    KhachHang = models.ForeignKey(KhachHang, on_delete=models.CASCADE)
+    Diemso = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    Nhanxet = models.TextField(max_length=500, null=True, blank=True)
+    NgayDanhGia = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.DanhGiaID
+        return f"Review {self.DanhGiaID} - {self.Diemso}"
