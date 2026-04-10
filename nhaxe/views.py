@@ -63,68 +63,52 @@ def danhgiachuyenxe(request):
 def nhaxe(request):
     return render(request, 'home/nhaxe.html')
 
-
 def thong_tin_nha_xe(request):
     return render(request, 'home/thong_tin_nha_xe.html')
-
 
 def quanlychuyenxe(request):
     return render(request, 'home/quanlychuyenxe.html')
 
-
 def themchuyenxe(request):
     return render(request, 'home/themchuyenxe.html')
-
 
 def suachuyenxe(request):
     return render(request, 'home/suachuyenxe.html')
 
-
 def quanlytuyenxe(request):
     return render(request, 'home/quanlytuyenxe.html')
-
 
 def quanly_loaixe(request):
     return render(request, 'home/quanly_loaixe.html')
 
-
 def quan_ly_xe(request):
     return render(request, 'home/quan_ly_xe.html')
-
 
 def quanlytaixe(request):
     return render(request, 'home/quanlytaixe.html')
 
-
 def quanly_khachhang(request):
     return render(request, 'home/quanly_khachhang.html')
 
-
 def quanlyve(request):
     return render(request, 'home/quanlyve.html')
-
 
 # ==================== TÀI XẾ (tx) ====================
 
 def taixe(request):
     return render(request, 'home/taixe.html')
 
-
 def thongtin_taixe(request):
     return render(request, 'home/thongtin_taixe.html')
-
 
 def taixe_quanlychuyenxe(request):
     return render(request, 'home/taixe_quanlychuyenxe.html')
 
-
 def taixe_chitietchuyenxe(request):
     return render(request, 'home/taixe_chitietchuyenxe.html')
 
-
 def taixe_lotrinh(request):
     return render(request, 'home/taixe_lotrinh.html')
-
 
 def phancongtaixe(request):
     return render(request, 'home/phancongtaixe.html')
