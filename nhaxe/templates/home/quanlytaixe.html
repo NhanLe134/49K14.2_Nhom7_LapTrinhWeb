@@ -14,6 +14,42 @@
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <!-- Page specific styling -->
     <link rel="stylesheet" href="{% static 'css/quanlytaixe.css' %}">
+    <style>
+        .custom-file-input {
+            display: none;
+        }
+
+        .custom-file-label {
+            display: inline-block;
+            padding: 8px 12px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .custom-file-label:hover {
+            background-color: #e1e1e1;
+        }
+
+        #createAvatarPreview, #editAvatarPreview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .upload-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+    </style>
 </head>
 
 <body>
@@ -89,8 +125,8 @@
 
                     <div class="details-container">
                         <div class="details-left">
-                            <img src="{% static 'img/3.jpg' %}" id="detailAvatar" alt="Avatar" class="details-avatar"
-                                onerror="this.src='https://ui-avatars.com/api/?name=Nguyễn+Tuấn+Anh&background=random'">
+                            <img src="" id="detailAvatar" alt="Avatar" class="details-avatar"
+                                onerror="this.src='https://ui-avatars.com/api/?name=Tài+Xế&background=random'">
                             <div class="details-buttons">
                                 <button class="btn-close" onclick="hideDriverDetails()">Đóng</button>
                                 <button class="btn-edit" id="btnEdit" onclick="openEditModal()"><i
@@ -100,34 +136,33 @@
 
                         <div class="details-right">
                             <div class="form-group">
-                                <label class="form-label">Họ tên tài xế</label>
-                                <input type="text" class="form-input" id="detailName" value="Nguyễn Tuấn Anh" disabled>
+                                <label class="form-label">Mã tài xế</label>
+                                <input type="text" class="form-input" id="detailId" disabled>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Số điện thoại <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="detailPhone" value="05671111289" disabled>
+                                <label class="form-label">Họ tên <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="detailName" disabled>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Số CCCD</label>
-                                <input type="text" class="form-input" id="detailCCCD" value="049206004552" disabled>
+                                <input type="text" class="form-input" id="detailCCCD" disabled>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Số bằng lái <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="detailLicense" value="8123456789" disabled>
+                                <input type="text" class="form-input" id="detailLicense" disabled>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Loại bằng lái <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="detailLicenseType" value="B" disabled>
+                                <input type="text" class="form-input" id="detailLicenseType" disabled>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Ngày hết hạn bằng lái <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="detailLicenseExpiry" value="12/31/2027"
-                                    disabled>
+                                <input type="text" class="form-input" id="detailLicenseExpiry" disabled>
                             </div>
                         </div>
                     </div>
@@ -146,24 +181,49 @@
     <script src="{% static 'js/common.js' %}"></script>
     <!-- SCRIPT -->
     <script>
-        const defaultDrivers = [
-            { id: 1, avatar: "{% static 'img/1.jpg' %}", name: 'Lê Văn Huy', phone: '0567856789', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 2, avatar: "{% static 'img/2.jpg' %}", name: 'Lưu Tuệ Tâm', phone: '0987546362', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 3, avatar: "{% static 'img/3.jpg' %}", name: 'Nguyễn Tuấn Anh', phone: '05671111289', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 4, avatar: "{% static 'img/4.jpg' %}", name: 'Lê Công Tuấn', phone: '0987656782', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 5, avatar: "{% static 'img/5.jpg' %}", name: 'Trần Anh Minh', phone: '0987654333', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 6, avatar: "{% static 'img/6.jpg' %}", name: 'Phan Thành Đạt', phone: '0867110985', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 7, avatar: "{% static 'img/7.jpg' %}", name: 'Võ Thiên Tú', phone: '0834226789', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 8, avatar: "{% static 'img/8.jpg' %}", name: 'Nguyễn Hữu Tài', phone: '0267854321', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 9, avatar: "{% static 'img/9.jpg' %}", name: 'Cao Phúc Đạt', phone: '0389790101', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' }
-        ];
+        const API_BASE_URL = 'https://api-vexeapp.onrender.com';
+        // Note: Using an alternative API to upload images because sometimes browser/CORS blocks client-side imgBB requests
+        // Using Cloudinary API for reliable image upload
+        const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/demo/image/upload';
+        const CLOUDINARY_UPLOAD_PRESET = 'docs_upload_example_us_core';
 
-        // Use local storage for drivers to persist changes
-        let drivers = JSON.parse(localStorage.getItem('drivers')) || defaultDrivers;
+        let drivers = [];
         let selectedDriverId = null;
+        let base64Avatar = "";
+        let uploadedImageUrl = "";
 
-        function saveToStorage() {
-            localStorage.setItem('drivers', JSON.stringify(drivers));
+        // Tự động generate ID cho frontend dựa trên danh sách tài xế hiện có
+        function generateNextTaixeID() {
+            if (!drivers || drivers.length === 0) return 'TAI0000';
+
+            // Lấy tất cả các số trong ID (bỏ qua tiền tố TAI)
+            const ids = drivers.map(d => {
+                const idStr = d.taixeID || d.TaixeID || '';
+                // Lọc lấy phần số
+                const numStr = idStr.replace(/[^0-9]/g, '');
+                return parseInt(numStr) || 0;
+            });
+
+            const maxId = Math.max(...ids);
+            const nextNum = maxId + 1;
+
+            // Format thành 4 chữ số (ví dụ: 1 -> 0001)
+            const formattedNum = nextNum.toString().padStart(4, '0');
+            return `TAI${formattedNum}`;
+        }
+
+        async function fetchDrivers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/taixe/`);
+                if (response.ok) {
+                    drivers = await response.json();
+                    renderDrivers();
+                } else {
+                    console.error('Lỗi khi tải dữ liệu tài xế');
+                }
+            } catch (error) {
+                console.error('Lỗi kết nối API:', error);
+            }
         }
 
         function renderDrivers() {
@@ -173,14 +233,22 @@
             drivers.forEach(driver => {
                 const item = document.createElement('div');
                 item.className = 'driver-item';
-                item.onclick = () => showDriverDetails(driver.id);
+
+                const taixeID = driver.taixeID || driver.TaixeID || 'TAIXXXX';
+                const loaiBangLai = driver.loaiBangLai || driver.LoaiBangLai;
+                const hinhAnhURL = driver.hinhAnhURL || driver.HinhAnhURL;
+
+                item.onclick = () => showDriverDetails(taixeID);
+
+                const avatarUrl = (hinhAnhURL && hinhAnhURL.length > 5) ? hinhAnhURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(taixeID)}&background=random`;
+
                 item.innerHTML = `
-                    <img src="${driver.avatar}" alt="Avatar" class="driver-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=random'">
+                    <img src="${avatarUrl}" alt="Avatar" class="driver-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(taixeID)}&background=random'">
                     <div class="driver-info">
-                        <div class="driver-name">${driver.name}</div>
-                        <div class="driver-phone">${driver.phone}</div>
+                        <div class="driver-name">${taixeID}</div>
+                        <div class="driver-phone">${loaiBangLai || 'Không có'}</div>
                     </div>
-                    <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal(${driver.id})">
+                    <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal('${taixeID}')">
                         <i class="fa-regular fa-trash-can"></i>
                     </div>
                 `;
@@ -189,17 +257,33 @@
         }
 
         function showDriverDetails(id) {
-            const driver = drivers.find(d => d.id === id);
+            const driver = drivers.find(d => (d.taixeID || d.TaixeID) === id);
             if (!driver) return;
             
             selectedDriverId = id;
-            document.getElementById('detailAvatar').src = driver.avatar;
-            document.getElementById('detailName').value = driver.name;
-            document.getElementById('detailPhone').value = driver.phone;
-            document.getElementById('detailCCCD').value = driver.cccd;
-            document.getElementById('detailLicense').value = driver.license;
-            document.getElementById('detailLicenseType').value = driver.licenseType;
-            document.getElementById('detailLicenseExpiry').value = driver.licenseExpiry;
+
+            const taixeID = driver.taixeID || driver.TaixeID;
+            const soCCCD = driver.soCCCD || driver.SoCCCD;
+            const soBangLai = driver.soBangLai || driver.SoBangLai;
+            const loaiBangLai = driver.loaiBangLai || driver.LoaiBangLai;
+            const hinhAnhURL = driver.hinhAnhURL || driver.HinhAnhURL;
+            const ngayHetHanBangLai = driver.ngayHetHanBangLai || driver.NgayHetHanBangLai;
+
+            document.getElementById('detailAvatar').src = (hinhAnhURL && hinhAnhURL.length > 5) ? hinhAnhURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(taixeID)}&background=random`;
+            document.getElementById('detailId').value = taixeID;
+            document.getElementById('detailName').value = `Tài xế ${taixeID}`;
+            document.getElementById('detailCCCD').value = soCCCD;
+            document.getElementById('detailLicense').value = soBangLai;
+            document.getElementById('detailLicenseType').value = loaiBangLai;
+
+            let expiryDate = ngayHetHanBangLai;
+            if (expiryDate) {
+                const d = new Date(expiryDate);
+                expiryDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+            } else {
+                expiryDate = 'Không có';
+            }
+            document.getElementById('detailLicenseExpiry').value = expiryDate;
 
             document.getElementById('driverListView').style.display = 'none';
             document.getElementById('driverDetailsView').style.display = 'flex';
@@ -208,56 +292,157 @@
         function hideDriverDetails() {
             document.getElementById('driverListView').style.display = 'block';
             document.getElementById('driverDetailsView').style.display = 'none';
-            renderDrivers();
         }
 
         function openCreateModal() {
             document.getElementById('createModal').style.display = 'flex';
+
+            // Tự động tạo ID tăng dần
+            const nextId = generateNextTaixeID();
+            document.getElementById('createID').value = nextId;
+
+            document.getElementById('createName').value = "";
+            document.getElementById('createCCCD').value = "";
+            document.getElementById('createLicense').value = "";
+
+            document.getElementById('createAvatarPreview').src = "https://ui-avatars.com/api/?name=User&background=random";
+            document.getElementById('createAvatarInput').value = "";
+            uploadedImageUrl = "";
         }
 
         function closeCreateModal() {
             document.getElementById('createModal').style.display = 'none';
         }
 
-        function submitCreateForm() {
-            const name = document.getElementById('createName').value.trim();
-            const phone = document.getElementById('createPhone').value.trim();
+        async function handleAvatarUpload(event, isEdit = false) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                // Show local preview immediately
+                const localUrl = URL.createObjectURL(file);
+                if (isEdit) {
+                    document.getElementById('editAvatarPreview').src = localUrl;
+                } else {
+                    document.getElementById('createAvatarPreview').src = localUrl;
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                const labelElement = isEdit ? document.getElementById('lblEditUpload') : document.getElementById('lblCreateUpload');
+                const originalText = labelElement.innerHTML;
+                labelElement.innerHTML = "Đang tải ảnh...";
+                labelElement.parentElement.style.pointerEvents = "none";
+
+                try {
+                    const response = await fetch(CLOUDINARY_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    labelElement.innerHTML = originalText;
+                    labelElement.parentElement.style.pointerEvents = "auto";
+
+                    if (result.secure_url) {
+                        uploadedImageUrl = result.secure_url;
+                        console.log("Uploaded successfully: ", uploadedImageUrl);
+                    } else {
+                        console.error("Upload error:", result);
+                        alert('Lỗi khi tải ảnh lên máy chủ. Vui lòng thử lại.');
+                    }
+                } catch(err) {
+                    labelElement.innerHTML = originalText;
+                    labelElement.parentElement.style.pointerEvents = "auto";
+                    console.error("Fetch error:", err);
+                    alert('Không thể kết nối đến máy chủ lưu trữ ảnh.');
+                }
+            } catch (err) {
+                console.error("Image process failed:", err);
+                alert('Lỗi xử lý file ảnh.');
+            }
+        }
+
+        async function submitCreateForm() {
+            const taixeID = document.getElementById('createID').value.trim();
+            const hoten = document.getElementById('createName').value.trim();
+            const cccd = document.getElementById('createCCCD').value.trim();
+            const license = document.getElementById('createLicense').value.trim();
+            const licenseType = document.getElementById('createLicenseType').value;
+            const licenseExpiry = document.getElementById('createLicenseExpiry').value;
             
-            if (!name || !phone) {
-                alert('Vui lòng điền họ tên và số điện thoại');
+            if (!hoten || !cccd || !license || !licenseType || !licenseExpiry) {
+                alert('Vui lòng điền đầy đủ các thông tin bắt buộc (Họ tên, CCCD, Số Bằng Lái, Loại, Ngày hết hạn)');
                 return;
             }
 
-            const newId = drivers.length > 0 ? Math.max(...drivers.map(d => d.id)) + 1 : 1;
+            const btnSubmit = document.querySelector('.btn-create-submit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Đang tạo...";
+
             const newDriver = {
-                id: newId,
-                name: name,
-                phone: phone,
-                avatar: document.getElementById('createAvatarPreview').src,
-                cccd: document.getElementById('createCCCD').value || 'Chưa cập nhật',
-                license: document.getElementById('createLicense').value || 'Chưa cập nhật',
-                licenseType: document.getElementById('createLicenseType').value || 'B',
-                licenseExpiry: document.getElementById('createLicenseExpiry').value || 'N/A'
+                TaixeID: taixeID,
+                HinhAnhURL: uploadedImageUrl,
+                SoBangLai: license,
+                soCCCD: cccd,
+                LoaiBangLai: licenseType,
+                NgayHetHanBangLai: licenseExpiry
             };
 
-            drivers.push(newDriver);
-            saveToStorage();
-            closeCreateModal();
-            renderDrivers();
-            showSuccess('Tạo tài khoản thành công!');
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/taixe/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newDriver)
+                });
+
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Tạo tài khoản";
+
+                if (response.ok) {
+                    closeCreateModal();
+                    await fetchDrivers();
+                    showSuccess('Tạo tài khoản thành công!');
+                } else {
+                    const err = await response.text();
+                    alert('Lỗi khi tạo tài xế: ' + err);
+                }
+            } catch (error) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Tạo tài khoản";
+                console.error('Lỗi gọi API:', error);
+                alert('Không thể kết nối đến máy chủ');
+            }
         }
 
         function openEditModal() {
-            const driver = drivers.find(d => d.id === selectedDriverId);
+            const driver = drivers.find(d => (d.taixeID || d.TaixeID) === selectedDriverId);
             if (!driver) return;
 
-            document.getElementById('editName').value = driver.name;
-            document.getElementById('editPhone').value = driver.phone;
-            document.getElementById('editCCCD').value = driver.cccd;
-            document.getElementById('editLicense').value = driver.license;
-            document.getElementById('editLicenseType').value = driver.licenseType;
-            document.getElementById('editLicenseExpiry').value = driver.licenseExpiry;
-            document.getElementById('editAvatarPreview').src = driver.avatar;
+            const taixeID = driver.taixeID || driver.TaixeID;
+            const soCCCD = driver.soCCCD || driver.SoCCCD;
+            const soBangLai = driver.soBangLai || driver.SoBangLai;
+            const loaiBangLai = driver.loaiBangLai || driver.LoaiBangLai;
+            const hinhAnhURL = driver.hinhAnhURL || driver.HinhAnhURL;
+            const ngayHetHanBangLai = driver.ngayHetHanBangLai || driver.NgayHetHanBangLai;
+
+            uploadedImageUrl = hinhAnhURL || "";
+
+            document.getElementById('editName').value = `Tài xế ${taixeID}`;
+            document.getElementById('editCCCD').value = soCCCD;
+            document.getElementById('editLicense').value = soBangLai;
+            document.getElementById('editLicenseType').value = loaiBangLai;
+
+            if (ngayHetHanBangLai) {
+                document.getElementById('editLicenseExpiry').value = ngayHetHanBangLai.split('T')[0];
+            }
+
+            document.getElementById('editAvatarPreview').src = (hinhAnhURL && hinhAnhURL.length > 5) ? hinhAnhURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(taixeID)}&background=random`;
 
             document.getElementById('editModal').style.display = 'flex';
         }
@@ -266,22 +451,50 @@
             document.getElementById('editModal').style.display = 'none';
         }
 
-        function saveEditModal() {
-            const driver = drivers.find(d => d.id === selectedDriverId);
+        async function saveEditModal() {
+            const driver = drivers.find(d => (d.taixeID || d.TaixeID) === selectedDriverId);
             if (!driver) return;
 
-            driver.name = document.getElementById('editName').value;
-            driver.phone = document.getElementById('editPhone').value;
-            driver.cccd = document.getElementById('editCCCD').value;
-            driver.license = document.getElementById('editLicense').value;
-            driver.licenseType = document.getElementById('editLicenseType').value;
-            driver.licenseExpiry = document.getElementById('editLicenseExpiry').value;
-            driver.avatar = document.getElementById('editAvatarPreview').src;
+            const taixeID = driver.taixeID || driver.TaixeID;
 
-            saveToStorage();
-            closeEditModal();
-            showDriverDetails(selectedDriverId);
-            showSuccess('Cập nhật thông tin thành công!');
+            const btnSubmit = document.querySelector('.btn-save-modal');
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Đang lưu...";
+
+            const updatedData = {
+                TaixeID: taixeID,
+                HinhAnhURL: uploadedImageUrl,
+                soCCCD: document.getElementById('editCCCD').value,
+                SoBangLai: document.getElementById('editLicense').value,
+                LoaiBangLai: document.getElementById('editLicenseType').value,
+                NgayHetHanBangLai: document.getElementById('editLicenseExpiry').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/taixe/${taixeID}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Lưu thay đổi";
+
+                if (response.ok) {
+                    closeEditModal();
+                    await fetchDrivers();
+                    showDriverDetails(selectedDriverId);
+                    showSuccess('Cập nhật thông tin thành công!');
+                } else {
+                    alert('Lỗi khi cập nhật!');
+                }
+            } catch (error) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Lưu thay đổi";
+                console.error('Lỗi gọi API:', error);
+            }
         }
 
         let driverToDelete = null;
@@ -294,12 +507,23 @@
             document.getElementById('deleteModal').style.display = 'none';
         }
 
-        function confirmDelete() {
-            drivers = drivers.filter(d => d.id !== driverToDelete);
-            saveToStorage();
-            closeDeleteModal();
-            renderDrivers();
-            showSuccess('Xóa tài khoản thành công!');
+        async function confirmDelete() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/taixe/${driverToDelete}/`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    closeDeleteModal();
+                    hideDriverDetails(); // in case deleting the currently viewed driver
+                    await fetchDrivers();
+                    showSuccess('Xóa tài khoản thành công!');
+                } else {
+                    alert('Lỗi khi xóa tài xế!');
+                }
+            } catch (error) {
+                console.error('Lỗi gọi API:', error);
+            }
         }
 
         function showSuccess(msg) {
@@ -312,7 +536,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderDrivers();
+            fetchDrivers();
         });
     </script>
 
@@ -325,41 +549,46 @@
             </div>
             <div class="create-modal-body">
                 <div class="create-modal-col">
+                    <div class="form-group" style="display:none;">
+                        <label class="form-label">Mã Tài Xế <span class="required">*</span></label>
+                        <input type="text" id="createID" class="form-input editable" readonly>
+                    </div>
                     <div class="form-group">
-                        <label class="form-label">Họ tên tài xế <span class="required">*</span></label>
+                        <label class="form-label">Họ Tên <span class="required">*</span></label>
                         <input type="text" id="createName" class="form-input editable" placeholder="Nhập họ tên">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Số điện thoại <span class="required">*</span></label>
-                        <input type="text" id="createPhone" class="form-input editable" placeholder="Nhập số điện thoại">
+                        <label class="form-label">Số CCCD <span class="required">*</span></label>
+                        <input type="text" id="createCCCD" class="form-input editable" placeholder="Nhập 12 số CCCD">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Số CCCD</label>
-                        <input type="text" id="createCCCD" class="form-input editable" placeholder="Nhập số CCCD">
+                        <label class="form-label">Số bằng lái <span class="required">*</span></label>
+                        <input type="text" id="createLicense" class="form-input editable" placeholder="Nhập 12 số bằng lái">
                     </div>
                 </div>
                 <div class="create-modal-col">
                     <div class="form-group">
-                        <label class="form-label">Số bằng lái</label>
-                        <input type="text" id="createLicense" class="form-input editable" placeholder="Nhập số bằng lái">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Loại bằng lái</label>
+                        <label class="form-label">Loại bằng lái <span class="required">*</span></label>
                         <select id="createLicenseType" class="form-input editable">
                             <option value="B">B</option>
+                            <option value="B1">B1</option>
                             <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
-                            <option value="F">F</option>
+                            <option value="C1">C1</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Ngày hết hạn bằng lái</label>
+                        <label class="form-label">Ngày hết hạn bằng lái <span class="required">*</span></label>
                         <input type="date" id="createLicenseExpiry" class="form-input editable">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Ảnh đại diện</label>
-                        <img id="createAvatarPreview" class="create-avatar-preview" src="{% static 'img/3.jpg' %}" alt="Preview">
+                        <div class="upload-container">
+                            <img id="createAvatarPreview" src="https://ui-avatars.com/api/?name=User&background=random" alt="Preview">
+                            <label class="custom-file-label">
+                                <span id="lblCreateUpload">Tải ảnh lên</span>
+                                <input type="file" id="createAvatarInput" class="custom-file-input" accept="image/*" onchange="handleAvatarUpload(event, false)">
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -376,16 +605,15 @@
             <div class="edit-modal-body">
                 <div class="edit-modal-left">
                     <img id="editAvatarPreview" class="edit-avatar" src="" alt="Avatar">
-                    <button class="btn-change-photo">Đổi ảnh</button>
+                    <label class="custom-file-label">
+                        <span id="lblEditUpload">Đổi ảnh</span>
+                        <input type="file" class="custom-file-input" accept="image/*" onchange="handleAvatarUpload(event, true)">
+                    </label>
                 </div>
                 <div class="edit-modal-right">
                     <div class="form-group">
-                        <label class="form-label">Họ tên tài xế</label>
+                        <label class="form-label">Họ tên</label>
                         <input type="text" id="editName" class="form-input editable">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Số điện thoại</label>
-                        <input type="text" id="editPhone" class="form-input editable">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số CCCD</label>
@@ -397,11 +625,16 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Loại bằng lái</label>
-                        <input type="text" id="editLicenseType" class="form-input editable">
+                        <select id="editLicenseType" class="form-input editable">
+                            <option value="B">B</option>
+                            <option value="B1">B1</option>
+                            <option value="C">C</option>
+                            <option value="C1">C1</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Ngày hết hạn</label>
-                        <input type="text" id="editLicenseExpiry" class="form-input editable">
+                        <input type="date" id="editLicenseExpiry" class="form-input editable">
                     </div>
                 </div>
             </div>
