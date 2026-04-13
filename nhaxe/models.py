@@ -1,5 +1,11 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
+def validate_future_date(value):
+    if value < timezone.now().date():
+        raise ValidationError('Ngày hết hạn bằng lái không được nhỏ hơn ngày hiện tại.')
 
 # 1. Bảng Khách Hàng
 class KhachHang(models.Model):
@@ -25,16 +31,45 @@ class Nhaxe(models.Model):
         return self.NhaxeID
 # 4. Bảng Tài Xế
 class Taixe(models.Model):
-    TaixeID = models.CharField(max_length=10, primary_key=True)
+    LOAI_BANG_LAI_CHOICES = [
+        ('B', 'B'),
+        ('B1', 'B1'),
+        ('C', 'C'),
+        ('C1', 'C1'),
+    ]
+
+    TaixeID = models.CharField(max_length=10, primary_key=True, blank=True, editable=False)
     HinhAnhURL = models.CharField(max_length=255, null=True, blank=True)
-    SoBangLai = models.CharField(max_length=20, unique=True)
+    SoBangLai = models.CharField(
+        max_length=12,
+        unique=True,
+        validators=[RegexValidator(regex=r'^\d{12}$', message="Số bằng lái phải có đúng 12 chữ số")]
+    )
     soCCCD = models.CharField(
         max_length=12,
         unique=True,
         validators=[RegexValidator(regex=r'^\d{12}$', message="CCCD phải có đúng 12 chữ số")]
     )
-    LoaiBangLai = models.CharField(max_length=20, null=True, blank=True)
-    NgayHetHanBangLai = models.DateField(null=True, blank=True)
+    LoaiBangLai = models.CharField(max_length=2, choices=LOAI_BANG_LAI_CHOICES, null=True, blank=True)
+    NgayHetHanBangLai = models.DateField(
+        null=True, 
+        blank=True,
+        validators=[validate_future_date]
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.TaixeID:
+            last_taixe = Taixe.objects.all().order_by('TaixeID').last()
+            if not last_taixe:
+                self.TaixeID = 'TAI0000'
+            else:
+                last_id = last_taixe.TaixeID
+                try:
+                    num = int(last_id[3:]) + 1
+                    self.TaixeID = f'TAI{num:04d}'
+                except ValueError:
+                    self.TaixeID = 'TAI0000'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.TaixeID
@@ -141,4 +176,3 @@ class DanhGia(models.Model):
     NgayDanhGia = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Review {self.DanhGiaID} - {self.Diemso}"
-
