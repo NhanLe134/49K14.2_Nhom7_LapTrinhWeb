@@ -28,7 +28,7 @@
                 <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
                     <i class="fa-solid fa-gear"></i> Quản lý tài khoản
                 </a>
-                <a href="{% url 'index' %}" class="dropdown-item">
+                <a href="{% url 'dangxuat' %}" class="dropdown-item">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
                 </a>
             </div>
@@ -61,13 +61,44 @@
 
         <!-- Main Content -->
         <main class="main-content-qlcx">
+            {% if messages %}
+            <ul class="django-messages" style="margin: 0 0 20px 0; max-width: 1000px;">
+                {% for msg in messages %}
+                <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
             <div class="top-actions">
                 <button class="btn-add-trip" onclick="window.location.href='{% url 'themchuyenxe' %}'">Thêm chuyến
                     xe</button>
             </div>
 
             <div class="trip-list">
-                <!-- Trips are dynamically generated in JavaScript -->
+                {% for chuyen in chuyen_xe_list %}
+                <div class="trip-card" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'" style="cursor: pointer;">
+                    <img class="trip-image" src="{% static 'img/xe1.jpg' %}" alt="xe">
+                    <div class="trip-info-main">
+                        <div class="trip-title">
+                            <strong>{{ chuyen.ChuyenXeID }}</strong>
+                            <p>{{ chuyen.TuyenXe.diemDi }} - {{ chuyen.TuyenXe.diemDen }}</p>
+                        </div>
+                        <div class="trip-details">
+                            <p>Giờ xuất phát: {{ chuyen.GioDi|time:"H:i" }}</p>
+                            <p>Loại xe: {{ chuyen.Xe.Loaixe.SoCho }} chỗ</p>
+                        </div>
+                    </div>
+                    <div class="trip-actions">
+                        {% if chuyen.TrangThai == 'completed' or chuyen.TrangThai == 'Hoàn thành' %}
+                            <span class="status-badge" style="background-color: #DCFCE7; color: #16a34a;">Hoàn thành</span>
+                        {% else %}
+                            <span class="status-badge">Chưa hoàn thành</span>
+                        {% endif %}
+                        <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' %}?id={{ chuyen.ChuyenXeID }}'">Chỉnh sửa</button>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="text-align:center; padding: 20px; color: #666;">Chưa có chuyến xe nào.</p>
+                {% endfor %}
             </div>
         </main>
     </div>
@@ -91,87 +122,6 @@
             document.addEventListener('click', () => {
                 userMenu.classList.remove('show');
             });
-
-            // Lấy danh sách chuyến xe mới tạo từ localStorage
-            const tripList = document.querySelector('.trip-list');
-            if (tripList) {
-                let savedTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-
-                // Initialize default trips if none exist, mapping hardcoded ones into storage
-                const now = new Date();
-                const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-                const tomorrow = new Date(now);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-
-                const defaultTrip1 = {
-                    id: 'D001',
-                    route: 'Huế-Đà Nẵng',
-                    date: todayStr,
-                    time: '6h00',
-                    carType: 'xe 4 chỗ',
-                    image: '{% static 'img/xe1.jpg' %}'
-            };
-            const defaultTrip2 = {
-                id: 'D002',
-                route: 'Huế-Đà Nẵng',
-                date: tomorrowStr,
-                time: '6h00',
-                carType: 'xe 4 chỗ',
-                image: '{% static 'img/xe2.jpg' %}'
-        };
-
-        let updated = false;
-        if (!savedTrips.some(t => t.id === 'D001')) {
-            savedTrips.unshift(defaultTrip1);
-            updated = true;
-        } else {
-            let t = savedTrips.find(t => t.id === 'D001');
-            if (!t.date) { t.date = todayStr; updated = true; }
-        }
-
-        if (!savedTrips.some(t => t.id === 'D002')) {
-            const d1Idx = savedTrips.findIndex(t => t.id === 'D001');
-            const insertIdx = d1Idx !== -1 ? d1Idx + 1 : 0;
-            savedTrips.splice(insertIdx, 0, defaultTrip2);
-            updated = true;
-        } else {
-            let t = savedTrips.find(t => t.id === 'D002');
-            if (!t.date) { t.date = tomorrowStr; updated = true; }
-        }
-
-        if (updated) {
-            localStorage.setItem('app_trips', JSON.stringify(savedTrips));
-        }
-
-        tripList.innerHTML = '';
-        savedTrips.forEach(trip => {
-            const tripHtml = `
-                        <div class="trip-card" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id=${trip.id}'" style="cursor: pointer;">
-                            <img class="trip-image" src="${trip.image}" alt="xe">
-                            <div class="trip-info-main">
-                                <div class="trip-title">
-                                    <strong>${trip.id}</strong>
-                                    <p>${trip.route}</p>
-                                </div>
-                                <div class="trip-details">
-                                    <p>Giờ xuất phát: ${trip.time}</p>
-                                    <p>Loại xe: ${trip.carType}</p>
-                                </div>
-                            </div>
-                            <div class="trip-actions">
-                                ${trip.status === 'completed'
-                    ? '<span class="status-badge" style="background-color: #DCFCE7; color: #16a34a;">Hoàn thành</span>'
-                    : '<span class="status-badge">Chưa hoàn thành</span>'
-                }
-                                <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' %}?id=${trip.id}'">Chỉnh sửa</button>
-                            </div>
-                        </div>
-                    `;
-            tripList.insertAdjacentHTML('beforeend', tripHtml);
-        });
-            }
         });
     </script>
     <script src="{% static 'js/common.js' %}"></script>

@@ -29,7 +29,7 @@
                 <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
                     <i class="fa-solid fa-gear"></i> Quản lý tài khoản
                 </a>
-                <a href="{% url 'index' %}" class="dropdown-item">
+                <a href="{% url 'dangxuat' %}" class="dropdown-item">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
                 </a>
             </div>
@@ -74,36 +74,63 @@
                     <div id="topPriceDisplay" style="display: none;">Giá vé: <span id="priceVal"></span></div>
                 </div>
 
-                <form id="tripForm">
+                {% if messages %}
+                <ul class="django-messages">
+                    {% for msg in messages %}
+                    <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                <form id="tripForm" method="POST" action="{% url 'suachuyenxe' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{ chuyen.ChuyenXeID }}">
+                    
                     <div class="form-group">
-                        <label for="route">Tên tuyến xe</label>
-                        <select id="route" class="form-control" required>
-                            <option value="hue-danang">Huế - Đà Nẵng</option>
-                            <option value="danang-hue">Đà Nẵng - Huế</option>
+                        <label for="route">Tuyến xe</label>
+                        <select id="route" name="tuyenxe" class="form-control" required>
+                            <option value="">Chọn tuyến xe</option>
+                            {% for tuyen in tuyen_xe_list %}
+                            <option value="{{ tuyen.tuyenXeID }}" {% if chuyen.TuyenXe_id == tuyen.tuyenXeID %}selected{% endif %}>
+                                {{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})
+                            </option>
+                            {% endfor %}
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="date">Ngày chạy</label>
-                        <input type="date" id="date" class="form-control" required>
+                        <input type="date" name="date" id="date" class="form-control" value="{{ chuyen.NgayKhoiHanh|date:'Y-m-d' }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="time">Giờ xuất phát</label>
-                        <select id="time" class="form-control" required>
-                            <option value="" disabled selected>Chọn giờ xuất phát</option>
-                        </select>
+                        <input type="time" name="time" id="time" class="form-control" value="{{ chuyen.GioDi|time:'H:i' }}" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="carType">Loại xe</label>
-                        <select id="carType" class="form-control" required>
-                            <option value="" disabled selected>Chọn loại xe</option>
-                            <option value="4">xe 4 chỗ</option>
-                            <option value="7">xe 7 chỗ</option>
-                            <option value="limousine">xe limousine</option>
+                        <label for="carType">Xe (Biển số - Loại chỗ)</label>
+                        <select id="carType" name="xe" class="form-control" required>
+                            <option value="">Chọn xe</option>
+                            {% for xe in xe_list %}
+                            <option value="{{ xe.XeID }}" {% if chuyen.Xe_id == xe.XeID %}selected{% endif %}>
+                                {{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ
+                            </option>
+                            {% endfor %}
                         </select>
-                        <div id="priceDisplay" class="price-display"></div>
+                    </div>
+
+                    <!-- Tài xế -->
+                    <div class="form-group">
+                        <label for="taixe">Tài xế</label>
+                        <select id="taixe" name="taixe" class="form-control" required>
+                            <option value="" disabled>Chọn tài xế</option>
+                            {% for tx in taixe_list %}
+                            <option value="{{ tx.TaixeID }}" {% if chuyen.Taixe_id == tx.TaixeID %}selected{% endif %}>
+                                Tài xế ID: {{ tx.TaixeID }} - CCCD: {{ tx.soCCCD }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <div class="form-buttons">
@@ -133,155 +160,19 @@
     <script src="{% static 'js/common.js' %}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const timeSelect = document.getElementById('time');
-            const dateInput = document.getElementById('date');
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
 
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
-            dateInput.min = todayStr;
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
 
-            const populateTimeOptions = (selectedTime) => {
-                const selectedDate = dateInput.value;
-                const isToday = selectedDate === todayStr;
-                const currentHour = new Date().getHours();
-
-                timeSelect.innerHTML = '<option value="" disabled>Chọn giờ xuất phát</option>';
-                for (let i = 4; i <= 22; i++) {
-                    const hourStr = i + 'h00';
-                    const option = document.createElement('option');
-                    option.value = hourStr;
-                    option.textContent = hourStr;
-
-                    if (isToday && i <= currentHour) {
-                        option.disabled = true;
-                        option.style.color = '#ccc';
-                    }
-
-                    if (selectedTime && hourStr === selectedTime) {
-                        option.selected = true;
-                    }
-
-                    timeSelect.appendChild(option);
-                }
-            };
-
-            dateInput.addEventListener('change', () => populateTimeOptions(null));
-
-            const carTypeSelect = document.getElementById('carType');
-            const priceDisplay = document.getElementById('priceDisplay');
-            const topPriceDisplay = document.getElementById('topPriceDisplay');
-            const priceVal = document.getElementById('priceVal');
-            const seatCount = document.getElementById('seatCount');
-
-            const prices = {
-                '4': '150.000 VNĐ',
-                '7': '180.000 VNĐ',
-                'limousine': '200.000 VNĐ'
-            };
-            const seats = {
-                '4': '4',
-                '7': '7',
-                'limousine': '9'
-            };
-
-            const updatePriceAndSeat = (val) => {
-                if (prices[val]) {
-                    priceDisplay.textContent = `Giá vé: ${prices[val]}`;
-                    priceDisplay.classList.add('visible');
-
-                    priceVal.textContent = prices[val];
-                    topPriceDisplay.style.display = 'block';
-                    seatCount.textContent = seats[val];
-                } else {
-                    priceDisplay.classList.remove('visible');
-                    topPriceDisplay.style.display = 'none';
-                    seatCount.textContent = '';
-                }
-            };
-
-            carTypeSelect.addEventListener('change', (e) => {
-                updatePriceAndSeat(e.target.value);
-            });
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const tripId = urlParams.get('id');
-            const routeElem = document.getElementById('route');
-
-            let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-            let currentTripIndex = -1;
-
-            if (tripId) {
-                currentTripIndex = trips.findIndex(t => t.id === tripId);
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
             }
-
-            if (currentTripIndex !== -1) {
-                const trip = trips[currentTripIndex];
-
-                for (let i = 0; i < routeElem.options.length; i++) {
-                    if (routeElem.options[i].text === trip.route || (trip.route.includes(routeElem.options[i].text))) {
-                        routeElem.selectedIndex = i;
-                        break;
-                    }
-                }
-
-                if (trip.date) {
-                    dateInput.value = trip.date;
-                }
-
-                populateTimeOptions(trip.time || null);
-
-                if (trip.carType) {
-                    for (let i = 0; i < carTypeSelect.options.length; i++) {
-                        if (carTypeSelect.options[i].text === trip.carType) {
-                            carTypeSelect.selectedIndex = i;
-                            updatePriceAndSeat(carTypeSelect.options[i].value);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            const tripForm = document.getElementById('tripForm');
-            const popupOverlay = document.getElementById('popupOverlay');
-
-            tripForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-
-                const routeText = routeElem.options[routeElem.selectedIndex].text;
-                const timeText = timeSelect.value;
-                const dateText = dateInput.value;
-                const carTypeText = carTypeSelect.options[carTypeSelect.selectedIndex].text;
-
-                const nextId = tripId || ('D00' + (Math.floor(Math.random() * 7) + 3));
-
-                const updatedTrip = {
-                    id: nextId,
-                    route: routeText,
-                    date: dateText,
-                    time: timeText,
-                    carType: carTypeText,
-                    image: currentTripIndex !== -1
-                        ? trips[currentTripIndex].image
-                        : "{% static 'img/xe1.jpg' %}"
-                };
-
-                if (currentTripIndex !== -1) {
-                    trips[currentTripIndex] = updatedTrip;
-                } else {
-                    trips.push(updatedTrip);
-                }
-
-                localStorage.setItem('app_trips', JSON.stringify(trips));
-
-                popupOverlay.classList.add('active');
-
-                setTimeout(() => {
-                    window.location.href = '{% url 'quanlychuyenxe' %}';
-                }, 1500);
-            });
         });
     </script>
 </body>

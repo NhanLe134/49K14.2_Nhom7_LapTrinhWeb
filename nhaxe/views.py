@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
+# Các hàm đăng nhập / đăng xuất đã được chuyển sang auth_views.py
+
 
 # ==================== TRANG CHUNG ====================
 
-def index(request):
-    return render(request, 'home/index.html')
 
 
 def timkiem(request):
@@ -37,10 +37,8 @@ def thongtin_khachhang(request):
 def lotrinh(request):
     return render(request, 'home/lotrinh.html')
 
-
 def chitietchuyenxe(request):
     return render(request, 'home/chitietchuyenxe.html')
-
 
 def vecuatoi(request):
     return render(request, 'home/vecuatoi.html')
@@ -53,10 +51,8 @@ def vietdanhgia(request):
 def dadanhgia(request):
     return render(request, 'home/dadanhgia.html')
 
-
 def danhgiachuyenxe(request):
     return render(request, 'home/danhgiachuyenxe.html')
-
 
 # ==================== NHÀ XE (nx) ====================
 
@@ -65,15 +61,6 @@ def nhaxe(request):
 
 def thong_tin_nha_xe(request):
     return render(request, 'home/thong_tin_nha_xe.html')
-
-def quanlychuyenxe(request):
-    return render(request, 'home/quanlychuyenxe.html')
-
-def themchuyenxe(request):
-    return render(request, 'home/themchuyenxe.html')
-
-def suachuyenxe(request):
-    return render(request, 'home/suachuyenxe.html')
 
 def quanlytuyenxe(request):
     return render(request, 'home/quanlytuyenxe.html')
@@ -101,11 +88,6 @@ def taixe(request):
 def thongtin_taixe(request):
     return render(request, 'home/thongtin_taixe.html')
 
-def taixe_quanlychuyenxe(request):
-    return render(request, 'home/taixe_quanlychuyenxe.html')
-
-def taixe_chitietchuyenxe(request):
-    return render(request, 'home/taixe_chitietchuyenxe.html')
 
 def taixe_lotrinh(request):
     return render(request, 'home/taixe_lotrinh.html')

@@ -128,3 +128,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ==================== CẤU HÌNH API ====================
+# URL gốc của API backend (.NET Core hoặc API ngoài)
+API_BASE_URL = 'https://api-vexeapp.onrender.com'   # ← Thay bằng URL thật của API
+API_TIMEOUT = 10  # giây

@@ -60,19 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showError(passwordInput, passwordError, 'Vui lòng nhập mật khẩu');
             hasError = true;
         }
-        if (hasError) return;
-
-        // Simple placeholder for validation (actual redirect handled in index.html)
-        if (username === 'nx' && password === '1' || username === 'admin') {
-            // Success placeholder
-        } else if (username === 'tx' && password === '1' || username === 'taixe') {
-            // Success placeholder
-        } else if (username === 'kh' && password === '1' || username === 'khachhang') {
-            // Success placeholder
-        } else {
-            // Invalid credentials
-            showError(usernameInput, usernameError, 'Tên đăng nhập sai. Vui lòng nhập lại');
-            showError(passwordInput, passwordError, 'Mật khẩu sai. Vui lòng nhập lại');
+        
+        if (!hasError) {
+            // Form is valid, submit to Django backend
+            loginForm.submit();
         }
     });
 

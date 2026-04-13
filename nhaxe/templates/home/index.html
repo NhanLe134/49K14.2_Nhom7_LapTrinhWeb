@@ -7,6 +7,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - Vexeapp</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Thông báo lỗi từ Django messages */
+        .django-messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px 0;
+        }
+        .django-messages li {
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .django-messages .msg-error {
+            background: #ffe4e4;
+            color: #c0392b;
+            border: 1px solid #f5c6c6;
+        }
+        .django-messages .msg-success {
+            background: #e4ffe8;
+            color: #1e8449;
+            border: 1px solid #c6f5cc;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,11 +40,23 @@
         </div>
 
         <div class="login-form">
-            <form id="loginForm" novalidate>
+
+            {% if messages %}
+            <ul class="django-messages">
+                {% for msg in messages %}
+                <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <form id="loginForm" method="POST" action="{% url 'dangnhap' %}" novalidate>
+                {% csrf_token %}
+
                 <div class="form-group">
                     <label for="username">Tên đăng nhập</label>
                     <div class="input-wrapper">
-                        <input type="text" id="username" required>
+                        <input type="text" id="username" name="username" required
+                               value="{{ username_value|default:'' }}">
                         <span class="custom-placeholder" id="user-placeholder">Tên đăng nhập <span
                                 class="required-star">*</span></span>
                     </div>
@@ -30,7 +66,7 @@
                 <div class="form-group">
                     <label for="password">Mật khẩu</label>
                     <div class="input-wrapper">
-                        <input type="password" id="password" required>
+                        <input type="password" id="password" name="password" required>
                         <span class="custom-placeholder" id="pass-placeholder">Mật khẩu <span
                                 class="required-star">*</span></span>
                     </div>
@@ -57,38 +93,7 @@
         KẾT NỐI HÀNH TRÌNH DI SẢN
     </div>
 
-    <script src="{% static 'js/script.js' %}?v=2"></script>
-    <script>
-        const URL_NHAXE = "{% url 'nhaxe' %}";
-        const URL_TAIXE = "{% url 'taixe' %}";
-        const URL_KHACHHANG = "{% url 'khachhang' %}";
-
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const usernameError = document.getElementById('username-error');
-            const passwordError = document.getElementById('password-error');
-            
-            usernameError.textContent = '';
-            passwordError.textContent = '';
-            
-            if (!username) { usernameError.textContent = 'Vui lòng nhập tên đăng nhập'; return; }
-            if (!password) { passwordError.textContent = 'Vui lòng nhập mật khẩu'; return; }
-
-            // Explicit roles: admin/nx -> nhaxe, taixe/tx -> taixe, kh -> khachhang
-            if (username === 'admin' || username === 'nx') {
-                window.location.href = URL_NHAXE;
-            } else if (username === 'taixe' || username === 'tx') {
-                window.location.href = URL_TAIXE;
-            } else if (username === 'kh' || username === 'khachhang') {
-                window.location.href = URL_KHACHHANG;
-            } else {
-                // Default to customer interface for other users
-                window.location.href = URL_KHACHHANG;
-            }
-        });
-    </script>
+    <script src="{% static 'js/script.js' %}?v=4"></script>
 </body>
 
 </html>

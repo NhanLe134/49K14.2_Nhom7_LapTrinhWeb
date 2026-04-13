@@ -29,7 +29,7 @@
                 <a href="{% url 'thongtin_taixe' %}" class="dropdown-item">
                     <i class="fa-solid fa-gear"></i> Quản lý tài khoản
                 </a>
-                <a href="{% url 'index' %}" class="dropdown-item">
+                <a href="{% url 'dangxuat' %}" class="dropdown-item">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
                 </a>
             </div>
@@ -50,65 +50,63 @@
 
         <!-- Main Content -->
         <main class="main-content-ctcx">
+            {% if messages %}
+            <ul class="django-messages" style="margin: 0 0 20px 0; max-width: 1000px;">
+                {% for msg in messages %}
+                <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
             <h2 class="section-title">Thông tin chuyến xe</h2>
             
             <div class="trip-detail-card" id="tripDetailBox">
                 <img src="{% static 'img/xe2.jpg' %}" alt="xe" id="detailImage">
-                <div class="detail-route" id="detailRoute">...</div>
+                <div class="detail-route" id="detailRoute">{{ chuyen.TuyenXe.diemDi }} - {{ chuyen.TuyenXe.diemDen }}</div>
                 <div class="detail-stats">
-                    <p>Giờ xuất phát: <span id="detailTime">...</span></p>
-                    <p>Tổng số ghế: <span id="detailTotalSeats">...</span></p>
-                    <p>Ghế trống: <span id="detailEmptySeats">...</span></p>
+                    <p>Giờ xuất phát: <span id="detailTime">{{ chuyen.GioDi|time:"H:i" }}</span></p>
+                    <p>Tổng số ghế: <span id="detailTotalSeats">{{ chuyen.Xe.Loaixe.SoCho }}</span></p>
+                    <p>Biển số xe: <span id="detailEmptySeats">{{ chuyen.Xe.BienSoXe }}</span></p>
                 </div>
                 <div class="status-dropdown" style="position: relative; display: inline-block; cursor: pointer;">
-                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none;">Chưa hoàn thành</div>
+                    {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
+                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #DCFCE7; color: #16a34a;">Hoàn thành</div>
+                    {% else %}
+                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #F8FDE9; color: #C0CD1C;">Chưa hoàn thành</div>
+                    {% endif %}
                     <div id="statusMenu" class="status-menu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; flex-direction: column; gap: 5px; z-index: 10;">
+                        {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
+                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #F8FDE9; color: #C0CD1C; margin-bottom: 5px;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>
+                        {% else %}
+                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #DCFCE7; color: #16a34a; margin-bottom: 5px;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
             <div class="action-row">
-                <button class="btn-assign" id="btnAssignDriver" style="display: none;">Hiển thị lộ trình</button>
+                <button class="btn-assign" id="btnAssignDriver" onclick="window.location.href='{% url 'taixe_lotrinh' %}?id={{ chuyen.ChuyenXeID }}'">Hiển thị lộ trình</button>
             </div>
 
-            <h2 class="section-title">Danh sách hành khách</h2>
-            
+            <h2 class="section-title">Danh sách hành khách (Ví dụ mẫu)</h2>
             <div class="passenger-list">
                 <div class="passenger-card">
                     <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">Phan Thị Quỳnh Trâm</div>
+                    <div class="passenger-name">Hành Khách A</div>
                     <div class="passenger-contact">
                         <p>SĐT: 0123456789</p>
-                        <p>Điểm đón: 1 Tố Hữu, Thành Phố Huế</p>
-                        <p>Điểm trả: 1 Hùng Vương, Đà Nẵng</p>
                     </div>
                     <div class="passenger-seat">A1</div>
-                </div>
-
-                <div class="passenger-card">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">Lê Văn Hùng</div>
-                    <div class="passenger-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>Điểm đón: 25 Bà Triệu, Thành Phố Huế</p>
-                        <p>Điểm trả: 1 Tố Hữu, Đà Nẵng</p>
-                    </div>
-                    <div class="passenger-seat">A2</div>
-                </div>
-
-                <div class="passenger-card">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">Vương Tuệ Nhi</div>
-                    <div class="passenger-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>Điểm đón: 1 Nguyễn Huệ, Thành Phố Huế</p>
-                        <p>Điểm trả: 25 Phan Thanh, Đà Nẵng</p>
-                    </div>
-                    <div class="passenger-seat">A3</div>
                 </div>
             </div>
         </main>
     </div>
+
+    <form id="statusForm" method="POST" action="{% url 'taixe_chitietchuyenxe' %}">
+        {% csrf_token %}
+        <input type="hidden" name="id" value="{{ chuyen.ChuyenXeID }}">
+        <input type="hidden" name="status" id="newStatusInput">
+    </form>
 
     <!-- Status Change Confirmation Popup -->
     <div id="statusPopup" class="status-popup-overlay" style="opacity: 0; pointer-events: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 4000; display: flex; justify-content: center; align-items: center; transition: opacity 0.3s;">
@@ -123,7 +121,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="footer-banner">
         <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
         <div>Liên hệ: Nhóm 07 - Lập trình web</div>
@@ -131,36 +128,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tripId = urlParams.get('id');
-            const btnAssign = document.getElementById('btnAssignDriver');
-            
-            if (tripId) {
-                let sortedTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                const trip = sortedTrips.find(t => t.id === tripId);
-                
-                if (trip) {
-                    document.getElementById('detailImage').src = trip.image || "{% static 'img/xe1.jpg' %}";
-                    document.getElementById('detailRoute').textContent = trip.route;
-                    document.getElementById('detailTime').textContent = trip.time;
-                    
-                    const seats = trip.carType.includes('4') ? 4 : (trip.carType.includes('7') ? 7 : 9);
-                    document.getElementById('detailTotalSeats').textContent = seats;
-                    document.getElementById('detailEmptySeats').textContent = seats - 3;
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
 
-                    updateBadgeUI(trip.status || 'pending');
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
 
-                    btnAssign.style.display = 'block';
-                    btnAssign.textContent = 'Hiển thị lộ trình';
-                    btnAssign.onclick = () => {
-                        window.location.href = "{% url 'taixe_lotrinh' %}?id=" + trip.id;
-                    };
-                }
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
             }
         });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const globalTripId = urlParams.get('id');
         let pendingStatusChange = null;
 
         function toggleStatusMenu() {
@@ -170,16 +152,9 @@
 
         function selectStatus(newStatus) {
             document.getElementById('statusMenu').style.display = 'none';
-            if (globalTripId) {
-                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                const trip = trips.find(t => t.id === globalTripId);
-                const currentStatus = trip.status || 'pending';
-                if (currentStatus !== newStatus) {
-                    pendingStatusChange = newStatus;
-                    document.getElementById('statusPopup').style.opacity = '1';
-                    document.getElementById('statusPopup').style.pointerEvents = 'auto';
-                }
-            }
+            pendingStatusChange = newStatus;
+            document.getElementById('statusPopup').style.opacity = '1';
+            document.getElementById('statusPopup').style.pointerEvents = 'auto';
         }
 
         function closeStatusPopup() {
@@ -189,34 +164,11 @@
         }
 
         function confirmStatusChange() {
-            if (globalTripId && pendingStatusChange) {
-                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                const idx = trips.findIndex(t => t.id === globalTripId);
-                if (idx !== -1) {
-                    trips[idx].status = pendingStatusChange;
-                    localStorage.setItem('app_trips', JSON.stringify(trips));
-                    updateBadgeUI(pendingStatusChange);
-                }
+            if (pendingStatusChange) {
+                document.getElementById('newStatusInput').value = pendingStatusChange;
+                document.getElementById('statusForm').submit();
             }
             closeStatusPopup();
-        }
-
-        function updateBadgeUI(status) {
-            const badgeElem = document.getElementById('detailBadge');
-            const menuElem = document.getElementById('statusMenu');
-            const styleTemplate = `border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1);`;
-
-            if (status === 'completed') {
-                badgeElem.textContent = 'Hoàn thành';
-                badgeElem.style.backgroundColor = '#DCFCE7';
-                badgeElem.style.color = '#16a34a';
-                menuElem.innerHTML = `<div class="status-option" style="${styleTemplate} background: #F8FDE9; color: #C0CD1C; margin-bottom: 5px;" onclick="selectStatus('pending')">Chưa hoàn thành</div>`;
-            } else {
-                badgeElem.textContent = 'Chưa hoàn thành';
-                badgeElem.style.backgroundColor = '#F8FDE9';
-                badgeElem.style.color = '#C0CD1C';
-                menuElem.innerHTML = `<div class="status-option" style="${styleTemplate} background: #DCFCE7; color: #16a34a; margin-bottom: 5px;" onclick="selectStatus('completed')">Hoàn thành</div>`;
-            }
         }
     </script>
     <script src="{% static 'js/common.js' %}"></script>

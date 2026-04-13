@@ -297,3 +297,26 @@ body {
     width: 100%;
     margin-top: auto;
 }
+
+/* Thông báo lỗi từ Django messages */
+.django-messages {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+}
+.django-messages li {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+.django-messages .msg-error {
+    background: #ffe4e4;
+    color: #c0392b;
+    border: 1px solid #f5c6c6;
+}
+.django-messages .msg-success {
+    background: #e4ffe8;
+    color: #1e8449;
+    border: 1px solid #c6f5cc;
+}

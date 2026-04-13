@@ -28,7 +28,7 @@
                 <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
                     <i class="fa-solid fa-gear"></i> Quản lý tài khoản
                 </a>
-                <a href="{% url 'index' %}" class="dropdown-item">
+                <a href="{% url 'dangxuat' %}" class="dropdown-item">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
                 </a>
             </div>
@@ -67,48 +67,64 @@
             <div class="form-container">
                 <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
 
-                <form id="tripForm">
+                {% if messages %}
+                <ul class="django-messages">
+                    {% for msg in messages %}
+                    <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                <form id="tripForm" method="POST" action="{% url 'themchuyenxe' %}">
+                    {% csrf_token %}
                     <!-- Tên tuyến xe -->
                     <div class="form-group">
-                        <label for="route">Tên tuyến xe</label>
-                        <select id="route" class="form-control" required>
-                            <option value="hue-danang">Huế - Đà Nẵng</option>
-                            <option value="danang-hue">Đà Nẵng - Huế</option>
+                        <label for="route">Tuyến xe</label>
+                        <select id="route" name="tuyenxe" class="form-control" required>
+                            <option value="" disabled selected>Chọn tuyến xe</option>
+                            {% for tuyen in tuyen_xe_list %}
+                            <option value="{{ tuyen.tuyenXeID }}">{{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})</option>
+                            {% endfor %}
                         </select>
                     </div>
 
                     <!-- Ngày chạy -->
                     <div class="form-group">
                         <label for="date">Ngày chạy</label>
-                        <input type="date" id="date" class="form-control" placeholder="Vui lòng nhập ngày chạy"
-                            required>
+                        <input type="date" name="date" id="date" class="form-control" required>
                     </div>
 
                     <!-- Giờ xuất phát -->
                     <div class="form-group">
                         <label for="time">Giờ xuất phát</label>
-                        <select id="time" class="form-control" required>
-                            <option value="" disabled selected>Chọn giờ xuất phát</option>
-                            <!-- JS will populate from 4h00 to 22h00 -->
+                        <input type="time" name="time" id="time" class="form-control" required>
+                    </div>
+
+                    <!-- Xe -->
+                    <div class="form-group">
+                        <label for="carType">Xe (Biển số - Loại chỗ)</label>
+                        <select id="carType" name="xe" class="form-control" required>
+                            <option value="" disabled selected>Chọn xe</option>
+                            {% for xe in xe_list %}
+                            <option value="{{ xe.XeID }}">{{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ</option>
+                            {% endfor %}
                         </select>
                     </div>
 
-                    <!-- Loại xe -->
+                    <!-- Tài xế -->
                     <div class="form-group">
-                        <label for="carType">Loại xe</label>
-                        <select id="carType" class="form-control" required>
-                            <option value="" disabled selected>Chọn loại xe</option>
-                            <option value="4">xe 4 chỗ</option>
-                            <option value="7">xe 7 chỗ</option>
-                            <option value="limousine">xe limousine</option>
+                        <label for="taixe">Tài xế</label>
+                        <select id="taixe" name="taixe" class="form-control" required>
+                            <option value="" disabled selected>Chọn tài xế</option>
+                            {% for tx in taixe_list %}
+                            <option value="{{ tx.TaixeID }}">Tài xế ID: {{ tx.TaixeID }} - CCCD: {{ tx.soCCCD }}</option>
+                            {% endfor %}
                         </select>
-                        <div id="priceDisplay" class="price-display"></div>
                     </div>
 
                     <!-- Nút bấm -->
                     <div class="form-buttons">
-                        <button type="button" class="btn-cancel"
-                            onclick="window.location.href='{% url 'nhaxe' %}'">Hủy</button>
+                        <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Hủy</button>
                         <button type="submit" class="btn-submit">Xác nhận</button>
                     </div>
                 </form>
@@ -136,137 +152,26 @@
             const userBtn = document.getElementById('userDropdownBtn');
             const userMenu = document.getElementById('userMenu');
 
-            userBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                userMenu.classList.toggle('show');
-            });
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
 
-            document.addEventListener('click', () => {
-                userMenu.classList.remove('show');
-            });
-
-            const timeSelect = document.getElementById('time');
-            const dateInput = document.getElementById('date');
-
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
+            }
+            
             // Set min date to today for "Ngày chạy"
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
-            dateInput.min = todayStr;
-
-            // Populate time options from 4h to 22h, restrict past hours if today
-            const populateTimeOptions = () => {
-                const selectedDate = dateInput.value;
-                const isToday = selectedDate === todayStr;
-                const currentHour = new Date().getHours();
-
-                timeSelect.innerHTML = '<option value="" disabled selected>Chọn giờ xuất phát</option>';
-                for (let i = 4; i <= 22; i++) {
-                    const hourStr = i + 'h00';
-                    const option = document.createElement('option');
-                    option.value = hourStr;
-                    option.textContent = hourStr;
-
-                    if (isToday && i <= currentHour) {
-                        option.disabled = true;
-                        option.style.color = '#ccc';
-                    }
-
-                    timeSelect.appendChild(option);
-                }
-            };
-
-            dateInput.addEventListener('change', populateTimeOptions);
-            // Initial population
-            populateTimeOptions();
-
-            // Handle price display on car type change
-            const carTypeSelect = document.getElementById('carType');
-            const priceDisplay = document.getElementById('priceDisplay');
-
-            const prices = {
-                '4': '150.000 VNĐ',     // 150k
-                '7': '180.000 VNĐ',     // 180k
-                'limousine': '200.000 VNĐ' // 200k
-            };
-
-            carTypeSelect.addEventListener('change', (e) => {
-                const selectedVal = e.target.value; // '4', '7', 'limousine'
-                const vehicles = JSON.parse(localStorage.getItem('app_vehicle_types') || '[]');
-                
-                // Map '4', '7', 'limousine' to vehicle ids or names
-                // In quanly_loaixe.html, IDs are 'type-a', 'type-b', 'type-c'
-                let v = null;
-                if (selectedVal === '4') v = vehicles.find(x => x.id === 'type-a');
-                else if (selectedVal === '7') v = vehicles.find(x => x.id === 'type-b');
-                else if (selectedVal === 'limousine') v = vehicles.find(x => x.id === 'type-c');
-
-                if (v && v.price) {
-                    const priceFormatted = new Intl.NumberFormat('vi-VN').format(v.price) + ' VNĐ';
-                    priceDisplay.textContent = `Giá vé: ${priceFormatted}`;
-                    priceDisplay.classList.add('visible');
-                    // Store numeric price for easier saving
-                    priceDisplay.setAttribute('data-price', v.price);
-                } else if (prices[selectedVal]) {
-                    // Fallback to static if not set in Management
-                    priceDisplay.textContent = `Giá vé: ${prices[selectedVal]}`;
-                    priceDisplay.classList.add('visible');
-                    priceDisplay.setAttribute('data-price', prices[selectedVal].replace(/\D/g, ''));
-                } else {
-                    priceDisplay.classList.remove('visible');
-                    priceDisplay.removeAttribute('data-price');
-                }
-            });
-
-            // Form Submit Logic
-            const tripForm = document.getElementById('tripForm');
-            const popupOverlay = document.getElementById('popupOverlay');
-
-            tripForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-
-                // Collect form data
-                const routeElem = document.getElementById('route');
-                const timeElem = document.getElementById('time');
-                const dateElem = document.getElementById('date');
-                const carTypeElem = document.getElementById('carType');
-
-                const routeText = routeElem.options[routeElem.selectedIndex].text;
-                const timeText = timeElem.value;
-                const dateText = dateElem.value;
-                const carTypeText = carTypeElem.options[carTypeElem.selectedIndex].text;
-
-                // Create trip object
-                const nextId = 'D00' + (Math.floor(Math.random() * 7) + 3); // D003 - D009
-                const priceValue = priceDisplay.getAttribute('data-price') || '0';
-                
-                const newTrip = {
-                    id: nextId,
-                    route: routeText,
-                    date: dateText,
-                    time: timeText,
-                    carType: carTypeText,
-                    type: carTypeText, // For compatibility with timkiem.html
-                    price: priceValue,
-                    image: "{% static 'img/xe1.jpg' %}", // Using xe1.jpg as requested
-                    driver: true // Added for visibility in driver dashboard
-                };
-
-                // Save to localStorage
-                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                trips.push(newTrip);
-                localStorage.setItem('app_trips', JSON.stringify(trips));
-
-                // Show popup
-                popupOverlay.classList.add('active');
-
-                // Redirect back to Trips list
-                setTimeout(() => {
-                    window.location.href = '{% url 'quanlychuyenxe' %}';
-                }, 1500);
-            });
+            const dateInput = document.getElementById('date');
+            if (dateInput) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dateInput.min = `${year}-${month}-${day}`;
+            }
         });
     </script>
     <script src="{% static 'js/common.js' %}"></script>
