@@ -14,7 +14,7 @@ class Nhaxe(models.Model):
     NhaxeID = models.CharField(max_length=10, primary_key=True)
     Email = models.EmailField(max_length=100, unique=True)
     NgayDangKy = models.DateTimeField(auto_now_add=True)
-    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    AnhDaiDien = models.ImageField(upload_to='nhaxe/', null=True, blank=True)
     DiaChiTruSo = models.TextField(max_length=200, null=True, blank=True)
     SoDienThoai = models.CharField(
         max_length=10,
@@ -50,11 +50,27 @@ class CHITIETTAIXE(models.Model):
         unique_together = ('Nhaxe', 'Taixe')
 # 6. Bảng Loại Xe
 class Loaixe(models.Model):
-    LoaixeID = models.CharField(max_length=10, primary_key=True)
-    NgayCapNhatGia = models.DateField(null=True, blank=True)
+    LoaixeID = models.CharField(max_length=10, primary_key=True, blank=True)
+    NgayCapNhatGia = models.DateField(auto_now=True, null=True, blank=True)
     SoCho = models.IntegerField(validators=[MinValueValidator(1)])
     SoDoGheNgoiURL = models.CharField(max_length=255, null=True, blank=True)
-    GiaVe = models.DecimalField(max_digits=10, decimal_places=0)
+    GiaVe = models.DecimalField(max_digits=12, decimal_places=0)
+
+    def save(self, *args, **kwargs):
+        if not self.LoaixeID:
+            last_record = Loaixe.objects.order_by('LoaixeID').last()
+            if last_record:
+                last_id = last_record.LoaixeID
+                try:
+                    num = int(last_id.split('-')[1]) + 1
+                    self.LoaixeID = f'LX-{num:03d}'
+                except (IndexError, ValueError):
+                    import uuid
+                    self.LoaixeID = 'LX-' + str(uuid.uuid4())[:6]
+            else:
+                self.LoaixeID = 'LX-001'
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.LoaixeID
 # 7. Bảng Chi Tiết Loại Xe (Trung gian Nhà xe - Loại xe)
@@ -67,12 +83,29 @@ class CHITIETLOAIXE(models.Model):
         unique_together = ('Nhaxe', 'Loaixe')
 # 8. Bảng Xe
 class Xe(models.Model):
-    XeID = models.CharField(max_length=10, primary_key=True)
+    XeID = models.CharField(max_length=10, primary_key=True, blank=True)
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
     Loaixe = models.ForeignKey(Loaixe, on_delete=models.CASCADE)
-    TrangThai = models.CharField(max_length=20, null=True, blank=True)
+    TrangThai = models.CharField(max_length=50, default='Đang hoạt động')
     SoGhe = models.IntegerField(null=True, blank=True)
     BienSoXe = models.CharField(max_length=20, unique=True)
+    HinhAnhXe = models.ImageField(upload_to='xe/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.XeID:
+            last_record = Xe.objects.order_by('XeID').last()
+            if last_record:
+                last_id = last_record.XeID
+                try:
+                    num = int(last_id.split('-')[1]) + 1
+                    self.XeID = f'XE-{num:03d}'
+                except (IndexError, ValueError):
+                    import uuid
+                    self.XeID = 'XE-' + str(uuid.uuid4())[:6]
+            else:
+                self.XeID = 'XE-001'
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.BienSoXe
 # 9. Bảng Tuyến Xe
