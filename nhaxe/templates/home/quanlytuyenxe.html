@@ -43,12 +43,12 @@
             <div class="error-msg" id="nameError"></div>
         </div>
         <div class="add-route-field">
-            <label class="field-label">Điểm đi</label>
-            <input type="text" id="startPoint" class="field-input" placeholder="Ví dụ: Đà Nẵng">
+            <label class="field-label">Điểm đi <span style="color: red;">*</span></label>
+            <input type="text" id="startPoint" class="field-input" placeholder="Ví dụ: Đà Nẵng" required>
         </div>
         <div class="add-route-field">
-            <label class="field-label">Điểm đến</label>
-            <input type="text" id="endPoint" class="field-input" placeholder="Ví dụ: Huế">
+            <label class="field-label">Điểm đến <span style="color: red;">*</span></label>
+            <input type="text" id="endPoint" class="field-input" placeholder="Ví dụ: Huế" required>
         </div>
         <div class="add-route-field">
             <label class="field-label">Khoảng cách (km)</label>
@@ -90,20 +90,28 @@
 <script>
     // Lấy API_BASE_URL từ setting của Django thông qua biến môi trường hoặc gán cứng tạm
     const API_BASE_URL = 'https://api-vexeapp.onrender.com';
+
+    // Lưu trữ toàn bộ dữ liệu tuyến xe tải từ API (không chỉ của nhà xe hiện tại)
+    // Để có thể tính toán số thứ tự (index) lớn nhất dựa trên danh sách đầy đủ.
+    let allRoutes = [];
+
+    // Lưu trữ danh sách tuyến của nhà xe hiện tại để hiển thị
     let currentRoutes = [];
+
     let deletingRouteId = null;
 
-    // Lấy thông tin nhà xe từ session/local storage (Giả sử nhà xe hiện tại là NX00001)
-    const currentNhaXeID = 'NX00001';
+    // Lấy ID Nhà Xe từ server truyền xuống thông qua Django Template (đã được cấu hình ở views.py)
+    const currentNhaXeID = '{{ nha_xe_id }}';
 
     async function fetchRoutes() {
         try {
             const response = await fetch(`${API_BASE_URL}/api/tuyenxe/`);
             if (!response.ok) throw new Error('Không thể kết nối tới API');
 
-            const data = await response.json();
+            allRoutes = await response.json();
+
             // Lọc các tuyến thuộc nhà xe hiện tại
-            currentRoutes = data.filter(r => r.nhaXe === currentNhaXeID);
+            currentRoutes = allRoutes.filter(r => r.nhaXe === currentNhaXeID);
             renderRoutes();
         } catch (error) {
             console.error('Lỗi khi lấy danh sách tuyến:', error);
@@ -143,6 +151,9 @@
                     <div class="detail-label">Điểm trung gian</div>
                     <div class="detail-value">${intermediate}</div>
                 </div>
+            </div>
+            <div class="route-info-footer">
+                 <span class="status-badge active" style="margin-top: 10px; display: inline-block;">${route.tuyenXeID}</span>
             </div>
             <div class="route-actions">
                 <button class="btn-action-edit" onclick="openEditRoute('${route.tuyenXeID}')"><i class="fa-solid fa-pen"></i> Sửa</button>
@@ -187,6 +198,26 @@
         document.getElementById('addRouteView').style.display = 'block';
     }
 
+    // Hàm tạo ID tự động dựa trên số lượng tuyến hiện có
+    // Quét toàn bộ danh sách, lấy phần số từ 'TXxxxx', tìm số lớn nhất rồi cộng 1
+    function generateTuyenXeID() {
+        let maxNumber = 0;
+
+        allRoutes.forEach(route => {
+            if(route.tuyenXeID && route.tuyenXeID.startsWith('TX')) {
+                // Cắt bỏ chữ "TX" và parse phần còn lại sang số nguyên
+                const numberPart = parseInt(route.tuyenXeID.substring(2));
+                if(!isNaN(numberPart) && numberPart > maxNumber) {
+                    maxNumber = numberPart;
+                }
+            }
+        });
+
+        const nextNumber = maxNumber + 1;
+        // Format số thành chuỗi 4 chữ số, ví dụ 3 thành '0003'
+        return 'TX' + nextNumber.toString().padStart(4, '0');
+    }
+
     async function saveRoute() {
         const id = document.getElementById('tuyenXeID').value;
         const tenTuyen = document.getElementById('routeName').value.trim();
@@ -211,31 +242,44 @@
 
         try {
             if (id) {
-                // Edit (PUT/PATCH)
+                // Sửa tuyến xe (PUT)
+                payload.tuyenXeID = id; // Đảm bảo truyền lên đúng khóa chính
+
                 const response = await fetch(`${API_BASE_URL}/api/tuyenxe/${id}/`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({...payload, tuyenXeID: id})
+                    body: JSON.stringify(payload)
                 });
-                if (!response.ok) throw new Error('Sửa thất bại');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Chi tiết lỗi từ API:", errorData);
+                    throw new Error('Sửa thất bại');
+                }
                 showSuccess('Cập nhật tuyến thành công!');
             } else {
-                // Add (POST)
-                // Note: API should auto-generate tuyenXeID
+                // Thêm mới tuyến xe (POST)
+                payload.tuyenXeID = generateTuyenXeID();
+
                 const response = await fetch(`${API_BASE_URL}/api/tuyenxe/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if (!response.ok) throw new Error('Thêm thất bại');
-                showSuccess('Thêm tuyến mới thành công!');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Chi tiết lỗi từ API:", errorData);
+                    throw new Error('Thêm thất bại');
+                }
+                showSuccess('Thêm tuyến mới thành công (Mã: ' + payload.tuyenXeID + ')!');
             }
 
             hideAddRouteView();
             fetchRoutes(); // Tải lại danh sách
         } catch (error) {
-            console.error(error);
-            alert('Có lỗi xảy ra khi lưu dữ liệu!');
+            console.error("Lỗi Exception:", error);
+            alert('Có lỗi xảy ra khi lưu dữ liệu! Hãy kiểm tra Console để biết thêm chi tiết.');
         }
     }
 
