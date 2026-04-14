@@ -56,6 +56,23 @@
         </aside>
 
         <main class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 style="margin: 0; font-size: 1.5rem; color: #333;">Quản lý Loại xe</h1>
+                <div style="display: flex; gap: 10px;">
+                    <a href="{% url 'api_sync' %}?type=loaixe" class="btn btn-primary" style="background: #28a745; border: none; padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-sync"></i> Đồng bộ từ API
+                    </a>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
             <div class="nx-card-grid" id="main-vehicle-grid">
                 <!-- renderVehicles() -->
             </div>

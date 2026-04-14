@@ -125,7 +125,25 @@ def thong_tin_nha_xe(request):
 
             return JsonResponse({'status': 'success', 'message': 'Cập nhật thông tin thành công!'})
 
-    return render(request, 'home/thong_tin_nha_xe.html', {'nha_xe': nha_xe})
+def api_sync(request):
+    from .sync_manager import SyncManager
+    from django.contrib import messages
+    
+    model_type = request.GET.get('type', 'all')
+    token = request.session.get('token')
+    sync_mgr = SyncManager(token=token)
+    
+    if model_type == 'loaixe':
+        count, msg = sync_mgr.sync_loaixe()
+    elif model_type == 'xe':
+        count, msg = sync_mgr.sync_xe()
+    else:
+        count, msg = sync_mgr.sync_all()
+        
+    messages.success(request, msg)
+    
+    referrer = request.META.get('HTTP_REFERER', 'nhaxe')
+    return redirect(referrer)
 
 def quanlytuyenxe(request):
     return render(request, 'home/quanlytuyenxe.html')

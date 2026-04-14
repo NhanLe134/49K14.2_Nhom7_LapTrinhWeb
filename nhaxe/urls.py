@@ -44,4 +44,5 @@ urlpatterns = [
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', views.taixe_lotrinh, name='taixe_lotrinh'),
     path('phancongtaixe', views.phancongtaixe, name='phancongtaixe'),
+    path('api-sync/', views.api_sync, name='api_sync'),
 ]
