@@ -8,6 +8,7 @@ urlpatterns = [
     # ==================== TRANG CHUNG ====================
     path('', auth_views.index, name='index'),
     path('dangnhap', auth_views.dangnhap, name='dangnhap'),          # POST → xử lý đăng nhập
+    path('dangnhap/', auth_views.dangnhap_get),                      # GET → redirect về trang chủ
     path('dangxuat', auth_views.dangxuat, name='dangxuat'),          # GET  → đăng xuất
     path('timkiem', views.timkiem, name='timkiem'),
     path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),

@@ -93,17 +93,21 @@ class Xe(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.XeID:
-            last_record = Xe.objects.order_by('XeID').last()
+            # Generate ID in format XE001 (matching API 스타일)
+            last_record = Xe.objects.filter(XeID__startswith='XE').order_by('XeID').last()
             if last_record:
                 last_id = last_record.XeID
-                try:
-                    num = int(last_id.split('-')[1]) + 1
-                    self.XeID = f'XE-{num:03d}'
-                except (IndexError, ValueError):
+                # Try to extract the number from XE001 or XE-001
+                import re
+                match = re.search(r'(\d+)', last_id)
+                if match:
+                    num = int(match.group(1)) + 1
+                    self.XeID = f'XE{num:05d}' # Use 5 digits like the API screenshot XE00001
+                else:
                     import uuid
-                    self.XeID = 'XE-' + str(uuid.uuid4())[:6]
+                    self.XeID = 'XE' + str(uuid.uuid4())[:6]
             else:
-                self.XeID = 'XE-001'
+                self.XeID = 'XE00001'
         super().save(*args, **kwargs)
 
     def __str__(self):

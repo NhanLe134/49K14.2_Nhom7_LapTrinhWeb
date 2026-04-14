@@ -196,7 +196,6 @@ def quan_ly_xe(request):
         else:
             loaixe_obj = get_object_or_404(Loaixe, LoaixeID=loaixe_id)
             
-        xe_id = request.POST.get('xe_id')
         if xe_id: # Sửa
             xe = get_object_or_404(Xe, XeID=xe_id, Nhaxe=nha_xe)
             xe.BienSoXe = bien_so
@@ -206,9 +205,16 @@ def quan_ly_xe(request):
             if hinh_anh:
                 xe.HinhAnhXe = hinh_anh
             xe.save()
-            messages.success(request, "Cập nhật xe thành công.")
+            
+            # Sync to API
+            synced, sync_msg = sync_mgr.push_xe(xe)
+            if synced:
+                messages.success(request, f"Cập nhật xe thành công. {sync_msg}")
+            else:
+                messages.warning(request, f"Đã lưu nội bộ nhưng lỗi đồng bộ API: {sync_msg}")
+                
         else: # Thêm mới
-            Xe.objects.create(
+            xe = Xe.objects.create(
                 Nhaxe=nha_xe,
                 Loaixe=loaixe_obj,
                 BienSoXe=bien_so,
@@ -216,7 +222,13 @@ def quan_ly_xe(request):
                 SoGhe=so_ghe,
                 HinhAnhXe=hinh_anh
             )
-            messages.success(request, "Thêm xe mới thành công.")
+            
+            # Sync to API
+            synced, sync_msg = sync_mgr.push_xe(xe)
+            if synced:
+                messages.success(request, f"Thêm xe mới thành công. {sync_msg}")
+            else:
+                messages.warning(request, f"Đã lưu nội bộ nhưng lỗi đồng bộ API: {sync_msg}")
             
         return redirect('quan_ly_xe')
 

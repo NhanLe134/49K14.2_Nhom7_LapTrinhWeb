@@ -26,17 +26,12 @@ class SyncManager:
         
         count = 0
         for item in data:
-            # Mapping based on screenshot: LOAIXEID, SOCHO, GIAVE, NGAYCAPNHATGIA
-            # Note: Field names might be case-sensitive depending on the API serializer (usually JSON is CamelCase or all lowercase)
-            # Normalizing keys to allow both cases just in case
-            item = {k.upper(): v for k, v in item.items()}
-            
+            # API: LoaixeID, SoCho, GiaVe
             Loaixe.objects.update_or_create(
-                LoaixeID=item.get('LOAIXEID'),
+                LoaixeID=item.get('LoaixeID'),
                 defaults={
-                    'SoCho': item.get('SOCHO', 0),
-                    'GiaVe': Decimal(str(item.get('GIAVE', 0))),
-                    # NgayCapNhatGia handled by auto_now usually, but we can set if needed
+                    'SoCho': item.get('SoCho', 0),
+                    'GiaVe': Decimal(str(item.get('GiaVe', 0))),
                 }
             )
             count += 1
@@ -48,28 +43,62 @@ class SyncManager:
         
         count = 0
         for item in data:
-            item = {k.upper(): v for k, v in item.items()}
-            
-            # Ensure related objects exist or use placeholders
-            nhaxe_id = item.get('NHAXEID')
-            loaixe_id = item.get('LOAIXEID')
+            # API: XeID, TrangThai, SoGhe, BienSoXe, Nhaxe, Loaixe
+            xe_id = item.get('XeID')
+            nhaxe_id = item.get('Nhaxe')
+            loaixe_id = item.get('Loaixe')
             
             if not nhaxe_id or not loaixe_id: continue
             
-            nhaxe_obj, _ = Nhaxe.objects.get_or_create(NhaxeID=nhaxe_id, defaults={'Email': f'{nhaxe_id}@example.com', 'SoDienThoai': '0000000000'})
-            loaixe_obj, _ = Loaixe.objects.get_or_create(LoaixeID=loaixe_id, defaults={'SoCho': 0, 'GiaVe': 0})
+            # Ensure related objects exist
+            nhaxe_obj, _ = Nhaxe.objects.get_or_create(
+                NhaxeID=nhaxe_id, 
+                defaults={'Email': f'{nhaxe_id}@example.com', 'SoDienThoai': '0000000000'}
+            )
+            loaixe_obj, _ = Loaixe.objects.get_or_create(
+                LoaixeID=loaixe_id, 
+                defaults={'SoCho': 0, 'GiaVe': 0}
+            )
             
             Xe.objects.update_or_create(
-                XeID=item.get('XEID'),
+                XeID=xe_id,
                 defaults={
                     'Nhaxe': nhaxe_obj,
                     'Loaixe': loaixe_obj,
-                    'BienSoXe': item.get('BIENSOXE', 'N/A'),
-                    'TrangThai': item.get('TRANGTHAI', 'Đang hoạt động'),
+                    'BienSoXe': item.get('BienSoXe') or 'N/A',
+                    'TrangThai': item.get('TrangThai') or 'Đang hoạt động',
+                    'SoGhe': item.get('SoGhe') or 0,
                 }
             )
             count += 1
         return count, f"Đã đồng bộ {count} xe."
+
+    def push_xe(self, xe_obj):
+        # Push local vehicle to API
+        url = f"{self.base_url}/api/xe/"
+        payload = {
+            'XeID': xe_obj.XeID,
+            'BienSoXe': xe_obj.BienSoXe,
+            'TrangThai': xe_obj.TrangThai,
+            'SoGhe': xe_obj.SoGhe or 0,
+            'Nhaxe': xe_obj.Nhaxe.NhaxeID,
+            'Loaixe': xe_obj.Loaixe.LoaixeID,
+        }
+        try:
+            # We use POST to create or update if the API supports it (usually REST)
+            # If the ID exists, DRF usually expects PUT/PATCH at /{id}/
+            # For simplicity, we try POST first.
+            response = requests.post(url, json=payload, headers=self.headers, timeout=settings.API_TIMEOUT)
+            if response.status_code in [200, 201]:
+                return True, "Đã đồng bộ lên API thành công."
+            elif response.status_code == 400: # Maybe ID already exists, try PUT
+                put_url = f"{url}{xe_obj.XeID}/"
+                response = requests.put(put_url, json=payload, headers=self.headers, timeout=settings.API_TIMEOUT)
+                if response.status_code == 200:
+                    return True, "Đã cập nhật lên API thành công."
+            return False, f"Lỗi API: {response.text[:100]}"
+        except Exception as e:
+            return False, str(e)
 
     def sync_all(self):
         l_count, _ = self.sync_loaixe()
