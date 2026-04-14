@@ -39,6 +39,9 @@ urlpatterns = [
     path('quanly_loaixe', views.quanly_loaixe, name='quanly_loaixe'),
     path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),
+    path('them-tai-xe', taixe_views.them_tai_xe, name='them_tai_xe'),
+    path('sua-tai-xe/<str:pk>/', taixe_views.sua_tai_xe, name='sua_tai_xe'),
+    path('xoa-tai-xe/<str:pk>/', taixe_views.xoa_tai_xe, name='xoa_tai_xe'),
     path('quanly_khachhang', views.quanly_khachhang, name='quanly_khachhang'),
     path('quanlyve', views.quanlyve, name='quanlyve'),
 
@@ -49,4 +52,4 @@ urlpatterns = [
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
     path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
-]
+]
