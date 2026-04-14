@@ -72,6 +72,16 @@
                         class="fa-solid fa-arrow-right-long arrow"></i>
                 </div>
 
+                {% if messages %}
+                <div style="margin: 10px 0;">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" style="padding: 10px; border-radius: 5px; margin-bottom: 5px; background: {% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %}; color: {% if message.tags == 'error' %}#721c24{% else %}#155724{% endif %}; border: 1px solid {% if message.tags == 'error' %}#f5c6cb{% else %}#c3e6cb{% endif %};">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <!-- Driver Grid -->
                 <div class="driver-grid" id="driverGrid">
                     <!-- Drivers will be rendered here by JS -->
@@ -175,10 +185,10 @@
                 item.innerHTML = `
                     <img src="${driver.avatar}" alt="Avatar" class="driver-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=random'">
                     <div class="driver-info">
-                        <div class="driver-name">${driver.name}</div>
+                        <div class="driver-name">${driver.id}</div>
                         <div class="driver-phone">${driver.phone}</div>
                     </div>
-                    <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal(${driver.id})">
+                    <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal('${driver.id}')">
                         <i class="fa-regular fa-trash-can"></i>
                     </div>
                 `;
@@ -264,25 +274,16 @@
         }
 
         function saveEditModal() {
-            const driver = drivers.find(d => d.id === selectedDriverId);
-            if (!driver) return;
-
-            driver.name = document.getElementById('editName').value;
-            driver.phone = document.getElementById('editPhone').value;
-            driver.cccd = document.getElementById('editCCCD').value;
-            driver.license = document.getElementById('editLicense').value;
-            driver.licenseType = document.getElementById('editLicenseType').value;
-            driver.licenseExpiry = document.getElementById('editLicenseExpiry').value;
-            driver.avatar = document.getElementById('editAvatarPreview').src;
-
-            closeEditModal();
-            showDriverDetails(selectedDriverId);
-            showSuccess('Cập nhật thông tin thành công!');
+            const form = document.querySelector('#editModal form');
+            form.action = `/sua-tai-xe/${selectedDriverId}/`;
+            form.submit();
         }
 
         let driverToDelete = null;
         function showDeleteModal(id) {
             driverToDelete = id;
+            const form = document.querySelector('#deleteModal form');
+            form.action = `/xoa-tai-xe/${id}/`;
             document.getElementById('deleteModal').style.display = 'flex';
         }
 
@@ -291,10 +292,9 @@
         }
 
         function confirmDelete() {
-            drivers = drivers.filter(d => String(d.id) !== String(driverToDelete));
-            closeDeleteModal();
-            renderDrivers();
-            showSuccess('Xóa tài khoản thành công!');
+            const form = document.querySelector('#deleteModal form');
+            form.action = `/xoa-tai-xe/${driverToDelete}/`;
+            form.submit();
         }
 
         function showSuccess(msg) {
@@ -313,111 +313,136 @@
 
     <!-- Create Modal -->
     <div id="createModal" class="create-modal-overlay">
-        <div class="create-modal-box">
+        <form method="POST" action="{% url 'them_tai_xe' %}" enctype="multipart/form-data" class="create-modal-box">
+            {% csrf_token %}
             <div class="create-modal-header">
                 <span class="create-modal-title">Tạo tài khoản tài xế</span>
-                <button class="modal-close-icon" onclick="closeCreateModal()">&times;</button>
+                <button type="button" class="modal-close-icon" onclick="closeCreateModal()">&times;</button>
             </div>
             <div class="create-modal-body">
+                <!-- Hàng 1: Tài khoản -->
+                <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tên đăng nhập <span class="required">*</span></label>
+                        <input type="text" name="username" class="form-input editable" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mật khẩu <span class="required">*</span></label>
+                        <input type="password" name="password" class="form-input editable" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Xác nhận mật khẩu <span class="required">*</span></label>
+                        <input type="password" name="confirm_password" class="form-input editable" required>
+                    </div>
+                </div>
+
                 <div class="create-modal-col">
                     <div class="form-group">
                         <label class="form-label">Họ tên tài xế <span class="required">*</span></label>
-                        <input type="text" id="createName" class="form-input editable" placeholder="Nhập họ tên">
+                        <input type="text" name="full_name" class="form-input editable" placeholder="Nhập họ tên" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số điện thoại <span class="required">*</span></label>
-                        <input type="text" id="createPhone" class="form-input editable" placeholder="Nhập số điện thoại">
+                        <input type="text" name="phone" class="form-input editable" placeholder="Nhập số điện thoại" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số CCCD</label>
-                        <input type="text" id="createCCCD" class="form-input editable" placeholder="Nhập số CCCD">
+                        <input type="text" name="cccd" class="form-input editable" placeholder="Nhập số CCCD">
                     </div>
                 </div>
                 <div class="create-modal-col">
                     <div class="form-group">
                         <label class="form-label">Số bằng lái</label>
-                        <input type="text" id="createLicense" class="form-input editable" placeholder="Nhập số bằng lái">
+                        <input type="text" name="license_no" class="form-input editable" placeholder="Nhập số bằng lái">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Loại bằng lái</label>
-                        <select id="createLicenseType" class="form-input editable">
+                        <select name="license_type" class="form-input editable">
                             <option value="B">B</option>
+                            <option value="B1">B1</option>
                             <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
-                            <option value="F">F</option>
+                            <option value="C1">C1</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Ngày hết hạn bằng lái</label>
-                        <input type="date" id="createLicenseExpiry" class="form-input editable">
+                        <input type="date" name="expiry_date" class="form-input editable">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Ảnh đại diện</label>
-                        <img id="createAvatarPreview" class="create-avatar-preview" src="{% static 'img/3.jpg' %}" alt="Preview">
+                        <input type="file" name="hinh_anh" class="form-input">
                     </div>
                 </div>
             </div>
             <div class="create-modal-footer">
-                <button class="btn-create-submit" onclick="submitCreateForm()">Tạo tài khoản</button>
+                <button type="submit" class="btn-create-submit">Tạo tài khoản</button>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Edit Modal -->
     <div id="editModal" class="edit-modal-overlay">
-        <div class="edit-modal-box">
+        <form method="POST" action="" enctype="multipart/form-data" class="edit-modal-box">
+            {% csrf_token %}
             <div class="edit-modal-title">Chỉnh sửa thông tin tài xế</div>
             <div class="edit-modal-body">
                 <div class="edit-modal-left">
                     <img id="editAvatarPreview" class="edit-avatar" src="" alt="Avatar">
-                    <button class="btn-change-photo">Đổi ảnh</button>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <input type="file" name="hinh_anh" style="font-size: 12px; width: 100%;">
+                    </div>
                 </div>
                 <div class="edit-modal-right">
                     <div class="form-group">
                         <label class="form-label">Họ tên tài xế</label>
-                        <input type="text" id="editName" class="form-input editable">
+                        <input type="text" id="editName" name="full_name" class="form-input editable">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số điện thoại</label>
-                        <input type="text" id="editPhone" class="form-input editable">
+                        <input type="text" id="editPhone" name="phone" class="form-input editable">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số CCCD</label>
-                        <input type="text" id="editCCCD" class="form-input editable">
+                        <input type="text" id="editCCCD" name="cccd" class="form-input editable">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số bằng lái</label>
-                        <input type="text" id="editLicense" class="form-input editable">
+                        <input type="text" id="editLicense" name="license_no" class="form-input editable">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Loại bằng lái</label>
-                        <input type="text" id="editLicenseType" class="form-input editable">
+                        <select id="editLicenseType" name="license_type" class="form-input editable">
+                            <option value="B">B</option>
+                            <option value="B1">B1</option>
+                            <option value="C">C</option>
+                            <option value="C1">C1</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Ngày hết hạn</label>
-                        <input type="text" id="editLicenseExpiry" class="form-input editable">
+                        <label class="form-label">Ngày hết hạn (YYYY-MM-DD)</label>
+                        <input type="text" id="editLicenseExpiry" name="expiry_date" class="form-input editable">
                     </div>
                 </div>
             </div>
             <div class="edit-modal-actions">
-                <button class="btn-close" onclick="closeEditModal()">Hủy</button>
-                <button class="btn-save-modal" onclick="saveEditModal()">Lưu thay đổi</button>
+                <button type="button" class="btn-close" onclick="closeEditModal()">Hủy</button>
+                <button type="submit" class="btn-save-modal">Lưu thay đổi</button>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Delete Modal -->
     <div id="deleteModal" class="delete-modal-overlay">
-        <div class="delete-modal-box">
+        <form method="POST" action="" class="delete-modal-box">
+            {% csrf_token %}
             <i class="fa-solid fa-circle-exclamation delete-modal-icon"></i>
             <div class="delete-modal-title">Xác nhận xóa</div>
             <div class="delete-modal-msg">Bạn có chắc chắn muốn xóa tài khoản tài xế này khỏi hệ thống?</div>
             <div class="delete-modal-actions">
-                <button class="btn-delete-cancel" onclick="closeDeleteModal()">Hủy</button>
-                <button class="btn-delete-confirm" onclick="confirmDelete()">Xác nhận xóa</button>
+                <button type="button" class="btn-delete-cancel" onclick="closeDeleteModal()">Hủy</button>
+                <button type="submit" class="btn-delete-confirm">Xác nhận xóa</button>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Success Popup -->

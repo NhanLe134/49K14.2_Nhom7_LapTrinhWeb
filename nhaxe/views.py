@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Xe, Loaixe, Nhaxe
+from django.http import JsonResponse
+import requests
+from django.conf import settings
+import random
 
 # Các hàm đăng nhập / đăng xuất đã được chuyển sang auth_views.py
 
@@ -61,22 +64,28 @@ def nhaxe(request):
     return render(request, 'home/nhaxe.html')
 
 def thong_tin_nha_xe(request):
-    import random
-    from django.http import JsonResponse
-    from .models import Nhaxe
-
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('dangnhap')
 
-    nha_xe = Nhaxe.objects.filter(NhaxeID=user_id).first()
-    if not nha_xe:
-        # Fallback if profile doesn't exist yet (already handled by previous fix but safe here)
-        nha_xe = Nhaxe.objects.create(
-            NhaxeID=user_id,
-            Email=request.session.get('username', 'user') + "@example.com",
-            SoDienThoai="0000000000"
-        )
+    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+    api_url = f"{settings.API_BASE_URL}/api/nhaxe/{user_id}/"
+    
+    nha_xe_data = {}
+    try:
+        response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
+        if response.status_code == 200:
+            nha_xe_data = response.json()
+        else:
+            # Nếu chưa có profile trên API, dùng dữ liệu session làm mặc định
+            nha_xe_data = {
+                'NhaxeID': user_id,
+                'Email': request.session.get('username', 'user') + "@example.com",
+                'SoDienThoai': 'Chưa có',
+                'DiaChiTruSo': 'Chưa cập nhật'
+            }
+    except Exception:
+        messages.error(request, 'Không thể kết nối tới máy chủ API để lấy thông tin.')
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -84,79 +93,105 @@ def thong_tin_nha_xe(request):
         if action == 'send_otp':
             otp = str(random.randint(100000, 999999))
             request.session['update_otp'] = otp
-            # Simulate sending OTP
             messages.info(request, f"[SIMULATION] Mã xác thực của bạn là: {otp}")
-            print(f"DEBUG: OTP for {user_id}: {otp}")
             return JsonResponse({'status': 'sent'})
 
         elif action == 'save':
-            otp_verified = True
             phone = request.POST.get('phone')
             password = request.POST.get('password')
-            confirm_password = request.POST.get('confirm_password')
-
-            # Check if verification is needed
+            
+            # Validation OTP
             needs_otp = False
-            if phone and phone != nha_xe.SoDienThoai:
+            if phone and phone != nha_xe_data.get('SoDienThoai'):
                 needs_otp = True
-            if password and password != "*************": # Placeholder from UI
-                needs_otp = True
-
+            
             if needs_otp:
                 user_otp = request.POST.get('otp')
                 if user_otp != request.session.get('update_otp'):
                     return JsonResponse({'status': 'error', 'message': 'Mã xác thực không chính xác.'})
             
-            # Save data
-            nha_xe.DiaChiTruSo = request.POST.get('address')
-            if phone:
-                nha_xe.SoDienThoai = phone
+            # Chuẩn bị payload gửi lên API
+            payload = {
+                'NhaxeID': user_id,
+                'DiaChiTruSo': request.POST.get('address'),
+                'SoDienThoai': phone if phone else nha_xe_data.get('SoDienThoai'),
+            }
             
-            # Image upload
-            if 'anh_dai_dien' in request.FILES:
-                nha_xe.AnhDaiDien = request.FILES['anh_dai_dien']
-            
-            nha_xe.save()
-            
-            # Handle password change (In a real app, this would update the auth service)
-            if password and password != "*************":
-                # messages.success(request, "Mật khẩu đã được đổi thành công.")
-                pass
+            try:
+                # Gửi yêu cầu cập nhật (PUT hoặc POST tùy API)
+                res_update = requests.put(api_url, json=payload, headers=headers, timeout=settings.API_TIMEOUT)
+                if res_update.status_code in [200, 204]:
+                    return JsonResponse({'status': 'success', 'message': 'Cập nhật thông tin thành công!'})
+                else:
+                    return JsonResponse({'status': 'error', 'message': f'Lỗi API ({res_update.status_code}).'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': f'Lỗi kết nối: {str(e)}'})
 
-            return JsonResponse({'status': 'success', 'message': 'Cập nhật thông tin thành công!'})
-
-    return render(request, 'home/thong_tin_nha_xe.html', {'nha_xe': nha_xe})
+    return render(request, 'home/thong_tin_nha_xe.html', {'nha_xe': nha_xe_data})
 
 def quanlytuyenxe(request):
     return render(request, 'home/quanlytuyenxe.html')
 
 def quanly_loaixe(request):
-    return render(request, 'home/quanly_loaixe.html')
+    nha_xe_id = request.session.get('user_id')
+    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+    loaixe_list = []
+    try:
+        res = requests.get(f"{settings.API_BASE_URL}/api/loaixe/", headers=headers, timeout=settings.API_TIMEOUT)
+        if res.status_code == 200:
+            raw_data = res.json()
+            for item in raw_data:
+                loaixe_list.append({
+                    'LoaiXeId': item.get('LoaixeID'),
+                    'TenLoaiXe': f"Loại xe {item.get('SoCho')} chỗ",
+                    'SoGhe': item.get('SoCho'),
+                    'GiaVe': item.get('GiaVe'),
+                    'NgayCapNhat': item.get('NgayCapNhatGia')
+                })
+    except Exception:
+        messages.error(request, "Lỗi kết nối API lấy danh sách loại xe.")
+        
+    return render(request, 'home/quanly_loaixe.html', {'loaixe_list': loaixe_list})
+
+def cap_nhat_gia_ve(request, pk):
+    if request.method == 'POST':
+        headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+        new_price = request.POST.get('gia_ve')
+        payload = {"GiaVe": new_price}
+        try:
+            res = requests.put(f"{settings.API_BASE_URL}/api/loaixe/{pk}/", json=payload, headers=headers, timeout=settings.API_TIMEOUT)
+            if res.status_code in [200, 204]:
+                messages.success(request, "Cập nhật giá vé thành công.")
+            else:
+                messages.error(request, "Cập nhật giá vé thất bại trên server.")
+        except Exception:
+            messages.error(request, "Lỗi kết nối API.")
+            
+    return redirect('quanly_loaixe')
+
 
 def quan_ly_xe(request):
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
         return redirect('dangnhap')
     
-    # Check if Nhaxe exists locally, create if missing (since we auth via external API)
-    nha_xe = Nhaxe.objects.filter(NhaxeID=nha_xe_id).first()
-    if not nha_xe:
-        username = request.session.get('username', 'User')
-        # Create a placeholder record to prevent 404. 
-        # In a real app, this should probably redirect to a profile completion page.
-        nha_xe = Nhaxe.objects.create(
-            NhaxeID=nha_xe_id,
-            Email=f"{username.lower().replace(' ', '')}_{nha_xe_id.lower()}@example.com",
-            SoDienThoai=f"0{abs(hash(nha_xe_id)) % 1000000000:09d}"
-        )
+    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+    api_url_xe = f"{settings.API_BASE_URL}/api/xe/"
+    api_url_loaixe = f"{settings.API_BASE_URL}/api/loaixe/"
     
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == 'delete':
             xe_id = request.POST.get('xe_id')
-            Xe.objects.filter(XeID=xe_id, Nhaxe=nha_xe).delete()
-            messages.success(request, "Đã xóa xe thành công.")
+            try:
+                res = requests.delete(f"{api_url_xe}{xe_id}/", headers=headers, timeout=settings.API_TIMEOUT)
+                if res.status_code in [200, 204]:
+                    messages.success(request, "Đã xóa xe thành công.")
+                else:
+                    messages.error(request, f"Lỗi xóa xe (API: {res.status_code}).")
+            except Exception as e:
+                messages.error(request, f"Lỗi kết nối: {str(e)}")
             return redirect('quan_ly_xe')
 
         # Xử lý thêm/sửa xe
@@ -164,75 +199,106 @@ def quan_ly_xe(request):
         trang_thai = request.POST.get('trang_thai', 'Đang hoạt động')
         so_ghe = request.POST.get('so_ghe')
         loaixe_id = request.POST.get('loaixe_id')
-        hinh_anh = request.FILES.get('hinh_anh')
         xe_id = request.POST.get('xe_id')
 
-        # Kiểm tra trùng biển số (tránh lỗi IntegrityError)
-        if Xe.objects.filter(BienSoXe=bien_so).exclude(XeID=xe_id).exists():
-            messages.error(request, f"Biển số xe '{bien_so}' đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.")
-            return redirect('quan_ly_xe')
-        
         # Nếu chọn "Thêm loại mới"
         if loaixe_id == 'new':
             ten_loai = request.POST.get('new_loai_ten')
             new_so_cho = request.POST.get('new_loai_socho')
             new_gia = request.POST.get('new_loai_gia')
             
-            # Tạo Loaixe mới
-            new_loai = Loaixe.objects.create(
-                SoCho=new_so_cho,
-                GiaVe=new_gia
-            )
-            # Bạn có thể muốn lưu TenLoaiXe vào CHITIETLOAIXE hoặc một cách khác
-            # Ở đây tôi sẽ dùng LoaixeID vừa tạo
-            loaixe_obj = new_loai
-        else:
-            loaixe_obj = get_object_or_404(Loaixe, LoaixeID=loaixe_id)
-            
-        xe_id = request.POST.get('xe_id')
-        if xe_id: # Sửa
-            xe = get_object_or_404(Xe, XeID=xe_id, Nhaxe=nha_xe)
-            xe.BienSoXe = bien_so
-            xe.TrangThai = trang_thai
-            xe.SoGhe = so_ghe
-            xe.Loaixe = loaixe_obj
-            if hinh_anh:
-                xe.HinhAnhXe = hinh_anh
-            xe.save()
-            messages.success(request, "Cập nhật xe thành công.")
-        else: # Thêm mới
-            Xe.objects.create(
-                Nhaxe=nha_xe,
-                Loaixe=loaixe_obj,
-                BienSoXe=bien_so,
-                TrangThai=trang_thai,
-                SoGhe=so_ghe,
-                HinhAnhXe=hinh_anh
-            )
-            messages.success(request, "Thêm xe mới thành công.")
+            # Tạo Loaixe mới via API
+            try:
+                loai_payload = {"SoCho": new_so_cho, "GiaVe": new_gia}
+                res_loai = requests.post(api_url_loaixe, json=loai_payload, headers=headers, timeout=settings.API_TIMEOUT)
+                if res_loai.status_code in [200, 201]:
+                    loaixe_id = res_loai.json().get('LoaixeID')
+                else:
+                    messages.error(request, "Lỗi tạo loại xe mới.")
+                    return redirect('quan_ly_xe')
+            except Exception:
+                messages.error(request, "Lỗi kết nối tạo loại xe.")
+                return redirect('quan_ly_xe')
+
+        # Payload cho xe
+        xe_payload = {
+            "nhaXeId": nha_xe_id,
+            "loaixeId": loaixe_id,
+            "bienSoXe": bien_so,
+            "trangThai": trang_thai,
+            "soGhe": so_ghe
+        }
+        
+        try:
+            if xe_id: # Sửa
+                res = requests.put(f"{api_url_xe}{xe_id}/", json=xe_payload, headers=headers, timeout=settings.API_TIMEOUT)
+                msg = "Cập nhật xe thành công."
+            else: # Thêm mới
+                res = requests.post(api_url_xe, json=xe_payload, headers=headers, timeout=settings.API_TIMEOUT)
+                msg = "Thêm xe mới thành công."
+                
+            if res.status_code in [200, 201, 204]:
+                messages.success(request, msg)
+            else:
+                messages.error(request, f"Thao tác thất bại (API: {res.status_code}).")
+        except Exception as e:
+            messages.error(request, f"Lỗi kết nối: {str(e)}")
             
         return redirect('quan_ly_xe')
 
     # GET request
-    vehicles = Xe.objects.filter(Nhaxe=nha_xe).select_related('Loaixe')
-    
-    # Lấy danh sách loại xe kèm tên hãng (nếu có) từ bảng CHITIETLOAIXE
-    from .models import CHITIETLOAIXE
-    vehicle_types = CHITIETLOAIXE.objects.filter(Nhaxe=nha_xe).select_related('Loaixe')
+    vehicles = []
+    vehicle_types = []
+    try:
+        # Lấy danh sách xe và lọc
+        res_xe = requests.get(api_url_xe, headers=headers, timeout=settings.API_TIMEOUT)
+        if res_xe.status_code == 200:
+            all_xe = res_xe.json()
+            # Lọc xe thuộc nhà xe này (giả định API trả về nhaXeId hoặc nhaXe object)
+            vehicles = [x for x in all_xe if str(x.get('nhaXeId') or x.get('nhaXe')).strip() == str(nha_xe_id)]
+            
+        # Lấy danh sách loại xe
+        res_loai = requests.get(api_url_loaixe, headers=headers, timeout=settings.API_TIMEOUT)
+        if res_loai.status_code == 200:
+            vehicle_types = res_loai.json()
+    except Exception:
+        messages.error(request, "Lỗi kết nối API Server.")
     
     return render(request, 'home/quan_ly_xe.html', {
         'vehicles': vehicles,
         'vehicle_types': vehicle_types
     })
 
+
 def quanlytaixe(request):
     return render(request, 'home/quanlytaixe.html')
 
 def quanly_khachhang(request):
-    return render(request, 'home/quanly_khachhang.html')
+    user_id = request.session.get('user_id')
+    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+    khach_hang_data = {}
+    try:
+        res = requests.get(f"{settings.API_BASE_URL}/api/user-auth/{user_id}/", headers=headers, timeout=settings.API_TIMEOUT)
+        if res.status_code == 200:
+            khach_hang_data = res.json()
+    except Exception:
+        pass
+    return render(request, 'home/quanly_khachhang.html', {'khach_hang': khach_hang_data})
 
 def quanlyve(request):
-    return render(request, 'home/quanlyve.html')
+    user_id = request.session.get('user_id')
+    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+    ve_list = []
+    try:
+        res = requests.get(f"{settings.API_BASE_URL}/api/ve/", headers=headers, timeout=settings.API_TIMEOUT)
+        if res.status_code == 200:
+            all_ve = res.json()
+            # Lọc vé của khách hàng này
+            ve_list = [v for v in all_ve if str(v.get('KhachHangID') or v.get('khachHangId')).strip() == str(user_id)]
+    except Exception:
+        messages.error(request, "Lỗi kết nối API lấy danh sách vé.")
+        
+    return render(request, 'home/quanlyve.html', {'ve_list': ve_list})
 
 # ==================== TÀI XẾ (tx) ====================
 
