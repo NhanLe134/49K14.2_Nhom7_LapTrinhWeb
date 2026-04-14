@@ -119,34 +119,40 @@
             <!-- VIEW 2: ADD/EDIT ROUTE -->
             <div id="addRouteView" class="add-route-container" style="display: none;">
                 <div class="add-route-title" id="formTitle">Thêm tuyến mới</div>
-                <form class="add-route-form" id="routeForm" method="POST" action="{% url 'them_tuyen_xe' %}" onsubmit="validateAndSubmitAddRoute(event)">
+                <form class="add-route-form" id="routeForm" method="POST" action="{% url 'them_tuyen_xe' %}"
+                    onsubmit="validateAndSubmitAddRoute(event)">
                     {% csrf_token %}
                     <div class="add-route-field">
                         <label class="field-label">Tên tuyến</label>
                         <input type="text" name="tenTuyen" id="routeName" class="field-input"
                             placeholder="Ví dụ: Đà Nẵng - Huế">
-                        <div class="error-msg" id="nameError" style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+                        <div class="error-msg" id="nameError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
+                        </div>
                     </div>
                     <div class="add-route-field">
                         <label class="field-label">Điểm đi</label>
                         <input type="text" name="diemDi" id="startPoint" class="field-input"
                             placeholder="Ví dụ: Đà Nẵng">
-                        <div class="error-msg" id="startError" style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+                        <div class="error-msg" id="startError"
+                            style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
                     </div>
                     <div class="add-route-field">
                         <label class="field-label">Điểm đến</label>
                         <input type="text" name="diemDen" id="endPoint" class="field-input" placeholder="Ví dụ: Huế">
-                        <div class="error-msg" id="endError" style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+                        <div class="error-msg" id="endError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
+                        </div>
                     </div>
                     <div class="add-route-field">
                         <label class="field-label">Khoảng cách (km)</label>
                         <input type="number" step="0.1" name="quangDuong" id="distance" class="field-input"
                             placeholder="100">
-                        <div class="error-msg" id="distError" style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+                        <div class="error-msg" id="distError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
+                        </div>
                     </div>
                     <div class="add-route-field">
                         <label class="field-label">Điểm trung gian</label>
-                        <input type="text" name="diemTrungGian" id="diemTrungGian" class="field-input" placeholder="Ví dụ: Lăng Cô">
+                        <input type="text" name="diemTrungGian" id="diemTrungGian" class="field-input"
+                            placeholder="Ví dụ: Lăng Cô">
                     </div>
                     <div class="add-route-buttons">
                         <button type="button" class="btn-cancel-add-route" onclick="hideAddRouteView()">Hủy</button>
@@ -172,7 +178,7 @@
         </div>
     </div>
 
-    <!-- Cấu hình Popup Global Dùng Chung Toàn Dự Án -->
+    <!-- Cấu hình Popup Global Dùng Chung-->
     <div id="globalPopup" class="global-popup-overlay">
         <div class="global-popup-box">
             <i id="globalPopupIcon" class="global-popup-icon"></i>
@@ -302,10 +308,10 @@
             const popup = document.getElementById('globalPopup');
             const icon = document.getElementById('globalPopupIcon');
             const message = document.getElementById('globalPopupMessage');
-            
+
             icon.className = 'global-popup-icon';
             message.className = 'global-popup-message';
-            
+
             if (type === 'success') {
                 icon.classList.add('fa-regular', 'fa-circle-check', 'success');
                 message.classList.add('success');
@@ -313,7 +319,7 @@
                 icon.classList.add('fa-solid', 'fa-xmark', 'error');
                 message.classList.add('error');
             }
-            
+
             message.textContent = msg;
             popup.style.display = 'flex';
             setTimeout(() => {
@@ -333,7 +339,7 @@
                             showGlobalPopup('error', msg.text);
                         }
                     });
-                } catch(e) {}
+                } catch (e) { }
             }
         });
     </script>

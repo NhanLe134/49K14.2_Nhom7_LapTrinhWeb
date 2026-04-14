@@ -171,6 +171,7 @@ def cap_nhat_gia_ve(request, pk):
 
 
 def quan_ly_xe(request):
+    from .sync_manager import SyncManager
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
         return redirect('dangnhap')

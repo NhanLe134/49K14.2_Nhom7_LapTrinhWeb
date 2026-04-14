@@ -9,8 +9,8 @@ urlpatterns = [
 
     # ==================== TRANG CHUNG ====================
     path('', auth_views.index, name='index'),
-    path('dangnhap', auth_views.dangnhap, name='dangnhap'),          # POST → xử lý đăng nhập
-    path('dangxuat', auth_views.dangxuat, name='dangxuat'),          # GET  → đăng xuất
+    path('dangnhap', auth_views.dangnhap, name='dangnhap'),
+    path('dangxuat', auth_views.dangxuat, name='dangxuat'),
     path('timkiem', views.timkiem, name='timkiem'),
     path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
@@ -40,6 +40,9 @@ urlpatterns = [
     path('cap-nhat-gia/<str:pk>/', views.cap_nhat_gia_ve, name='cap_nhat_gia_ve'),
     path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),
+    path('them-tai-xe', taixe_views.them_tai_xe, name='them_tai_xe'),
+    path('sua-tai-xe/<str:pk>/', taixe_views.sua_tai_xe, name='sua_tai_xe'),
+    path('xoa-tai-xe/<str:pk>/', taixe_views.xoa_tai_xe, name='xoa_tai_xe'),
     path('quanly_khachhang', views.quanly_khachhang, name='quanly_khachhang'),
     path('quanlyve', views.quanlyve, name='quanlyve'),
 
@@ -50,9 +53,13 @@ urlpatterns = [
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
     path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
+<<<<<<< HEAD
 
     # Thao tác quản lý tài xế
     path('them-tai-xe', taixe_views.them_tai_xe, name='them_tai_xe'),
     path('sua-tai-xe/<str:pk>/', taixe_views.sua_tai_xe, name='sua_tai_xe'),
     path('xoa-tai-xe/<str:pk>/', taixe_views.xoa_tai_xe, name='xoa_tai_xe'),
 ]
+=======
+]
+>>>>>>> d0a037b929a299b04f8e9ed9d394f57564a39868
