@@ -126,7 +126,65 @@ def thong_tin_nha_xe(request):
             return JsonResponse({'status': 'success', 'message': 'Cập nhật thông tin thành công!'})
 
 def quanlytuyenxe(request):
-    return render(request, 'home/quanlytuyenxe.html')
+    from .sync_manager import SyncManager
+    from .models import TuyenXe, Nhaxe
+    from django.contrib import messages
+    
+    nha_xe_id = request.session.get('user_id')
+    if not nha_xe_id:
+        return redirect('dangnhap')
+        
+    nha_xe = Nhaxe.objects.filter(NhaxeID=nha_xe_id).first()
+    sync_mgr = SyncManager(token=request.session.get('token'))
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'delete':
+            t_id = request.POST.get('tuyen_id')
+            TuyenXe.objects.filter(tuyenXeID=t_id, nhaXe=nha_xe).delete()
+            # Note: Add push_delete if needed, but for now we focus on Add/Sync
+            messages.success(request, "Xóa tuyến xe thành công.")
+            return redirect('quanlytuyenxe')
+            
+        # Add/Edit
+        t_id = request.POST.get('tuyen_id')
+        ten_tuyen = request.POST.get('ten_tuyen')
+        diem_di = request.POST.get('diem_di')
+        diem_den = request.POST.get('diem_den')
+        quang_duong = request.POST.get('quang_duong')
+        diem_tg = request.POST.get('diem_tg')
+        
+        if t_id: # Edit
+            tuyen = get_object_or_404(TuyenXe, tuyenXeID=t_id, nhaXe=nha_xe)
+            tuyen.tenTuyen = ten_tuyen
+            tuyen.diemDi = diem_di
+            tuyen.diemDen = diem_den
+            tuyen.QuangDuong = quang_duong
+            tuyen.DiemTrungGian = diem_tg
+            tuyen.save()
+            synced, msg = sync_mgr.push_tuyenxe(tuyen)
+            messages.success(request, f"Cập nhật tuyến xe thành công. {msg}")
+        else: # Add
+            tuyen = TuyenXe.objects.create(
+                nhaXe=nha_xe,
+                tenTuyen=ten_tuyen,
+                diemDi=diem_di,
+                diemDen=diem_den,
+                QuangDuong=quang_duong,
+                DiemTrungGian=diem_tg
+            )
+            synced, msg = sync_mgr.push_tuyenxe(tuyen)
+            messages.success(request, f"Thêm tuyến xe thành công. {msg}")
+            
+        return redirect('quanlytuyenxe')
+
+    # GET
+    # Sync from API
+    sync_mgr.sync_tuyenxe()
+    
+    tuyen_xes = TuyenXe.objects.filter(nhaXe=nha_xe)
+    return render(request, 'home/quanlytuyenxe.html', {'tuyen_xes': tuyen_xes})
 
 def quanly_loaixe(request):
     from .sync_manager import SyncManager

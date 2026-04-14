@@ -100,7 +100,59 @@ class SyncManager:
         except Exception as e:
             return False, str(e)
 
+    def sync_tuyenxe(self):
+        data = self.fetch_data('tuyenxe')
+        if not data: return 0, "Không thể lấy dữ liệu Tuyến xe từ API."
+        
+        count = 0
+        for item in data:
+            # API: tuyenXeID, tenTuyen, diemDi, diemDen, QuangDuong, DiemTrungGian, nhaXe
+            t_id = item.get('tuyenXeID')
+            nhaxe_id = item.get('nhaXe')
+            if not t_id or not nhaxe_id: continue
+            
+            nhaxe_obj, _ = Nhaxe.objects.get_or_create(NhaxeID=nhaxe_id, defaults={'Email': f'{nhaxe_id}@example.com', 'SoDienThoai': '0000000000'})
+            
+            TuyenXe.objects.update_or_create(
+                tuyenXeID=t_id,
+                defaults={
+                    'nhaXe': nhaxe_obj,
+                    'tenTuyen': item.get('tenTuyen') or f"{item.get('diemDi')} - {item.get('diemDen')}",
+                    'diemDi': item.get('diemDi') or 'Đà Nẵng',
+                    'diemDen': item.get('diemDen') or 'Huế',
+                    'QuangDuong': item.get('QuangDuong'),
+                    'DiemTrungGian': item.get('DiemTrungGian'),
+                }
+            )
+            count += 1
+        return count, f"Đã đồng bộ {count} tuyến xe."
+
+    def push_tuyenxe(self, tx_obj):
+        url = f"{self.base_url}/api/tuyenxe/"
+        payload = {
+            'tuyenXeID': tx_obj.tuyenXeID,
+            'tenTuyen': tx_obj.tenTuyen,
+            'diemDi': tx_obj.diemDi,
+            'diemDen': tx_obj.diemDen,
+            'QuangDuong': tx_obj.QuangDuong,
+            'DiemTrungGian': tx_obj.DiemTrungGian,
+            'nhaXe': tx_obj.nhaXe.NhaxeID,
+        }
+        try:
+            response = requests.post(url, json=payload, headers=self.headers, timeout=settings.API_TIMEOUT)
+            if response.status_code in [200, 201]:
+                return True, "Đã đồng bộ Tuyến xe lên API thành công."
+            elif response.status_code == 400:
+                put_url = f"{url}{tx_obj.tuyenXeID}/"
+                response = requests.put(put_url, json=payload, headers=self.headers, timeout=settings.API_TIMEOUT)
+                if response.status_code == 200:
+                    return True, "Đã cập nhật Tuyến xe lên API thành công."
+            return False, f"Lỗi API Tuyến xe: {response.text[:100]}"
+        except Exception as e:
+            return False, str(e)
+
     def sync_all(self):
         l_count, _ = self.sync_loaixe()
         x_count, _ = self.sync_xe()
-        return l_count + x_count, f"Tổng cộng đã đồng bộ {l_count} loại xe và {x_count} xe."
+        t_count, _ = self.sync_tuyenxe()
+        return l_count + x_count + t_count, f"Đã đồng bộ {l_count} loại xe, {x_count} xe và {t_count} tuyến xe."

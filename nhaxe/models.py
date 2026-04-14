@@ -114,13 +114,32 @@ class Xe(models.Model):
         return self.BienSoXe
 # 9. Bảng Tuyến Xe
 class TuyenXe(models.Model):
-    tuyenXeID = models.CharField(max_length=10, primary_key=True)
+    tuyenXeID = models.CharField(max_length=10, primary_key=True, blank=True)
     nhaXe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
     tenTuyen = models.CharField(max_length=500, null=True, blank=True)
     diemDi = models.CharField(max_length=500, default='Đà Nẵng')
     diemDen = models.CharField(max_length=500, default='Huế')
     QuangDuong = models.CharField(max_length=100, null=True, blank=True)
     DiemTrungGian = models.CharField(max_length=500, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.tuyenXeID:
+            # Generate ID in format TX00001
+            last_record = TuyenXe.objects.filter(tuyenXeID__startswith='TX').order_by('tuyenXeID').last()
+            if last_record:
+                last_id = last_record.tuyenXeID
+                import re
+                match = re.search(r'(\d+)', last_id)
+                if match:
+                    num = int(match.group(1)) + 1
+                    self.tuyenXeID = f'TX{num:05d}'
+                else:
+                    import uuid
+                    self.tuyenXeID = 'TX' + str(uuid.uuid4())[:6]
+            else:
+                self.tuyenXeID = 'TX00001'
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.tenTuyen or self.tuyenXeID
 # 10. Bảng Chuyến Xe
