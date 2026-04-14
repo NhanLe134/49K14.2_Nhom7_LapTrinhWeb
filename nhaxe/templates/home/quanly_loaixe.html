@@ -56,8 +56,53 @@
         </aside>
 
         <main class="main-content">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <div class="nx-card-grid" id="main-vehicle-grid">
-                <!-- renderVehicles() -->
+                {% if loaixe_list %}
+                    {% for v in loaixe_list %}
+                    <div class="nx-card">
+                        <div class="nx-card-header">
+                            <div class="nx-card-icon">
+                                {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}C{% else %}X{% endif %}
+                            </div>
+                            <div class="nx-card-title">
+                                <h3>{{ v.TenLoaiXe }}</h3>
+                                <span>{{ v.SoGhe }} chỗ</span>
+                            </div>
+                        </div>
+                        <div class="nx-card-row">
+                            <span class="nx-label">💲 Giá vé</span>
+                            {% if v.GiaVe %}
+                                <span class="nx-value">{{ v.GiaVe|floatformat:0 }} đ</span>
+                            {% else %}
+                                <span class="nx-badge-warning">Chưa thiết lập</span>
+                            {% endif %}
+                        </div>
+                        <div class="nx-card-row">
+                            <span class="nx-label">📅 Cập nhật cuối</span>
+                            {% if v.NgayCapNhat %}
+                                <span class="nx-value">{{ v.NgayCapNhat }}</span>
+                            {% else %}
+                                <span class="nx-value">Chưa cập nhật</span>
+                            {% endif %}
+                        </div>
+                        <button class="nx-btn-update" onclick="openUpdateModal('{{ v.LoaiXeId }}', '{{ v.TenLoaiXe }}', '{{ v.SoGhe }}', '{% if v.GiaVe %}{{ v.GiaVe|floatformat:0 }}{% else %}0{% endif %}')">
+                            💲 Cập nhật giá vé
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Không có dữ liệu loại xe.</p>
+                {% endif %}
             </div>
         </main>
     </div>
@@ -75,40 +120,43 @@
                     <div class="nx-modal-icon-dollar">💲</div>
                     <div>
                         <h2>Cập nhật giá vé</h2>
-                        <span id="modal-vehicle-info">Loại xe A (4 chỗ)</span>
+                        <span id="modal-vehicle-info"></span>
                     </div>
                 </div>
                 <button class="nx-btn-close" id="btn-close-update">&times;</button>
             </div>
 
-            <div class="nx-modal-body">
-                <div class="nx-input-group readonly-group">
-                    <label>Giá hiện tại</label>
-                    <input type="text" id="modal-current-price" value="150.000 đ" readonly disabled>
-                </div>
-
-                <div class="nx-input-group active-group">
-                    <label>Giá vé mới <span class="required-star">*</span></label>
-                    <div class="nx-input-wrapper">
-                        <input type="number" id="modal-new-price" placeholder="Nhập giá mới">
-                        <span class="nx-currency">VND</span>
+            <form method="POST" action="" id="update-price-form">
+                {% csrf_token %}
+                <div class="nx-modal-body">
+                    <div class="nx-input-group readonly-group">
+                        <label>Giá hiện tại</label>
+                        <input type="text" id="modal-current-price" value="" readonly disabled>
                     </div>
-                    <div class="nx-error-msg" id="price-error">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="15" y1="9" x2="9" y2="15"></line>
-                            <line x1="9" y1="9" x2="15" y2="15"></line>
-                        </svg>
-                        <span id="price-error-text">Giá vé phải lớn hơn 0</span>
+
+                    <div class="nx-input-group active-group">
+                        <label>Giá vé mới <span class="required-star">*</span></label>
+                        <div class="nx-input-wrapper">
+                            <input type="number" name="gia_ve" id="modal-new-price" placeholder="Nhập giá mới" required>
+                            <span class="nx-currency">VND</span>
+                        </div>
+                        <div class="nx-error-msg" id="price-error">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                            <span id="price-error-text">Giá vé phải lớn hơn 0</span>
+                        </div>
+                    </div>
+
+                    <div class="nx-modal-actions">
+                        <button type="submit" class="nx-btn-save" id="btn-save-price">Lưu</button>
+                        <button type="button" class="nx-btn-cancel" id="btn-cancel-update">Hủy thao tác</button>
                     </div>
                 </div>
-
-                <div class="nx-modal-actions">
-                    <button class="nx-btn-save" id="btn-save-price">Lưu</button>
-                    <button class="nx-btn-cancel" id="btn-cancel-update">Hủy thao tác</button>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -130,22 +178,8 @@
         </div>
     </div>
 
-    <div id="successModal" class="nx-modal-overlay">
-        <div class="nx-modal-box new-success-alert">
-            <div class="new-success-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-            </div>
-            <p class="new-success-message">Thiết lập giá vé thành công</p>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            renderVehicles();
             const userBtn = document.getElementById('userDropdownBtn');
             const userMenu = document.getElementById('userMenu');
 
@@ -160,80 +194,27 @@
                 });
             }
         });
+
         const updateModal = document.getElementById('updateModal');
         const confirmCancelModal = document.getElementById('confirmCancelModal');
-        const successModal = document.getElementById('successModal');
 
         const inputNewPrice = document.getElementById('modal-new-price');
         const errorBox = document.getElementById('price-error');
         const errorText = document.getElementById('price-error-text');
+        const updateForm = document.getElementById('update-price-form');
 
-        let currentVehicleEditId = null;
-
-        function renderVehicles() {
-            const grid = document.getElementById('main-vehicle-grid');
-            if (!grid) return;
-            let vehicles = JSON.parse(localStorage.getItem('app_vehicle_types'));
-            if (!vehicles) {
-                vehicles = [
-                    { id: 'type-a', typeClass: 'type-a', icon: 'A', name: 'Loại xe A', seats: '4 chỗ', price: 150000, lastUpdate: '25/02/2026' },
-                    { id: 'type-b', typeClass: 'type-b', icon: 'B', name: 'Loại xe B', seats: '7 chỗ', price: 250000, lastUpdate: '20/02/2026' },
-                    { id: 'type-c', typeClass: 'type-c', icon: 'C', name: 'Loại xe C', seats: '9 chỗ', price: null, lastUpdate: null }
-                ];
-                localStorage.setItem('app_vehicle_types', JSON.stringify(vehicles));
-            }
-
-            grid.innerHTML = '';
-            vehicles.forEach(v => {
-                const priceText = v.price ? new Intl.NumberFormat('vi-VN').format(v.price) + ' đ' : '';
-                const priceHtml = v.price
-                    ? `<span class="nx-value">${priceText}</span>`
-                    : `<span class="nx-badge-warning">Chưa thiết lập</span>`;
-
-                const updateHtml = v.lastUpdate
-                    ? `<span class="nx-value">${v.lastUpdate}</span>`
-                    : `<span class="nx-value">Chưa cập nhật</span>`;
-
-                const cardHtml = `
-                <div class="nx-card ${v.typeClass}">
-                    <div class="nx-card-header">
-                        <div class="nx-card-icon">${v.icon}</div>
-                        <div class="nx-card-title">
-                            <h3>${v.name}</h3>
-                            <span>${v.seats}</span>
-                        </div>
-                    </div>
-                    <div class="nx-card-row">
-                        <span class="nx-label">💲 Giá vé</span>
-                        ${priceHtml}
-                    </div>
-                    <div class="nx-card-row">
-                        <span class="nx-label">📅 Cập nhật cuối</span>
-                        ${updateHtml}
-                    </div>
-                    <button class="nx-btn-update" onclick="openUpdateModal('${v.id}')">
-                        💲 Cập nhật giá vé
-                    </button>
-                </div>
-                `;
-                grid.insertAdjacentHTML('beforeend', cardHtml);
-            });
-        }
-
-        function openUpdateModal(vId) {
-            currentVehicleEditId = vId;
-            let vehicles = JSON.parse(localStorage.getItem('app_vehicle_types') || '[]');
-            const v = vehicles.find(x => x.id === vId);
-            if (!v) return;
-
-            document.getElementById('modal-vehicle-info').textContent = `${v.name} (${v.seats})`;
+        function openUpdateModal(id, name, seats, price) {
+            document.getElementById('modal-vehicle-info').textContent = `${name} (${seats} chỗ)`;
             const currentPriceInput = document.getElementById('modal-current-price');
 
-            if (!v.price) {
+            if (!price || price === '0') {
                 currentPriceInput.value = 'Chưa thiết lập';
             } else {
-                currentPriceInput.value = new Intl.NumberFormat('vi-VN').format(v.price) + ' đ';
+                currentPriceInput.value = new Intl.NumberFormat('vi-VN').format(price) + ' đ';
             }
+
+            // Cập nhật action của form
+            updateForm.action = `/cap-nhat-gia/${id}/`;
 
             inputNewPrice.value = '';
             inputNewPrice.classList.remove('input-error');
@@ -259,44 +240,16 @@
             updateModal.classList.remove('show');
         });
 
-        document.getElementById('btn-save-price').addEventListener('click', () => {
+        updateForm.addEventListener('submit', (e) => {
             const priceValue = inputNewPrice.value.trim();
-
-            inputNewPrice.classList.remove('input-error');
-            errorBox.style.display = 'none';
-
-            if (priceValue === '') {
-                inputNewPrice.classList.add('input-error');
-                errorText.textContent = 'Vui lòng nhập giá vé';
-                errorBox.style.display = 'flex';
-                return;
-            }
-
             const priceNum = Number(priceValue);
+
             if (priceNum <= 0 || isNaN(priceNum)) {
+                e.preventDefault(); // Ngăn submit form
                 inputNewPrice.classList.add('input-error');
-                errorText.textContent = 'Giá vé phải lớn hơn 0 và là số hợp lệ';
+                errorText.textContent = 'Giá vé phải lớn hơn 0';
                 errorBox.style.display = 'flex';
-                return;
             }
-
-            let vehicles = JSON.parse(localStorage.getItem('app_vehicle_types') || '[]');
-            const vIdx = vehicles.findIndex(x => x.id === currentVehicleEditId);
-            if (vIdx !== -1) {
-                vehicles[vIdx].price = priceNum;
-                const now = new Date();
-                vehicles[vIdx].lastUpdate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-                localStorage.setItem('app_vehicle_types', JSON.stringify(vehicles));
-            }
-
-            renderVehicles();
-
-            updateModal.classList.remove('show');
-            successModal.classList.add('show');
-
-            setTimeout(() => {
-                successModal.classList.remove('show');
-            }, 2000);
         });
 
         inputNewPrice.addEventListener('input', () => {
@@ -305,7 +258,6 @@
                 errorBox.style.display = 'none';
             }
         });
-
     </script>
     <script src="{% static 'js/common.js' %}"></script>
 </body>
