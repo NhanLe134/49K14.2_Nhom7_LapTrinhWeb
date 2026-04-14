@@ -15,82 +15,52 @@ def index(request):
     return render(request, 'home/index.html')
 
 
-@require_http_methods(['POST'])
 def dangnhap(request):
     """
-    View xử lý đăng nhập:
-    1. Nhận username + password từ form POST.
-    2. Gọi API backend để xác thực.
-    3. Nếu thành công → lưu thông tin vào session → redirect theo role.
-    4. Nếu thất bại → quay lại trang login với thông báo lỗi.
+    View xử lý đăng nhập (Cả GET và POST):
+    - GET: Hiển thị trang đăng nhập.
+    - POST: Xác thực người dùng qua API.
     """
+    if request.method == 'GET':
+        if request.session.get('user_id'):
+            role = request.session.get('role', '')
+            return _redirect_by_role(role)
+        return render(request, 'home/index.html')
+
+    # Xử lý POST
     username = request.POST.get('username', '').strip()
     password = request.POST.get('password', '')
-
-    # --- Validation cơ bản ---
+    
+    # ... Rest of the existing POST logic ...
     if not username or not password:
         messages.error(request, 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.')
-        return render(request, 'home/index.html', {
-            'username_value': username,
-        })
+        return render(request, 'home/index.html', {'username_value': username})
 
-    # --- Gọi API lấy danh sách tài khoản ---
     api_url = f"{settings.API_BASE_URL}/api/user-auth/"
-
     try:
-        response = requests.get(
-            api_url,
-            timeout=settings.API_TIMEOUT,
-        )
-    except requests.exceptions.ConnectionError:
-        messages.error(request, 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.')
-        return render(request, 'home/index.html', {'username_value': username})
-    except requests.exceptions.Timeout:
-        messages.error(request, 'Máy chủ phản hồi quá chậm. Vui lòng thử lại.')
-        return render(request, 'home/index.html', {'username_value': username})
-    except requests.exceptions.RequestException as e:
-        messages.error(request, f'Lỗi kết nối: {str(e)}')
+        response = requests.get(api_url, timeout=settings.API_TIMEOUT)
+    except Exception as e:
+        messages.error(request, f'Lỗi kết nối API: {str(e)}')
         return render(request, 'home/index.html', {'username_value': username})
 
-    # --- Xử lý phản hồi API ---
     if response.status_code == 200:
-        try:
-            users_data = response.json()
-        except ValueError:
-            messages.error(request, 'Phản hồi từ máy chủ không hợp lệ.')
-            return render(request, 'home/index.html', {'username_value': username})
-
-        # Tìm người dùng trong danh sách trả về
-        matched_user = None
-        for u in users_data:
-            # API trả ra các key như UserID, TenDangNhap, MatKhau, Vaitro...
-            if u.get('TenDangNhap') == username and u.get('MatKhau') == password:
-                matched_user = u
-                break
+        users_data = response.json()
+        matched_user = next((u for u in users_data if u.get('TenDangNhap') == username and u.get('MatKhau') == password), None)
         
         if matched_user:
-            # Lưu thông tin người dùng vào session
             request.session['user_id']  = matched_user.get('UserID')
             request.session['username'] = matched_user.get('TenDangNhap')
             request.session['role']     = (matched_user.get('Vaitro') or '').lower()
             request.session['ho_ten']   = matched_user.get('TenDangNhap')
-            request.session['token']    = 'dummy-token' # API hiện tại không có JWT
+            request.session['token']    = 'dummy-token'
             request.session.set_expiry(0)
-
-            role = request.session['role']
-            return _redirect_by_role(role)
+            return _redirect_by_role(request.session['role'])
         else:
             messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
-
     else:
-        messages.error(request, f'Lấy dữ liệu API thất bại (mã lỗi: {response.status_code}).')
+        messages.error(request, f'Lấy dữ liệu API thất bại ({response.status_code}).')
 
     return render(request, 'home/index.html', {'username_value': username})
-
-
-def dangnhap_get(request):
-    """Alias GET → trang đăng nhập (tránh 405 khi user vào thẳng /dangnhap)."""
-    return redirect('index')
 
 
 def dangxuat(request):

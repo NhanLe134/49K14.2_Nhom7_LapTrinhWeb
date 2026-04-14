@@ -9,8 +9,8 @@ urlpatterns = [
 
     # ==================== TRANG CHUNG ====================
     path('', auth_views.index, name='index'),
-    path('dangnhap', auth_views.dangnhap, name='dangnhap'),          # POST → xử lý đăng nhập
-    path('dangxuat', auth_views.dangxuat, name='dangxuat'),          # GET  → đăng xuất
+    path('dangnhap', auth_views.dangnhap, name='dangnhap'),
+    path('dangxuat', auth_views.dangxuat, name='dangxuat'),
     path('timkiem', views.timkiem, name='timkiem'),
     path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
@@ -52,4 +52,4 @@ urlpatterns = [
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
     path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
-]
+]

@@ -93,18 +93,35 @@ class Xe(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.XeID:
-            last_record = Xe.objects.order_by('XeID').last()
+            import re
+            # Find the highest ID that follows the XE00001 pattern
+            last_record = Xe.objects.filter(XeID__regex=r'^XE\d+').order_by('XeID').last()
+            
             if last_record:
-                last_id = last_record.XeID
-                try:
-                    num = int(last_id.split('-')[1]) + 1
-                    self.XeID = f'XE-{num:03d}'
-                except (IndexError, ValueError):
-                    import uuid
-                    self.XeID = 'XE-' + str(uuid.uuid4())[:6]
+                match = re.search(r'(\d+)', last_record.XeID)
+                num = int(match.group(1)) + 1
             else:
-                self.XeID = 'XE-001'
+                num = 1
+            
+            # Safety loop to avoid UNIQUE constraint clusters
+            new_id = f'XE{num:05d}'
+            while Xe.objects.filter(XeID=new_id).exists():
+                num += 1
+                new_id = f'XE{num:05d}'
+            
+            self.XeID = new_id
+            
         super().save(*args, **kwargs)
+
+    @property
+    def ten_loai_xe(self):
+        """Lấy tên hãng xe từ bảng CHITIETLOAIXE"""
+        try:
+            from .models import CHITIETLOAIXE
+            ct = CHITIETLOAIXE.objects.filter(Nhaxe=self.Nhaxe, Loaixe=self.Loaixe).first()
+            return ct.TenLoaiXe if ct and ct.TenLoaiXe else self.Loaixe.LoaixeID
+        except:
+            return self.Loaixe.LoaixeID
 
     def __str__(self):
         return self.BienSoXe
