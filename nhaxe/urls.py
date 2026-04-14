@@ -33,6 +33,7 @@ urlpatterns = [
     path('suachuyenxe', chuyenxe_views.suachuyenxe, name='suachuyenxe'),
     path('quanlytuyenxe', views.quanlytuyenxe, name='quanlytuyenxe'),
     path('quanly_loaixe', views.quanly_loaixe, name='quanly_loaixe'),
+    path('cap-nhat-gia/<str:loaixe_id>/', views.capnhat_gia_loaixe, name='capnhat_gia'),
     path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),
     path('quanly_khachhang', views.quanly_khachhang, name='quanly_khachhang'),
