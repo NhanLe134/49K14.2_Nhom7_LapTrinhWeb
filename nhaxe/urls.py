@@ -37,6 +37,7 @@ urlpatterns = [
     path('sua-tuyen-xe/<str:pk>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),
     path('xoa-tuyen-xe/<str:pk>/', tuyenxe_views.xoa_tuyen_xe, name='xoa_tuyen_xe'),
     path('quanly_loaixe', views.quanly_loaixe, name='quanly_loaixe'),
+    path('cap-nhat-gia/<str:pk>/', views.cap_nhat_gia_ve, name='cap_nhat_gia_ve'),
     path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),
     path('them-tai-xe', taixe_views.them_tai_xe, name='them_tai_xe'),
@@ -52,4 +53,13 @@ urlpatterns = [
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
     path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
+<<<<<<< HEAD
+
+    # Thao tác quản lý tài xế
+    path('them-tai-xe', taixe_views.them_tai_xe, name='them_tai_xe'),
+    path('sua-tai-xe/<str:pk>/', taixe_views.sua_tai_xe, name='sua_tai_xe'),
+    path('xoa-tai-xe/<str:pk>/', taixe_views.xoa_tai_xe, name='xoa_tai_xe'),
 ]
+=======
+]
+>>>>>>> d0a037b929a299b04f8e9ed9d394f57564a39868

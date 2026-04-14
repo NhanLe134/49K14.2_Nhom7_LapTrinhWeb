@@ -16,8 +16,10 @@ def quanlychuyenxe(request):
             response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
             if response.status_code == 200:
                 chuyen_xe_list = response.json()
-        except requests.exceptions.RequestException:
-            pass
+            else:
+                messages.error(request, f'Lỗi lấy danh sách chuyến xe (Mã: {response.status_code}).')
+        except requests.exceptions.RequestException as e:
+            messages.error(request, f'Lỗi kết nối API: {str(e)}')
     return render(request, 'home/quanlychuyenxe.html', {'chuyen_xe_list': chuyen_xe_list})
 
 def themchuyenxe(request):

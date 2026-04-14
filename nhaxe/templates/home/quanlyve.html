@@ -68,113 +68,28 @@
                     <h2 class="ticket-section-title">Danh sách vé đã đặt</h2>
 
                     <div class="ticket-grid">
-                        <!-- Ticket Card 1 -->
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">07:00</div>
-                                    <div class="ticket-date">26/02/2026</div>
+                        {% if ve_list %}
+                            {% for v in ve_list %}
+                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTenKhach }}', '{{ v.NgayDat }}', '{{ v.GiaVe }}')">
+                                <div class="ticket-card-content">
+                                    <div class="ticket-time-col">
+                                        <div class="ticket-time">{{ v.GioDi|default:"07:00" }}</div>
+                                        <div class="ticket-date">{{ v.NgayKhoiHanh|default:"Chưa có" }}</div>
+                                    </div>
+                                    <div class="ticket-divider"></div>
+                                    <div class="ticket-info-col">
+                                        <div class="ticket-route">{{ v.TenTuyen|default:"Đang cập nhật" }}</div>
+                                        <div class="ticket-bus">{{ v.TenNhaXe|default:"Vexeapp" }}</div>
+                                        <div class="ticket-qty">Số lượng ghế: 1</div>
+                                        <div class="ticket-seats">Mã số ghế: {{ v.SoGhe|default:"Đang chờ" }}</div>
+                                    </div>
                                 </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Đà Nẵng - Huế</div>
-                                    <div class="ticket-bus">Long Hùng</div>
-                                    <div class="ticket-qty">Số lượng ghế: 2</div>
-                                    <div class="ticket-seats">Mã số ghế: B6, B7</div>
-                                </div>
+                                <button class="btn-cancel">Hủy</button>
                             </div>
-                            <button class="btn-cancel">Hủy</button>
-                        </div>
-
-                        <!-- Ticket Card 2 -->
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">09:00</div>
-                                    <div class="ticket-date">26/02/2026</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Hội An - Huế</div>
-                                    <div class="ticket-bus">Châu Thanh</div>
-                                    <div class="ticket-qty">Số lượng ghế: 1</div>
-                                    <div class="ticket-seats">Mã số ghế: B4</div>
-                                </div>
-                            </div>
-                            <button class="btn-cancel">Hủy</button>
-                        </div>
-
-                        <!-- Ticket Card 3 -->
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">11:00</div>
-                                    <div class="ticket-date">24/02/2026</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Huế - Đà Nẵng</div>
-                                    <div class="ticket-bus">Châu Thanh</div>
-                                    <div class="ticket-qty">Số lượng ghế: 3</div>
-                                    <div class="ticket-seats">Mã số ghế: A1 - A2 - A3</div>
-                                </div>
-                            </div>
-                            <button class="btn-cancel">Hủy</button>
-                        </div>
-
-                        <!-- Ticket Card 4 -->
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">22:00</div>
-                                    <div class="ticket-date">21/01/2026</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Huế - Đà Nẵng</div>
-                                    <div class="ticket-bus">Đà Nẵng - Huế</div>
-                                    <div class="ticket-qty">Số lượng ghế: 2</div>
-                                    <div class="ticket-seats">Mã số ghế: C1 - C2</div>
-                                </div>
-                            </div>
-                            <button class="btn-cancel">Hủy</button>
-                        </div>
-
-                        <!-- Ticket Card 5 -->
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">08:00</div>
-                                    <div class="ticket-date">25/02/2026</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Hội An - Huế</div>
-                                    <div class="ticket-bus">Long Hùng</div>
-                                    <div class="ticket-qty">Số lượng ghế: 1</div>
-                                    <div class="ticket-seats">Mã số ghế: B5</div>
-                                </div>
-                            </div>
-                            <button class="btn-cancel">Hủy</button>
-                        </div>
-
-                        <!-- Ticket Card 6 -->
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">16:00</div>
-                                    <div class="ticket-date">10/01/2026</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Đà Nẵng - Huế</div>
-                                    <div class="ticket-bus">Long Hùng</div>
-                                    <div class="ticket-qty">Số lượng ghế: 1</div>
-                                    <div class="ticket-seats">Mã số ghế: A2</div>
-                                </div>
-                            </div>
-                            <button class="btn-cancel">Hủy</button>
-                        </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="padding: 20px; text-align: center; color: #666;">Bạn chưa có vé nào được đặt.</p>
+                        {% endif %}
                     </div>
                 </div> <!-- End view-booked -->
 
