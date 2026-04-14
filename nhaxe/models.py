@@ -93,53 +93,47 @@ class Xe(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.XeID:
-            # Generate ID in format XE001 (matching API 스타일)
-            last_record = Xe.objects.filter(XeID__startswith='XE').order_by('XeID').last()
+            import re
+            # Find the highest ID that follows the XE00001 pattern
+            last_record = Xe.objects.filter(XeID__regex=r'^XE\d+').order_by('XeID').last()
+            
             if last_record:
-                last_id = last_record.XeID
-                # Try to extract the number from XE001 or XE-001
-                import re
-                match = re.search(r'(\d+)', last_id)
-                if match:
-                    num = int(match.group(1)) + 1
-                    self.XeID = f'XE{num:05d}' # Use 5 digits like the API screenshot XE00001
-                else:
-                    import uuid
-                    self.XeID = 'XE' + str(uuid.uuid4())[:6]
+                match = re.search(r'(\d+)', last_record.XeID)
+                num = int(match.group(1)) + 1
             else:
-                self.XeID = 'XE00001'
+                num = 1
+            
+            # Safety loop to avoid UNIQUE constraint clusters
+            new_id = f'XE{num:05d}'
+            while Xe.objects.filter(XeID=new_id).exists():
+                num += 1
+                new_id = f'XE{num:05d}'
+            
+            self.XeID = new_id
+            
         super().save(*args, **kwargs)
+
+    @property
+    def ten_loai_xe(self):
+        """Lấy tên hãng xe từ bảng CHITIETLOAIXE"""
+        try:
+            from .models import CHITIETLOAIXE
+            ct = CHITIETLOAIXE.objects.filter(Nhaxe=self.Nhaxe, Loaixe=self.Loaixe).first()
+            return ct.TenLoaiXe if ct and ct.TenLoaiXe else self.Loaixe.LoaixeID
+        except:
+            return self.Loaixe.LoaixeID
 
     def __str__(self):
         return self.BienSoXe
 # 9. Bảng Tuyến Xe
 class TuyenXe(models.Model):
-    tuyenXeID = models.CharField(max_length=10, primary_key=True, blank=True)
+    tuyenXeID = models.CharField(max_length=10, primary_key=True)
     nhaXe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
     tenTuyen = models.CharField(max_length=500, null=True, blank=True)
     diemDi = models.CharField(max_length=500, default='Đà Nẵng')
     diemDen = models.CharField(max_length=500, default='Huế')
     QuangDuong = models.CharField(max_length=100, null=True, blank=True)
     DiemTrungGian = models.CharField(max_length=500, null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        if not self.tuyenXeID:
-            # Generate ID in format TX00001
-            last_record = TuyenXe.objects.filter(tuyenXeID__startswith='TX').order_by('tuyenXeID').last()
-            if last_record:
-                last_id = last_record.tuyenXeID
-                import re
-                match = re.search(r'(\d+)', last_id)
-                if match:
-                    num = int(match.group(1)) + 1
-                    self.tuyenXeID = f'TX{num:05d}'
-                else:
-                    import uuid
-                    self.tuyenXeID = 'TX' + str(uuid.uuid4())[:6]
-            else:
-                self.tuyenXeID = 'TX00001'
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.tenTuyen or self.tuyenXeID
 # 10. Bảng Chuyến Xe

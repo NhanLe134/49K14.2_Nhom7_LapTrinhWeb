@@ -61,16 +61,6 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            {% if messages %}
-                <div class="messages" style="margin-bottom: 20px;">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}" style="padding: 15px; border-radius: 4px; margin-bottom: 10px; background-color: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %}; border: 1px solid {% if message.tags == 'success' %}#c3e6cb{% else %}#f5c6cb{% endif %};">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
             <!-- VIEW 1: ROUTE LIST -->
             <div id="routeListView">
                 <div class="content-header-flex">
@@ -81,49 +71,81 @@
 
                 <!-- Route Grid -->
                 <div class="route-grid">
-                    {% for item in tuyen_xes %}
+                    <!-- Route 1 -->
                     <div class="route-card">
                         <div class="route-card-header">
-                            {{ item.tenTuyen }}
+                            Tuyến Đà Nẵng – Huế
                             <span class="intermediate-val hidden"></span>
                         </div>
                         <div class="route-locations">
                             <div class="loc-item">
-                                <i class="fa-solid fa-location-dot loc-icon"></i> {{ item.diemDi }}
+                                <i class="fa-solid fa-location-dot loc-icon"></i> Đà Nẵng
                             </div>
                             <i class="fa-solid fa-arrow-right route-arrow"></i>
                             <div class="loc-item">
-                                <i class="fa-solid fa-location-dot loc-icon"></i> {{ item.diemDen }}
+                                <i class="fa-solid fa-location-dot loc-icon"></i> Huế
                             </div>
                         </div>
                         <div class="route-details">
                             <div class="detail-box">
                                 <div class="detail-label">Khoảng cách</div>
-                                <div class="detail-value">{{ item.QuangDuong|default:"--" }}</div>
+                                <div class="detail-value">100 km</div>
                             </div>
                             <div class="detail-box">
-                                <div class="detail-label">Thông tin</div>
-                                <div class="detail-value">{{ item.DiemTrungGian|default:"Direct" }}</div>
+                                <div class="detail-label">Thời gian</div>
+                                <div class="detail-value">≈ 2.5 giờ</div>
                             </div>
                         </div>
                         <div class="route-info-footer">
-                            <span class="status-badge active">ID: {{ item.tuyenXeID }}</span>
+                            <span class="status-badge active">Đang hoạt động</span>
+                            <span class="vehicle-types">Xe 4 chỗ, Xe 7 chỗ, Limousine</span>
                         </div>
                         <div class="route-actions">
-                            <button class="btn-action-edit" onclick="openEditRoute('{{ item.tuyenXeID }}', '{{ item.tenTuyen }}', '{{ item.diemDi }}', '{{ item.diemDen }}', '{{ item.QuangDuong }}', '{{ item.DiemTrungGian }}')">
-                                <i class="fa-solid fa-pen"></i> Sửa
-                            </button>
-                            <form action="{% url 'quanlytuyenxe' %}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa tuyến xe này?')">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="tuyen_id" value="{{ item.tuyenXeID }}">
-                                <button type="submit" class="btn-action-delete"><i class="fa-solid fa-trash"></i> Xóa</button>
-                            </form>
+                            <button class="btn-action-edit" onclick="openEditRoute(this)"><i
+                                    class="fa-solid fa-pen"></i> Sửa</button>
+                            <button class="btn-action-delete" onclick="showDeleteConfirm(this)"><i
+                                    class="fa-solid fa-trash"></i> Xóa</button>
                         </div>
                     </div>
-                    {% empty %}
-                    <p style="text-align: center; color: #666; width: 100%;">Chưa có tuyến xe nào.</p>
-                    {% endfor %}
+
+                    <!-- Route 2 -->
+                    <div class="route-card">
+                        <div class="route-card-header">
+                            Tuyến Huế – Đà Nẵng
+                            <span class="intermediate-val hidden"></span>
+                        </div>
+                        <div class="route-locations">
+                            <div class="loc-item">
+                                <i class="fa-solid fa-location-dot loc-icon"></i> Huế
+                            </div>
+                            <i class="fa-solid fa-arrow-right route-arrow"></i>
+                            <div class="loc-item">
+                                <i class="fa-solid fa-location-dot loc-icon"></i> Đà Nẵng
+                            </div>
+                        </div>
+                        <div class="route-details">
+                            <div class="detail-box">
+                                <div class="detail-label">Khoảng cách</div>
+                                <div class="detail-value">100 km</div>
+                            </div>
+                            <div class="detail-box">
+                                <div class="detail-label">Thời gian</div>
+                                <div class="detail-value">≈ 2.5 giờ</div>
+                            </div>
+                        </div>
+                        <div class="route-info-footer">
+                            <span class="status-badge active">Đang hoạt động</span>
+                            <span class="vehicle-types">Xe 4 chỗ, Xe 7 chỗ, Limousine</span>
+                        </div>
+                        <div class="route-actions">
+                            <button class="btn-action-edit" onclick="openEditRoute(this)"><i
+                                    class="fa-solid fa-pen"></i> Sửa</button>
+                            <button class="btn-action-delete" onclick="showDeleteConfirm(this)"><i
+                                    class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    </div>
+
+                    <!-- (CÁC ROUTE KHÁC GIỮ NGUYÊN 100% NHƯ FILE GỐC CỦA M) -->
                 </div>
             </div>
 
@@ -132,28 +154,27 @@
     <!-- VIEW 2: ADD/EDIT ROUTE -->
     <div id="addRouteView" class="add-route-container" style="display: none;">
         <div class="add-route-title" id="formTitle">Thêm tuyến mới</div>
-        <form class="add-route-form" action="{% url 'quanlytuyenxe' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" id="tuyenId" name="tuyen_id">
+        <form class="add-route-form" onsubmit="event.preventDefault(); saveRoute();">
             <div class="add-route-field">
                 <label class="field-label">Tên tuyến</label>
-                <input type="text" id="routeName" name="ten_tuyen" class="field-input" placeholder="Ví dụ: Đà Nẵng - Huế" required>
+                <input type="text" id="routeName" class="field-input" placeholder="Ví dụ: Đà Nẵng - Huế">
+                <div class="error-msg" id="nameError"></div>
             </div>
             <div class="add-route-field">
                 <label class="field-label">Điểm đi</label>
-                <input type="text" id="startPoint" name="diem_di" class="field-input" placeholder="Ví dụ: Đà Nẵng">
+                <input type="text" id="startPoint" class="field-input" placeholder="Ví dụ: Đà Nẵng">
             </div>
             <div class="add-route-field">
                 <label class="field-label">Điểm đến</label>
-                <input type="text" id="endPoint" name="diem_den" class="field-input" placeholder="Ví dụ: Huế">
+                <input type="text" id="endPoint" class="field-input" placeholder="Ví dụ: Huế">
             </div>
             <div class="add-route-field">
-                <label class="field-label">Khoảng cách</label>
-                <input type="text" id="distance" name="quang_duong" class="field-input" placeholder="100 km">
+                <label class="field-label">Khoảng cách (km)</label>
+                <input type="number" id="distance" class="field-input" placeholder="100">
             </div>
             <div class="add-route-field">
-                <label class="field-label">Điểm trung gian / Ghi chú</label>
-                <input type="text" id="duration" name="diem_tg" class="field-input" placeholder="Đèo Hải Vân">
+                <label class="field-label">Thời gian ước tính (giờ)</label>
+                <input type="text" id="duration" class="field-input" placeholder="2.5">
             </div>
             <div class="google-map-note">* Thông tin bổ sung từ Google Maps</div>
             <div class="add-route-buttons">
@@ -186,9 +207,55 @@
     </div>
 
     <script>
+        let routes = JSON.parse(localStorage.getItem('app_routes')) || [
+            { id: 1, name: 'Tuyến Đà Nẵng – Huế', start: 'Đà Nẵng', end: 'Huế', distance: '100 km', duration: '≈ 2.5 giờ', status: 'Đang hoạt động' },
+            { id: 2, name: 'Tuyến Huế – Đà Nẵng', start: 'Huế', end: 'Đà Nẵng', distance: '100 km', duration: '≈ 2.5 giờ', status: 'Đang hoạt động' }
+        ];
+        let editingRouteId = null;
+        let deletingRouteId = null;
+
+        function saveToStorage() {
+            localStorage.setItem('app_routes', JSON.stringify(routes));
+        }
+
+        function renderRoutes() {
+            const grid = document.querySelector('.route-grid');
+            grid.innerHTML = '';
+            routes.forEach(route => {
+                const card = document.createElement('div');
+                card.className = 'route-card';
+                card.innerHTML = `
+                <div class="route-card-header">${route.name}</div>
+                <div class="route-locations">
+                    <div class="loc-item"><i class="fa-solid fa-location-dot loc-icon"></i> ${route.start}</div>
+                    <i class="fa-solid fa-arrow-right route-arrow"></i>
+                    <div class="loc-item"><i class="fa-solid fa-location-dot loc-icon"></i> ${route.end}</div>
+                </div>
+                <div class="route-details">
+                    <div class="detail-box">
+                        <div class="detail-label">Khoảng cách</div>
+                        <div class="detail-value">${route.distance}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Thời gian</div>
+                        <div class="detail-value">${route.duration}</div>
+                    </div>
+                </div>
+                <div class="route-info-footer">
+                    <span class="status-badge active">${route.status}</span>
+                </div>
+                <div class="route-actions">
+                    <button class="btn-action-edit" onclick="openEditRoute(${route.id})"><i class="fa-solid fa-pen"></i> Sửa</button>
+                    <button class="btn-action-delete" onclick="showDeleteConfirm(${route.id})"><i class="fa-solid fa-trash"></i> Xóa</button>
+                </div>
+            `;
+                grid.appendChild(card);
+            });
+        }
+
         function showAddRouteView() {
+            editingRouteId = null;
             document.getElementById('formTitle').textContent = 'Thêm tuyến mới';
-            document.getElementById('tuyenId').value = '';
             document.getElementById('routeName').value = '';
             document.getElementById('startPoint').value = '';
             document.getElementById('endPoint').value = '';
@@ -202,19 +269,77 @@
         function hideAddRouteView() {
             document.getElementById('routeListView').style.display = 'block';
             document.getElementById('addRouteView').style.display = 'none';
+            renderRoutes();
         }
 
-        function openEditRoute(id, name, start, end, dist, duration) {
+        function openEditRoute(id) {
+            const route = routes.find(r => r.id === id);
+            if (!route) return;
+
+            editingRouteId = id;
             document.getElementById('formTitle').textContent = 'Chỉnh sửa tuyến';
-            document.getElementById('tuyenId').value = id;
-            document.getElementById('routeName').value = name;
-            document.getElementById('startPoint').value = start;
-            document.getElementById('endPoint').value = end;
-            document.getElementById('distance').value = dist;
-            document.getElementById('duration').value = duration;
+            document.getElementById('routeName').value = route.name;
+            document.getElementById('startPoint').value = route.start;
+            document.getElementById('endPoint').value = route.end;
+            document.getElementById('distance').value = route.distance.replace(' km', '');
+            document.getElementById('duration').value = route.duration.replace('≈ ', '').replace(' giờ', '');
 
             document.getElementById('routeListView').style.display = 'none';
             document.getElementById('addRouteView').style.display = 'block';
+        }
+
+        function saveRoute() {
+            const name = document.getElementById('routeName').value.trim();
+            const start = document.getElementById('startPoint').value.trim();
+            const end = document.getElementById('endPoint').value.trim();
+            const dist = document.getElementById('distance').value.trim();
+            const dur = document.getElementById('duration').value.trim();
+
+            if (!name || !start || !end) {
+                alert('Vui lòng điền đầy đủ các thông tin bắt buộc');
+                return;
+            }
+
+            if (editingRouteId) {
+                const idx = routes.findIndex(r => r.id === editingRouteId);
+                routes[idx] = {
+                    ...routes[idx],
+                    name, start, end,
+                    distance: dist + ' km',
+                    duration: '≈ ' + dur + ' giờ'
+                };
+                showSuccess('Cập nhật tuyến thành công!');
+            } else {
+                const newId = routes.length > 0 ? Math.max(...routes.map(r => r.id)) + 1 : 1;
+                routes.push({
+                    id: newId,
+                    name, start, end,
+                    distance: dist + ' km',
+                    duration: '≈ ' + dur + ' giờ',
+                    status: 'Đang hoạt động'
+                });
+                showSuccess('Thêm tuyến mới thành công!');
+            }
+
+            saveToStorage();
+            hideAddRouteView();
+        }
+
+        function showDeleteConfirm(id) {
+            deletingRouteId = id;
+            document.getElementById('deleteConfirmModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+        }
+
+        function confirmDelete() {
+            routes = routes.filter(r => r.id !== deletingRouteId);
+            saveToStorage();
+            closeDeleteModal();
+            renderRoutes();
+            showSuccess('Xóa tuyến thành công!');
         }
 
         function showSuccess(msg) {
@@ -225,6 +350,10 @@
                 popup.style.display = 'none';
             }, 2000);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRoutes();
+        });
     </script>
 
     <script src="{% static 'js/common.js' %}"></script>
