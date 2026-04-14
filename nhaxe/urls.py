@@ -3,6 +3,7 @@ from . import views
 from . import auth_views
 from . import chuyenxe_views
 from . import taixe_views
+from . import tuyenxe_views
 
 urlpatterns = [
 
@@ -31,7 +32,10 @@ urlpatterns = [
     path('quanlychuyenxe', chuyenxe_views.quanlychuyenxe, name='quanlychuyenxe'),
     path('themchuyenxe', chuyenxe_views.themchuyenxe, name='themchuyenxe'),
     path('suachuyenxe', chuyenxe_views.suachuyenxe, name='suachuyenxe'),
-    path('quanlytuyenxe', views.quanlytuyenxe, name='quanlytuyenxe'),
+    path('quanlytuyenxe', tuyenxe_views.quanlytuyenxe, name='quanlytuyenxe'),
+    path('them-tuyen-xe', tuyenxe_views.them_tuyen_xe, name='them_tuyen_xe'),
+    path('sua-tuyen-xe/<str:pk>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),
+    path('xoa-tuyen-xe/<str:pk>/', tuyenxe_views.xoa_tuyen_xe, name='xoa_tuyen_xe'),
     path('quanly_loaixe', views.quanly_loaixe, name='quanly_loaixe'),
     path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),
