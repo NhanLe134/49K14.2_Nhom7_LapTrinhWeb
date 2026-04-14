@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import auth_views
 from . import chuyenxe_views
+from . import taixe_views
 
 urlpatterns = [
 
@@ -33,15 +34,15 @@ urlpatterns = [
     path('quanlytuyenxe', views.quanlytuyenxe, name='quanlytuyenxe'),
     path('quanly_loaixe', views.quanly_loaixe, name='quanly_loaixe'),
     path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
-    path('quanlytaixe', views.quanlytaixe, name='quanlytaixe'),
+    path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),
     path('quanly_khachhang', views.quanly_khachhang, name='quanly_khachhang'),
     path('quanlyve', views.quanlyve, name='quanlyve'),
 
     # ==================== TÀI XẾ ====================
-    path('taixe', views.taixe, name='taixe'),
-    path('thongtin_taixe', views.thongtin_taixe, name='thongtin_taixe'),
+    path('taixe', taixe_views.taixe, name='taixe'),
+    path('thongtin_taixe', taixe_views.thongtin_taixe, name='thongtin_taixe'),
     path('taixe_quanlychuyenxe', chuyenxe_views.taixe_quanlychuyenxe, name='taixe_quanlychuyenxe'),
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
-    path('taixe_lotrinh', views.taixe_lotrinh, name='taixe_lotrinh'),
-    path('phancongtaixe', views.phancongtaixe, name='phancongtaixe'),
+    path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
+    path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
 ]

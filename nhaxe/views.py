@@ -73,8 +73,6 @@ def quanly_loaixe(request):
 def quan_ly_xe(request):
     return render(request, 'home/quan_ly_xe.html')
 
-def quanlytaixe(request):
-    return render(request, 'home/quanlytaixe.html')
 
 def quanly_khachhang(request):
     return render(request, 'home/quanly_khachhang.html')
@@ -82,17 +80,3 @@ def quanly_khachhang(request):
 def quanlyve(request):
     return render(request, 'home/quanlyve.html')
 
-# ==================== TÀI XẾ (tx) ====================
-
-def taixe(request):
-    return render(request, 'home/taixe.html')
-
-def thongtin_taixe(request):
-    return render(request, 'home/thongtin_taixe.html')
-
-
-def taixe_lotrinh(request):
-    return render(request, 'home/taixe_lotrinh.html')
-
-def phancongtaixe(request):
-    return render(request, 'home/phancongtaixe.html')
