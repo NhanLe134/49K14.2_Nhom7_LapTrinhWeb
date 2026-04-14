@@ -146,25 +146,23 @@
     <script src="{% static 'js/common.js' %}"></script>
     <!-- SCRIPT -->
     <script>
-        const defaultDrivers = [
-            { id: 1, avatar: "{% static 'img/1.jpg' %}", name: 'Lê Văn Huy', phone: '0567856789', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 2, avatar: "{% static 'img/2.jpg' %}", name: 'Lưu Tuệ Tâm', phone: '0987546362', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 3, avatar: "{% static 'img/3.jpg' %}", name: 'Nguyễn Tuấn Anh', phone: '05671111289', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 4, avatar: "{% static 'img/4.jpg' %}", name: 'Lê Công Tuấn', phone: '0987656782', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 5, avatar: "{% static 'img/5.jpg' %}", name: 'Trần Anh Minh', phone: '0987654333', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 6, avatar: "{% static 'img/6.jpg' %}", name: 'Phan Thành Đạt', phone: '0867110985', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 7, avatar: "{% static 'img/7.jpg' %}", name: 'Võ Thiên Tú', phone: '0834226789', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 8, avatar: "{% static 'img/8.jpg' %}", name: 'Nguyễn Hữu Tài', phone: '0267854321', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' },
-            { id: 9, avatar: "{% static 'img/9.jpg' %}", name: 'Cao Phúc Đạt', phone: '0389790101', cccd: '049206004552', license: '8123456789', licenseType: 'B', licenseExpiry: '12/31/2027' }
+        // Dữ liệu tài xế lấy từ API (server-side render qua Django view)
+        let drivers = [
+            {% for tx in taixe_list %}
+            {
+                id:           "{{ tx.id }}",
+                name:         "{{ tx.ten }}",
+                phone:        "{{ tx.soDienThoai }}",
+                cccd:         "{{ tx.soCCCD }}",
+                license:      "{{ tx.soBangLai }}",
+                licenseType:  "{{ tx.loaiBangLai }}",
+                licenseExpiry:"{{ tx.ngayHetHan }}",
+                avatar:       "{{ tx.hinhAnh }}"
+            },
+            {% endfor %}
         ];
-
-        // Use local storage for drivers to persist changes
-        let drivers = JSON.parse(localStorage.getItem('drivers')) || defaultDrivers;
         let selectedDriverId = null;
 
-        function saveToStorage() {
-            localStorage.setItem('drivers', JSON.stringify(drivers));
-        }
 
         function renderDrivers() {
             const grid = document.getElementById('driverGrid');
@@ -189,7 +187,7 @@
         }
 
         function showDriverDetails(id) {
-            const driver = drivers.find(d => d.id === id);
+            const driver = drivers.find(d => String(d.id) === String(id));
             if (!driver) return;
             
             selectedDriverId = id;
@@ -241,7 +239,6 @@
             };
 
             drivers.push(newDriver);
-            saveToStorage();
             closeCreateModal();
             renderDrivers();
             showSuccess('Tạo tài khoản thành công!');
@@ -278,7 +275,6 @@
             driver.licenseExpiry = document.getElementById('editLicenseExpiry').value;
             driver.avatar = document.getElementById('editAvatarPreview').src;
 
-            saveToStorage();
             closeEditModal();
             showDriverDetails(selectedDriverId);
             showSuccess('Cập nhật thông tin thành công!');
@@ -295,8 +291,7 @@
         }
 
         function confirmDelete() {
-            drivers = drivers.filter(d => d.id !== driverToDelete);
-            saveToStorage();
+            drivers = drivers.filter(d => String(d.id) !== String(driverToDelete));
             closeDeleteModal();
             renderDrivers();
             showSuccess('Xóa tài khoản thành công!');
