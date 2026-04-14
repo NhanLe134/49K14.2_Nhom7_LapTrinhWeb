@@ -6,7 +6,6 @@ from decimal import Decimal
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nhom7.settings')
 django.setup()
 
-from nhaxe.models import Loaixe, CHITIETLOAIXE, Nhaxe
 
 def populate_brands():
     # Targets for 16-30 seats
