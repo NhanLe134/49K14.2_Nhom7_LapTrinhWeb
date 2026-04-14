@@ -55,7 +55,9 @@ def thong_tin_nha_xe(request):
     return render(request, 'home/thong_tin_nha_xe.html')
 
 def quanlytuyenxe(request):
-    return render(request, 'home/quanlytuyenxe.html')
+    # Lấy nha_xe_id từ session, mặc định là NX00001 nếu chưa đăng nhập/không tìm thấy
+    nha_xe_id = request.session.get('nha_xe_id', 'NX00001')
+    return render(request, 'home/quanlytuyenxe.html', {'nha_xe_id': nha_xe_id})
 
 def quanly_loaixe(request):
     # Danh sách 3 loại xe mặc định theo yêu cầu thiết kế
