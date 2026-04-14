@@ -74,8 +74,6 @@ def dangnhap(request):
             request.session['username'] = matched_user.get('TenDangNhap')
             request.session['role']     = (matched_user.get('Vaitro') or '').lower()
             request.session['ho_ten']   = matched_user.get('TenDangNhap')
-            # Lưu cả id nhà xe để sử dụng ở các trang quản lý
-            request.session['nha_xe_id'] = matched_user.get('Nhaxe')
             request.session['token']    = 'dummy-token' # API hiện tại không có JWT
             request.session.set_expiry(0)
 
@@ -112,7 +110,6 @@ def _redirect_by_role(role: str):
         'nhaxe':     'nhaxe',
         'nx':        'nhaxe',
         'admin':     'nhaxe',
-        'NhaXe':     'nhaxe',
         'taixe':     'taixe',
         'tx':        'taixe',
         'driver':    'taixe',

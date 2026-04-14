@@ -9,6 +9,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/quanly_phuongtien.css' %}">
+    <style>
+        .new-loai-fields {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px dashed #ccc;
+        }
+        .status-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+        .loaixe-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 
 <body>
@@ -60,6 +81,14 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}" style="padding: 10px; background: #e3f2fd; color: #0d47a1; margin-bottom: 10px; border-radius: 5px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
             <!-- LIST VIEW -->
             <div id="listView" class="view-container">
                 <div class="content-header">
@@ -70,7 +99,49 @@
                 </div>
 
                 <div id="vehicleList" class="vehicle-list">
-                    <!-- Dynamic content -->
+                    {% for xe in vehicles %}
+                    <div class="vehicle-item">
+                        <div class="vehicle-img">
+                            {% if xe.HinhAnhXe %}
+                                <img src="{{ xe.HinhAnhXe.url }}" alt="Vehicle">
+                            {% else %}
+                                <img src="{% static 'img/xe1.jpg' %}" alt="Vehicle">
+                            {% endif %}
+                        </div>
+                        <div class="vehicle-info">
+                            <div class="vehicle-main-details">
+                                <span class="vehicle-plate">{{ xe.BienSoXe }}</span>
+                                <span class="vehicle-route">ID: {{ xe.XeID }}</span>
+                            </div>
+                            <div class="vehicle-specs">
+                                <span>Số ghế: {{ xe.SoGhe|default:"--" }} ghế</span>
+                                <span>Loại xe: {{ xe.Loaixe.LoaixeID }}</span>
+                            </div>
+                        </div>
+                        <div class="vehicle-status">
+                            <span class="status-badge-list 
+                                {% if xe.TrangThai == 'Đang hoạt động' %}status-active
+                                {% elif xe.TrangThai == 'Bảo trì' %}status-maintenance
+                                {% else %}status-inactive{% endif %}">
+                                {{ xe.TrangThai }}
+                            </span>
+                            <div class="item-actions">
+                                <button class="btn-item-edit" 
+                                    onclick="showEditView('{{ xe.XeID }}', '{{ xe.BienSoXe }}', '{{ xe.Loaixe.LoaixeID }}', '{{ xe.SoGhe }}', '{{ xe.TrangThai }}')">
+                                    Chỉnh sửa
+                                </button>
+                                <form action="{% url 'quan_ly_xe' %}" method="POST" style="width: 100%;" onsubmit="return confirm('Xóa xe này?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="xe_id" value="{{ xe.XeID }}">
+                                    <button type="submit" class="btn-item-delete">Xóa</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="text-align: center; color: #666; padding: 20px;">Chưa có xe nào trong danh sách.</p>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -78,43 +149,67 @@
             <div id="editView" class="view-container" style="display: none;">
                 <h2 class="page-title" id="formTitle">Thông tin xe</h2>
 
-                <form id="vehicleForm" class="vehicle-form">
-                    <input type="hidden" id="vehicleId">
+                <form id="vehicleForm" class="vehicle-form" method="POST" enctype="multipart/form-data" action="{% url 'quan_ly_xe' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="vehicleId" name="xe_id">
+                    
                     <div class="form-layout">
                         <div class="form-left">
                             <div class="form-group">
                                 <label for="plate">Biển số</label>
-                                <input type="text" id="plate" placeholder="75H - 868686" required>
-                                <div class="error-msg" id="plateError">*Vui lòng nhập Biển số.</div>
+                                <input type="text" id="plate" name="bien_so" placeholder="75H - 868686" required>
                             </div>
+                            
                             <div class="form-group">
-                                <label for="type">Loại xe</label>
-                                <input type="text" id="type" placeholder="Limousine" required>
-                                <div class="error-msg" id="typeError">*Vui lòng nhập loại xe.</div>
+                                <label for="loaixe_id">Loại xe</label>
+                                <select id="loaixe_id" name="loaixe_id" class="loaixe-select" onchange="toggleNewLoai(this.value)" required>
+                                    <option value="" disabled selected>-- Chọn loại xe --</option>
+                                    {% for item in vehicle_types %}
+                                        <option value="{{ item.Loaixe.LoaixeID }}">{{ item.TenLoaiXe }}</option>
+                                    {% endfor %}
+                                    <option value="new" style="font-weight: bold; color: #06A0E2;">+ Thêm loại xe mới...</option>
+                                </select>
                             </div>
-                            <div class="form-group">
-                                <label for="seats">Số ghế</label>
-                                <div class="seats-input-wrapper">
-                                    <input type="number" id="seats" value="30" required>
+
+                            <!-- Fields for NEW TYPE (hidden by default) -->
+                            <div id="newTypeFields" class="new-loai-fields" style="display: none;">
+                                <h4 style="margin-top: 0;">Thông tin loại xe mới</h4>
+                                <div class="form-group">
+                                    <label>Số chỗ</label>
+                                    <input type="number" name="new_loai_socho" placeholder="VD: 16">
+                                </div>
+                                <div class="form-group">
+                                    <label>Giá vé mặc định</label>
+                                    <input type="number" name="new_loai_gia" placeholder="VD: 150000">
                                 </div>
                             </div>
+
+                            <div class="form-group" style="margin-top: 20px;">
+                                <label for="seats">Số ghế thực tế của xe</label>
+                                <input type="number" id="seats" name="so_ghe" placeholder="30" required>
+                            </div>
                         </div>
+                        
                         <div class="form-right">
                             <div class="form-group">
                                 <label>Trạng thái</label>
-                                <div id="statusBadge" class="status-badge status-active">Đang hoạt động</div>
-                                <select id="statusSelect" class="status-select" style="display: none;">
+                                <select id="statusSelect" name="trang_thai" class="status-select">
                                     <option value="Đang hoạt động">Đang hoạt động</option>
                                     <option value="Ngừng hoạt động">Ngừng hoạt động</option>
                                     <option value="Bảo trì">Bảo trì</option>
                                 </select>
                             </div>
+
+                            <div class="form-group">
+                                <label>Hình ảnh xe</label>
+                                <input type="file" name="hinh_anh" accept="image/*">
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-save" onclick="saveVehicle()">Lưu</button>
-                        <button type="button" class="btn-cancel" onclick="showListView()">Hủy</button>
+                        <button type="submit" class="btn-save">Lưu hệ thống</button>
+                        <button type="button" class="btn-cancel" onclick="showListView()">Hủy bỏ</button>
                     </div>
                 </form>
             </div>
@@ -128,154 +223,47 @@
     </footer>
 
     <script>
-        const STATIC_XE1 = "{% static 'img/xe1.jpg' %}";
-        const STATIC_XE2 = "{% static 'img/xe2.jpg' %}";
-        const STATIC_XE3 = "{% static 'img/xe3.jpg' %}";
-
-        const DEFAULT_VEHICLES = [
-            { id: 1, plate: '75H1-868686', route: 'Huế-Đà Nẵng', seats: 3, type: 'xe 4 chỗ', status: 'Đang hoạt động', image: STATIC_XE1 },
-            { id: 2, plate: '43H1-123456', route: 'Huế-Đà Nẵng', seats: 3, type: 'xe 4 chỗ', status: 'Ngừng hoạt động', image: STATIC_XE2 },
-            { id: 3, plate: '75D1-67890', route: 'Huế-Đà Nẵng', seats: 3, type: 'xe 4 chỗ', status: 'Bảo trì', image: STATIC_XE3 }
-        ];
-
-        let vehicles = JSON.parse(localStorage.getItem('app_vehicles')) || DEFAULT_VEHICLES;
-
-        function saveToStorage() {
-            localStorage.setItem('app_vehicles', JSON.stringify(vehicles));
-        }
-
-        function renderList() {
-            const listContainer = document.getElementById('vehicleList');
-            listContainer.innerHTML = '';
-
-            vehicles.forEach(v => {
-                const statusClass = v.status === 'Đang hoạt động' ? 'status-active' :
-                    v.status === 'Ngừng hoạt động' ? 'status-inactive' : 'status-maintenance';
-
-                const item = document.createElement('div');
-                item.className = 'vehicle-item';
-                item.innerHTML = `
-                    <div class="vehicle-img">
-                        <img src="${v.image || STATIC_XE1}" alt="Vehicle">
-                    </div>
-                    <div class="vehicle-info">
-                        <div class="vehicle-main-details">
-                            <span class="vehicle-plate">${v.plate}</span>
-                            <span class="vehicle-route">${v.route}</span>
-                        </div>
-                        <div class="vehicle-specs">
-                            <span>Số ghế: ${v.seats} ghế</span>
-                            <span>Loại xe: ${v.type}</span>
-                        </div>
-                    </div>
-                    <div class="vehicle-status">
-                        <span class="status-badge-list ${statusClass}">${v.status}</span>
-                        <div class="item-actions">
-                            <button class="btn-item-edit" onclick="showEditView(${v.id})">Chỉnh sửa</button>
-                            <button class="btn-item-delete" onclick="deleteVehicle(${v.id})">Xóa</button>
-                        </div>
-                    </div>
-                `;
-                listContainer.appendChild(item);
-            });
-        }
-
         function showListView() {
             document.getElementById('listView').style.display = 'block';
             document.getElementById('editView').style.display = 'none';
-            renderList();
         }
 
         function showAddView() {
             document.getElementById('listView').style.display = 'none';
             document.getElementById('editView').style.display = 'block';
-            document.getElementById('formTitle').textContent = 'Thông tin nhà xe';
+            document.getElementById('formTitle').textContent = 'Thêm xe mới';
 
             document.getElementById('vehicleId').value = '';
             document.getElementById('plate').value = '';
-            document.getElementById('type').value = 'Limousine';
-            document.getElementById('seats').value = 30;
-            document.getElementById('statusBadge').className = 'status-badge status-active';
-            document.getElementById('statusBadge').textContent = 'Đang hoạt động';
-
-            document.getElementById('plateError').style.display = 'none';
-            document.getElementById('typeError').style.display = 'none';
+            document.getElementById('loaixe_id').value = '';
+            document.getElementById('seats').value = '';
+            document.getElementById('statusSelect').value = 'Đang hoạt động';
+            
+            toggleNewLoai('');
         }
 
-        function showEditView(id) {
-            const v = vehicles.find(x => x.id === id);
-            if (!v) return;
-
+        function showEditView(id, plate, loaixeId, seats, status) {
             document.getElementById('listView').style.display = 'none';
             document.getElementById('editView').style.display = 'block';
-            document.getElementById('formTitle').textContent = 'Thông tin xe';
+            document.getElementById('formTitle').textContent = 'Chỉnh sửa xe';
 
-            document.getElementById('vehicleId').value = v.id;
-            document.getElementById('plate').value = v.plate;
-            document.getElementById('type').value = v.type;
-            document.getElementById('seats').value = v.seats;
+            document.getElementById('vehicleId').value = id;
+            document.getElementById('plate').value = plate;
+            document.getElementById('loaixe_id').value = loaixeId;
+            document.getElementById('seats').value = seats;
+            document.getElementById('statusSelect').value = status;
 
-            const statusClass = v.status === 'Đang hoạt động' ? 'status-active' :
-                v.status === 'Ngừng hoạt động' ? 'status-inactive' : 'status-maintenance';
-            document.getElementById('statusBadge').className = 'status-badge ' + statusClass;
-            document.getElementById('statusBadge').textContent = v.status;
-
-            document.getElementById('plateError').style.display = 'none';
-            document.getElementById('typeError').style.display = 'none';
+            toggleNewLoai(loaixeId);
         }
 
-        function saveVehicle() {
-            const id = document.getElementById('vehicleId').value;
-            const plate = document.getElementById('plate').value.trim();
-            const type = document.getElementById('type').value.trim();
-            const seats = document.getElementById('seats').value;
-
-            let hasError = false;
-            if (!plate) {
-                document.getElementById('plateError').style.display = 'block';
-                hasError = true;
+        function toggleNewLoai(val) {
+            const fields = document.getElementById('newTypeFields');
+            if (val === 'new') {
+                fields.style.display = 'block';
+                fields.querySelectorAll('input').forEach(i => i.required = true);
             } else {
-                document.getElementById('plateError').style.display = 'none';
-            }
-
-            if (!type) {
-                document.getElementById('typeError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('typeError').style.display = 'none';
-            }
-
-            if (hasError) return;
-
-            if (id) {
-                const idx = vehicles.findIndex(x => x.id == id);
-                if (idx !== -1) {
-                    vehicles[idx].plate = plate;
-                    vehicles[idx].type = type;
-                    vehicles[idx].seats = seats;
-                }
-            } else {
-                const newId = vehicles.length > 0 ? Math.max(...vehicles.map(x => x.id)) + 1 : 1;
-                vehicles.push({
-                    id: newId,
-                    plate: plate,
-                    route: 'Huế-Đà Nẵng',
-                    seats: seats,
-                    type: type,
-                    status: 'Đang hoạt động',
-                    image: "{% static 'img/xe1.jpg' %}"
-                });
-            }
-
-            saveToStorage();
-            showListView();
-        }
-
-        function deleteVehicle(id) {
-            if (confirm('Bạn có chắc chắn muốn xóa phương tiện này?')) {
-                vehicles = vehicles.filter(x => x.id !== id);
-                saveToStorage();
-                renderList();
+                fields.style.display = 'none';
+                fields.querySelectorAll('input').forEach(i => i.required = false);
             }
         }
 
