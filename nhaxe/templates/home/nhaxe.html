@@ -5,10 +5,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ Nhà xe - Vexeapp</title>
+    <title>{% block title %}Trang chủ Nhà xe - Vexeapp{% endblock %}</title>
     <!-- Use FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -39,28 +40,29 @@
     <div class="main-wrapper">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-house" style="color: #06A0E2;"></i> Trang chủ
+            <a href="{% url 'nhaxe' %}" class="sidebar-item {% block active_trangchu %}active{% endblock %}">
+                <i class="fa-solid fa-house" style="color: {% block color_trangchu %}#06A0E2{% endblock %};"></i> Trang chủ
             </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item {% block active_taixe %}{% endblock %}">
+                <i class="fa-solid fa-users" style="color: {% block color_taixe %}#444{% endblock %};"></i> Quản lý tài xế
             </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item {% block active_tuyenxe %}{% endblock %}">
+                <i class="fa-solid fa-route" style="color: {% block color_tuyenxe %}#444{% endblock %};"></i> Quản lý tuyến xe
             </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item {% block active_loaixe %}{% endblock %}">
+                <i class="fa-solid fa-tags" style="color: {% block color_loaixe %}#444{% endblock %};"></i> Quản lý loại xe
             </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item {% block active_chuyenxe %}{% endblock %}">
+                <i class="fa-solid fa-map" style="color: {% block color_chuyenxe %}#444{% endblock %};"></i> Quản lý chuyến xe
             </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item {% block active_xe %}{% endblock %}">
+                <i class="fa-solid fa-car" style="color: {% block color_xe %}#444{% endblock %};"></i> Quản lý phương tiện
             </a>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
+            {% block content %}
             <h2 class="page-title">Lịch làm việc</h2>
             <p class="page-subtitle">Lịch làm việc của các tài xế trong tuần</p>
 
@@ -107,7 +109,7 @@
                     </div>
                 </div>
             </div>
-
+            {% endblock %}
         </main>
     </div>
 
@@ -118,6 +120,16 @@
     </footer>
 
     <script src="{% static 'js/common.js' %}"></script>
+    
+    <!-- Cấu hình Popup Global Dùng Chung Toàn Dự Án -->
+    <div id="globalPopup" class="global-popup-overlay">
+        <div class="global-popup-box">
+            <i id="globalPopupIcon" class="global-popup-icon"></i>
+            <div id="globalPopupMessage" class="global-popup-message"></div>
+        </div>
+    </div>
+    
+    {% block extra_js %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             generateAdminSchedule();
@@ -196,6 +208,7 @@
             }
         }
     </script>
+    {% endblock %}
 </body>
 
 </html>

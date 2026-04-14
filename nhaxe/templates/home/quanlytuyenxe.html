@@ -1,166 +1,117 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
 
-<html lang="vi">
+{% block title %}Quản lý tuyến xe - Vexeapp{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý tuyến xe - Vexeapp</title>
-    <!-- Use FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Inherit base styling -->
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+{% block extra_css %}
     <!-- Page specific styling -->
     <link rel="stylesheet" href="{% static 'css/quanlytuyenxe.css' %}">
-</head>
+{% endblock %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
-        </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
-        </div>
-        <div class="dropdown-menu" id="userMenu">
-            <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">Quản lý tài khoản</a>
-            <a href="{% url 'dangxuat' %}" class="dropdown-item">Đăng xuất</a>
-        </div>
-    </header>
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#444{% endblock %}
+{% block active_tuyenxe %}active{% endblock %}
+{% block color_tuyenxe %}#06A0E2{% endblock %}
 
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-route"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-        </aside>
+{% block content %}
+    <!-- VIEW 1: ROUTE LIST -->
+    <div id="routeListView">
+        <div class="content-header-flex">
+            <h2 class="page-title">Quản lý tuyến xe</h2>
+            <button class="btn-add-route" onclick="showAddRouteView()"><i class="fa-solid fa-circle-plus"></i>
+                Thêm tuyến</button>
+        </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- VIEW 1: ROUTE LIST -->
-            <div id="routeListView">
-                <div class="content-header-flex">
-                    <h2 class="page-title">Quản lý tuyến xe</h2>
-                    <button class="btn-add-route" onclick="showAddRouteView()"><i class="fa-solid fa-circle-plus"></i>
-                        Thêm tuyến</button>
+        <!-- Route Grid -->
+        <div class="route-grid">
+            {% for route in danh_sach_tuyen %}
+            <!-- Route -->
+            <div class="route-card">
+                <div class="route-card-header">
+                    {{ route.tenTuyen }}
                 </div>
-
-
-
-                <!-- Route Grid -->
-                <div class="route-grid">
-                    {% for route in danh_sach_tuyen %}
-                    <!-- Route -->
-                    <div class="route-card">
-                        <div class="route-card-header">
-                            {{ route.tenTuyen }}
-                        </div>
-                        <div class="route-locations">
-                            <div class="loc-item">
-                                <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDi|default:"-" }}
-                            </div>
-                            <i class="fa-solid fa-arrow-right route-arrow"></i>
-                            <div class="loc-item">
-                                <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDen|default:"-" }}
-                            </div>
-                        </div>
-                        <div class="route-details">
-                            <div class="detail-box">
-                                <div class="detail-label">Khoảng cách</div>
-                                <div class="detail-value">{{ route.QuangDuong|default:"-" }} km</div>
-                            </div>
-                            <div class="detail-box">
-                                <div class="detail-label">Điểm trung gian</div>
-                                <div class="detail-value">{{ route.DiemTrungGian|default:"-" }}</div>
-                            </div>
-                        </div>
-                        <div class="route-info-footer">
-                            <span class="status-badge active">Đang hoạt động</span>
-                        </div>
-                        <div class="route-actions">
-                            <button class="btn-action-edit"
-                                onclick="openEditRoute('{{ route.tuyenXeID }}', '{{ route.tenTuyen|escapejs }}', '{{ route.diemDi|escapejs }}', '{{ route.diemDen|escapejs }}', '{{ route.QuangDuong|escapejs }}', '{{ route.DiemTrungGian|escapejs }}')"><i
-                                    class="fa-solid fa-pen"></i> Sửa</button>
-                            <button class="btn-action-delete" onclick="showDeleteConfirm('{{ route.tuyenXeID }}')"><i
-                                    class="fa-solid fa-trash"></i> Xóa</button>
-                        </div>
+                <div class="route-locations">
+                    <div class="loc-item">
+                        <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDi|default:"-" }}
                     </div>
-                    {% empty %}
-                    <div class="route-card"
-                        style="grid-column: 1 / -1; text-align: center; color: #555; padding: 20px;">
-                        Bạn chưa có tuyến xe nào hoặc máy chủ không phản hồi dữ liệu.
+                    <i class="fa-solid fa-arrow-right route-arrow"></i>
+                    <div class="loc-item">
+                        <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDen|default:"-" }}
                     </div>
-                    {% endfor %}
+                </div>
+                <div class="route-details">
+                    <div class="detail-box">
+                        <div class="detail-label">Khoảng cách</div>
+                        <div class="detail-value">{{ route.QuangDuong|default:"-" }} km</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Điểm trung gian</div>
+                        <div class="detail-value">{{ route.DiemTrungGian|default:"-" }}</div>
+                    </div>
+                </div>
+                <div class="route-info-footer">
+                    <span class="status-badge active">Đang hoạt động</span>
+                </div>
+                <div class="route-actions">
+                    <button class="btn-action-edit"
+                        onclick="openEditRoute('{{ route.tuyenXeID }}', '{{ route.tenTuyen|escapejs }}', '{{ route.diemDi|escapejs }}', '{{ route.diemDen|escapejs }}', '{{ route.QuangDuong|escapejs }}', '{{ route.DiemTrungGian|escapejs }}')"><i
+                            class="fa-solid fa-pen"></i> Sửa</button>
+                    <button class="btn-action-delete" onclick="showDeleteConfirm('{{ route.tuyenXeID }}')"><i
+                            class="fa-solid fa-trash"></i> Xóa</button>
                 </div>
             </div>
-
-            <!-- VIEW 2: ADD/EDIT ROUTE -->
-            <div id="addRouteView" class="add-route-container" style="display: none;">
-                <div class="add-route-title" id="formTitle">Thêm tuyến mới</div>
-                <form class="add-route-form" id="routeForm" method="POST" action="{% url 'them_tuyen_xe' %}"
-                    onsubmit="validateAndSubmitAddRoute(event)">
-                    {% csrf_token %}
-                    <div class="add-route-field">
-                        <label class="field-label">Tên tuyến</label>
-                        <input type="text" name="tenTuyen" id="routeName" class="field-input"
-                            placeholder="Ví dụ: Đà Nẵng - Huế">
-                        <div class="error-msg" id="nameError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
-                        </div>
-                    </div>
-                    <div class="add-route-field">
-                        <label class="field-label">Điểm đi</label>
-                        <input type="text" name="diemDi" id="startPoint" class="field-input"
-                            placeholder="Ví dụ: Đà Nẵng">
-                        <div class="error-msg" id="startError"
-                            style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
-                    </div>
-                    <div class="add-route-field">
-                        <label class="field-label">Điểm đến</label>
-                        <input type="text" name="diemDen" id="endPoint" class="field-input" placeholder="Ví dụ: Huế">
-                        <div class="error-msg" id="endError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
-                        </div>
-                    </div>
-                    <div class="add-route-field">
-                        <label class="field-label">Khoảng cách (km)</label>
-                        <input type="number" step="0.1" name="quangDuong" id="distance" class="field-input"
-                            placeholder="100">
-                        <div class="error-msg" id="distError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
-                        </div>
-                    </div>
-                    <div class="add-route-field">
-                        <label class="field-label">Điểm trung gian</label>
-                        <input type="text" name="diemTrungGian" id="diemTrungGian" class="field-input"
-                            placeholder="Ví dụ: Lăng Cô">
-                    </div>
-                    <div class="add-route-buttons">
-                        <button type="button" class="btn-cancel-add-route" onclick="hideAddRouteView()">Hủy</button>
-                        <button type="submit" class="btn-save-add-route">Lưu tuyến</button>
-                    </div>
-                </form>
+            {% empty %}
+            <div class="route-card"
+                style="grid-column: 1 / -1; text-align: center; color: #555; padding: 20px;">
+                Bạn chưa có tuyến xe nào hoặc máy chủ không phản hồi dữ liệu.
             </div>
-        </main>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- VIEW 2: ADD/EDIT ROUTE -->
+    <div id="addRouteView" class="add-route-container" style="display: none;">
+        <div class="add-route-title" id="formTitle">Thêm tuyến mới</div>
+        <form class="add-route-form" id="routeForm" method="POST" action="{% url 'them_tuyen_xe' %}"
+            onsubmit="validateAndSubmitAddRoute(event)">
+            {% csrf_token %}
+            <div class="add-route-field">
+                <label class="field-label">Tên tuyến</label>
+                <input type="text" name="tenTuyen" id="routeName" class="field-input"
+                    placeholder="Ví dụ: Đà Nẵng - Huế">
+                <div class="error-msg" id="nameError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
+                </div>
+            </div>
+            <div class="add-route-field">
+                <label class="field-label">Điểm đi</label>
+                <input type="text" name="diemDi" id="startPoint" class="field-input"
+                    placeholder="Ví dụ: Đà Nẵng">
+                <div class="error-msg" id="startError"
+                    style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+            </div>
+            <div class="add-route-field">
+                <label class="field-label">Điểm đến</label>
+                <input type="text" name="diemDen" id="endPoint" class="field-input" placeholder="Ví dụ: Huế">
+                <div class="error-msg" id="endError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
+                </div>
+            </div>
+            <div class="add-route-field">
+                <label class="field-label">Khoảng cách (km)</label>
+                <input type="number" step="0.1" name="quangDuong" id="distance" class="field-input"
+                    placeholder="100">
+                <div class="error-msg" id="distError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
+                </div>
+            </div>
+            <div class="add-route-field">
+                <label class="field-label">Điểm trung gian</label>
+                <input type="text" name="diemTrungGian" id="diemTrungGian" class="field-input"
+                    placeholder="Ví dụ: Lăng Cô">
+            </div>
+            <div class="add-route-buttons">
+                <button type="button" class="btn-cancel-add-route" onclick="hideAddRouteView()">Hủy</button>
+                <button type="submit" class="btn-save-add-route">Lưu tuyến</button>
+            </div>
+        </form>
     </div>
 
     <!-- Modal: Delete Confirmation -->
@@ -177,15 +128,9 @@
             </form>
         </div>
     </div>
+{% endblock %}
 
-    <!-- Cấu hình Popup Global Dùng Chung-->
-    <div id="globalPopup" class="global-popup-overlay">
-        <div class="global-popup-box">
-            <i id="globalPopupIcon" class="global-popup-icon"></i>
-            <div id="globalPopupMessage" class="global-popup-message"></div>
-        </div>
-    </div>
-
+{% block extra_js %}
     <script id="routesData" type="application/json">{{ tat_ca_ten_tuyen_json|safe }}</script>
     <script id="djangoMessages" type="application/json">
         [
@@ -343,8 +288,4 @@
             }
         });
     </script>
-
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
-
-</html>
+{% endblock %}

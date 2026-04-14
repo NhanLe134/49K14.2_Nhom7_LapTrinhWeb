@@ -22,11 +22,6 @@ def quanlytuyenxe(request):
             
             if nha_xe_cua_tuyen == nha_xe_id:
                 danh_sach_tuyen.append(tuyen)
-            elif isinstance(nha_xe_cua_tuyen, str) and nha_xe_cua_tuyen.strip() == nha_xe_id.strip():
-                danh_sach_tuyen.append(tuyen)
-            elif isinstance(nha_xe_cua_tuyen, dict):
-                if nha_xe_id in list(nha_xe_cua_tuyen.values()):
-                    danh_sach_tuyen.append(tuyen)
     else:
         messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
         
@@ -47,9 +42,6 @@ def them_tuyen_xe(request):
         quang_duong = request.POST.get('quangDuong')
         diem_trung_gian = request.POST.get('diemTrungGian')
         
-        if not ten_tuyen:
-            ten_tuyen = f"{diem_di} - {diem_den}"
-            
         response_get = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/")
         max_id = 0
         if response_get.status_code == 200:
@@ -91,9 +83,6 @@ def sua_tuyen_xe(request, pk):
         quang_duong = request.POST.get('quangDuong')
         diem_trung_gian = request.POST.get('diemTrungGian')
         
-        if not ten_tuyen:
-            ten_tuyen = f"{diem_di} - {diem_den}"
-            
         payload = {
             "tuyenXeID": pk,
             "tenTuyen": ten_tuyen,
