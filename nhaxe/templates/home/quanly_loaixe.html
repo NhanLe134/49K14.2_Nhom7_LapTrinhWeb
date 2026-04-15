@@ -1,305 +1,337 @@
 {% load static %}
 <html lang="vi">
 
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thiết lập giá vé - Nhà xe</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe_loaixe_style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <style>
-        .icon-A { background-color: #3b82f6 !important; color: white !important; }
-        .icon-B { background-color: #10b981 !important; color: white !important; }
-        .icon-C { background-color: #a855f7 !important; color: white !important; }
-        .nx-card-A { border-top: 5px solid #3b82f6 !important; }
-        .nx-card-B { border-top: 5px solid #10b981 !important; }
-        .nx-card-C { border-top: 5px solid #a855f7 !important; }
-        .nx-modal-overlay.show-modal { display: flex !important; }
-    </style>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Thiết lập giá vé - Nhà xe</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   <link rel="stylesheet" href="{% static 'css/nhaxe_loaixe_style.css' %}">
+   <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+   <style>
+       .icon-A { background-color: #3b82f6 !important; color: white !important; }
+       .icon-B { background-color: #10b981 !important; color: white !important; }
+       .icon-C { background-color: #a855f7 !important; color: white !important; }
+       .nx-card-A { border-top: 5px solid #3b82f6 !important; }
+       .nx-card-B { border-top: 5px solid #10b981 !important; }
+       .nx-card-C { border-top: 5px solid #a855f7 !important; }
+       .nx-modal-overlay.show-modal { display: flex !important; }
+   </style>
 </head>
 
+
 <body>
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
-        </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+   <header class="header">
+       <div class="header-logo">
+           <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+           <h1>NHÀ XE HÙNG CƯỜNG</h1>
+       </div>
+       <div class="header-user" id="userDropdownBtn">
+           <div class="user-avatar">
+               <i class="fa-solid fa-user"></i>
+           </div>
+           <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
 
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-    </header>
 
-    <div class="main-wrapper">
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-tags" style="color: #06A0E2;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-        </aside>
+           <div class="dropdown-menu" id="userMenu">
+               <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
+                   <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+               </a>
+               <a href="{% url 'dangxuat' %}" class="dropdown-item">
+                   <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+               </a>
+           </div>
+       </div>
+   </header>
 
-        <main class="main-content">
-            {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                        <!-- Giữ lại thông báo lỗi nếu có, còn thông báo thành công sẽ hiển thị bằng Modal -->
-                        {% if 'thành công' not in message.message|lower %}
-                            <div class="alert alert-{{ message.tags }}">
-                                {{ message }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            {% endif %}
 
-            <div class="nx-card-grid" id="main-vehicle-grid">
-                {% if loaixe_list %}
-                    {% for v in loaixe_list %}
-                    <div class="nx-card {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}nx-card-A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}nx-card-B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}nx-card-C{% endif %}">
-                        <div class="nx-card-header">
-                            <div class="nx-card-icon {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}icon-A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}icon-B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}icon-C{% endif %}">
-                                {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}C{% else %}X{% endif %}
-                            </div>
-                            <div class="nx-card-title">
-                                <h3>{{ v.TenLoaiXe }}</h3>
-                                <span>{{ v.SoGhe }} chỗ</span>
-                            </div>
-                        </div>
-                        <div class="nx-card-row">
-                            <span class="nx-label">💲 Giá vé</span>
-                            {% if v.GiaVe %}
-                                <span class="nx-value">{{ v.GiaVe|floatformat:0 }} đ</span>
-                            {% else %}
-                                <span class="nx-badge-warning">Chưa thiết lập</span>
-                            {% endif %}
-                        </div>
-                        <div class="nx-card-row">
-                            <span class="nx-label">📅 Cập nhật cuối</span>
-                            {% if v.NgayCapNhat %}
-                                <span class="nx-value">{{ v.NgayCapNhat }}</span>
-                            {% else %}
-                                <span class="nx-value">Chưa cập nhật</span>
-                            {% endif %}
-                        </div>
-                        <button class="nx-btn-update" onclick="openUpdateModal('{{ v.LoaiXeId }}', '{{ v.TenLoaiXe }}', '{{ v.SoGhe }}', '{% if v.GiaVe %}{{ v.GiaVe }}{% else %}0{% endif %}')">
-                            💲 Cập nhật giá vé
-                        </button>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p>Không có dữ liệu loại xe.</p>
-                {% endif %}
-            </div>
-        </main>
-    </div>
+   <div class="main-wrapper">
+       <aside class="sidebar">
+           <a href="{% url 'nhaxe' %}" class="sidebar-item">
+               <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+           </a>
+           <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
+               <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
+           </a>
+           <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
+               <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
+           </a>
+           <a href="{% url 'quanly_loaixe' %}" class="sidebar-item active">
+               <i class="fa-solid fa-tags" style="color: #06A0E2;"></i> Quản lý loại xe
+           </a>
+           <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
+               <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
+           </a>
+           <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
+               <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
+           </a>
+       </aside>
 
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
 
-    <div id="updateModal" class="nx-modal-overlay">
-        <div class="nx-modal-box update-modal">
-            <div class="nx-modal-header">
-                <div class="nx-modal-header-left">
-                    <div class="nx-modal-icon-dollar">💲</div>
-                    <div>
-                        <h2>Cập nhật giá vé</h2>
-                        <span id="modal-vehicle-info"></span>
-                    </div>
-                </div>
-                <button class="nx-btn-close" id="btn-close-update">&times;</button>
-            </div>
+       <main class="main-content">
+           {% if messages %}
+               <div class="messages">
+                   {% for message in messages %}
+                       <!-- Giữ lại thông báo lỗi nếu có, còn thông báo thành công sẽ hiển thị bằng Modal -->
+                       {% if 'thành công' not in message.message|lower %}
+                           <div class="alert alert-{{ message.tags }}">
+                               {{ message }}
+                           </div>
+                       {% endif %}
+                   {% endfor %}
+               </div>
+           {% endif %}
 
-            <form method="POST" action="" id="update-price-form">
-                {% csrf_token %}
-                <div class="nx-modal-body">
-                    <div class="nx-input-group readonly-group">
-                        <label>Giá hiện tại</label>
-                        <input type="text" id="modal-current-price" value="" readonly disabled>
-                    </div>
 
-                    <div class="nx-input-group active-group">
-                        <label>Giá vé mới <span class="required-star">*</span></label>
-                        <div class="nx-input-wrapper">
-                            <input type="number" name="gia_ve" id="modal-new-price" placeholder="Nhập giá mới" required>
-                            <span class="nx-currency">VND</span>
-                        </div>
-                        <div class="nx-error-msg" id="price-error">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="15" y1="9" x2="9" y2="15"></line>
-                                <line x1="9" y1="9" x2="15" y2="15"></line>
-                            </svg>
-                            <span id="price-error-text">Giá vé phải lớn hơn 0</span>
-                        </div>
-                    </div>
+           <div class="nx-card-grid" id="main-vehicle-grid">
+               {% if loaixe_list %}
+                   {% for v in loaixe_list %}
+                   <div class="nx-card {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}nx-card-A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}nx-card-B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}nx-card-C{% endif %}">
+                       <div class="nx-card-header">
+                           <div class="nx-card-icon {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}icon-A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}icon-B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}icon-C{% endif %}">
+                               {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}C{% else %}X{% endif %}
+                           </div>
+                           <div class="nx-card-title">
+                               <h3>{{ v.TenLoaiXe }}</h3>
+                               <span>{{ v.SoGhe }} chỗ</span>
+                           </div>
+                       </div>
+                       <div class="nx-card-row">
+                           <span class="nx-label">💲 Giá vé</span>
+                           {% if v.GiaVe %}
+                               <span class="nx-value">{{ v.GiaVe|floatformat:0 }} đ</span>
+                           {% else %}
+                               <span class="nx-badge-warning">Chưa thiết lập</span>
+                           {% endif %}
+                       </div>
+                       <div class="nx-card-row">
+                           <span class="nx-label">📅 Cập nhật cuối</span>
+                           {% if v.NgayCapNhat %}
+                               <span class="nx-value">{{ v.NgayCapNhat }}</span>
+                           {% else %}
+                               <span class="nx-value">Chưa cập nhật</span>
+                           {% endif %}
+                       </div>
+                       <button class="nx-btn-update" onclick="openUpdateModal('{{ v.LoaiXeId }}', '{{ v.TenLoaiXe }}', '{{ v.SoGhe }}', '{% if v.GiaVe %}{{ v.GiaVe }}{% else %}0{% endif %}')">
+                           💲 Cập nhật giá vé
+                       </button>
+                   </div>
+                   {% endfor %}
+               {% else %}
+                   <p>Không có dữ liệu loại xe.</p>
+               {% endif %}
+           </div>
+       </main>
+   </div>
 
-                    <div class="nx-modal-actions">
-                        <button type="submit" class="nx-btn-save" id="btn-save-price">Lưu</button>
-                        <button type="button" class="nx-btn-cancel" id="btn-cancel-update">Hủy thao tác</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <div id="confirmCancelModal" class="nx-modal-overlay">
-        <div class="nx-modal-box new-alert-modal">
-            <div class="alert-title-wrapper">
-                <svg viewBox="0 0 24 24" fill="#F61313" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-                    <path
-                        d="M12 2L1 21H23L12 2ZM12 16C11.448 16 11 15.552 11 15V10C11 9.448 11.448 9 12 9C12.552 9 13 9.448 13 10V15C13 15.552 12.552 16 12 16ZM13 19H11V17H13V19Z" />
-                </svg>
-                <h3>Xác nhận huỷ thao tác</h3>
-            </div>
-            <p class="new-alert-message">Bạn có chắc chắn muốn dừng việc thiết lập giá?<br>Hành động này không thể hoàn
-                tác</p>
-            <div class="new-alert-actions">
-                <button class="btn-grey" id="btn-no-cancel">Không</button>
-                <button class="btn-red" id="btn-yes-cancel">Đồng ý</button>
-            </div>
-        </div>
-    </div>
+   <footer class="footer-banner">
+       <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
+       <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+   </footer>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="nx-modal-overlay" style="display: none;">
-        <div class="nx-modal-box new-success-alert">
-            <div class="new-success-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-            </div>
-            <p class="new-success-message">Cập nhật giá vé thành công</p>
-        </div>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
+   <div id="updateModal" class="nx-modal-overlay">
+       <div class="nx-modal-box update-modal">
+           <div class="nx-modal-header">
+               <div class="nx-modal-header-left">
+                   <div class="nx-modal-icon-dollar">💲</div>
+                   <div>
+                       <h2>Cập nhật giá vé</h2>
+                       <span id="modal-vehicle-info"></span>
+                   </div>
+               </div>
+               <button class="nx-btn-close" id="btn-close-update">&times;</button>
+           </div>
 
-            if (userBtn && userMenu) {
-                userBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('show');
-                });
 
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('show');
-                });
-            }
+           <form method="POST" action="" id="update-price-form">
+               {% csrf_token %}
+               <div class="nx-modal-body">
+                   <div class="nx-input-group readonly-group">
+                       <label>Giá hiện tại</label>
+                       <input type="text" id="modal-current-price" value="" readonly disabled>
+                   </div>
 
-            // Xử lý hiển thị thông báo thành công
-            {% if messages %}
-                {% for message in messages %}
-                    {% if 'thành công' in message.message|lower %}
-                        const successModal = document.getElementById('successModal');
-                        if(successModal) {
-                            successModal.classList.add('show-modal');
-                            setTimeout(() => {
-                                successModal.classList.remove('show-modal');
-                            }, 3000);
-                        }
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        });
 
-        const updateModal = document.getElementById('updateModal');
-        const confirmCancelModal = document.getElementById('confirmCancelModal');
+                   <div class="nx-input-group active-group">
+                       <label>Giá vé mới <span class="required-star">*</span></label>
+                       <div class="nx-input-wrapper">
+                           <input type="number" name="gia_ve" id="modal-new-price" placeholder="Nhập giá mới" required>
+                           <span class="nx-currency">VND</span>
+                       </div>
+                       <div class="nx-error-msg" id="price-error">
+                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                               stroke-linecap="round" stroke-linejoin="round">
+                               <circle cx="12" cy="12" r="10"></circle>
+                               <line x1="15" y1="9" x2="9" y2="15"></line>
+                               <line x1="9" y1="9" x2="15" y2="15"></line>
+                           </svg>
+                           <span id="price-error-text">Giá vé phải lớn hơn 0</span>
+                       </div>
+                   </div>
 
-        const inputNewPrice = document.getElementById('modal-new-price');
-        const errorBox = document.getElementById('price-error');
-        const errorText = document.getElementById('price-error-text');
-        const updateForm = document.getElementById('update-price-form');
 
-        function openUpdateModal(id, name, seats, price) {
-            document.getElementById('modal-vehicle-info').textContent = ${name} (${seats} chỗ);
-            const currentPriceInput = document.getElementById('modal-current-price');
+                   <div class="nx-modal-actions">
+                       <button type="submit" class="nx-btn-save" id="btn-save-price">Lưu</button>
+                       <button type="button" class="nx-btn-cancel" id="btn-cancel-update">Hủy thao tác</button>
+                   </div>
+               </div>
+           </form>
+       </div>
+   </div>
 
-            if (!price || price === '0' || price === 'None') {
-                currentPriceInput.value = 'Chưa thiết lập';
-            } else {
-                currentPriceInput.value = new Intl.NumberFormat('vi-VN').format(price) + ' đ';
-            }
 
-            // Gán action URL với đúng ID thực tế của xe
-            updateForm.action = /cap-nhat-gia/${id}/;
+   <div id="confirmCancelModal" class="nx-modal-overlay">
+       <div class="nx-modal-box new-alert-modal">
+           <div class="alert-title-wrapper">
+               <svg viewBox="0 0 24 24" fill="#F61313" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                   <path
+                       d="M12 2L1 21H23L12 2ZM12 16C11.448 16 11 15.552 11 15V10C11 9.448 11.448 9 12 9C12.552 9 13 9.448 13 10V15C13 15.552 12.552 16 12 16ZM13 19H11V17H13V19Z" />
+               </svg>
+               <h3>Xác nhận huỷ thao tác</h3>
+           </div>
+           <p class="new-alert-message">Bạn có chắc chắn muốn dừng việc thiết lập giá?<br>Hành động này không thể hoàn
+               tác</p>
+           <div class="new-alert-actions">
+               <button class="btn-grey" id="btn-no-cancel">Không</button>
+               <button class="btn-red" id="btn-yes-cancel">Đồng ý</button>
+           </div>
+       </div>
+   </div>
 
-            inputNewPrice.value = '';
-            inputNewPrice.classList.remove('input-error');
-            errorBox.style.display = 'none';
 
-            updateModal.classList.add('show');
-        }
+   <!-- Success Modal -->
+   <div id="successModal" class="nx-modal-overlay" style="display: none;">
+       <div class="nx-modal-box new-success-alert">
+           <div class="new-success-icon">
+               <svg viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round">
+                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                   <polyline points="22 4 12 14.01 9 11.01"></polyline>
+               </svg>
+           </div>
+           <p class="new-success-message">Cập nhật giá vé thành công</p>
+       </div>
+   </div>
 
-        document.getElementById('btn-close-update').addEventListener('click', () => {
-            updateModal.classList.remove('show');
-        });
 
-        document.getElementById('btn-cancel-update').addEventListener('click', () => {
-            confirmCancelModal.classList.add('show');
-        });
+   <script>
+       document.addEventListener('DOMContentLoaded', () => {
+           const userBtn = document.getElementById('userDropdownBtn');
+           const userMenu = document.getElementById('userMenu');
 
-        document.getElementById('btn-no-cancel').addEventListener('click', () => {
-            confirmCancelModal.classList.remove('show');
-        });
 
-        document.getElementById('btn-yes-cancel').addEventListener('click', () => {
-            confirmCancelModal.classList.remove('show');
-            updateModal.classList.remove('show');
-        });
+           if (userBtn && userMenu) {
+               userBtn.addEventListener('click', (e) => {
+                   e.stopPropagation();
+                   userMenu.classList.toggle('show');
+               });
 
-        updateForm.addEventListener('submit', (e) => {
-            const priceValue = inputNewPrice.value.trim();
-            const priceNum = Number(priceValue);
 
-            if (priceNum <= 0 || isNaN(priceNum)) {
-                e.preventDefault(); // Ngăn submit form nếu không hợp lệ
-                inputNewPrice.classList.add('input-error');
-                errorText.textContent = 'Giá vé phải lớn hơn 0';
-                errorBox.style.display = 'flex';
-            }
-        });
+               document.addEventListener('click', () => {
+                   userMenu.classList.remove('show');
+               });
+           }
 
-        inputNewPrice.addEventListener('input', () => {
-            if (inputNewPrice.classList.contains('input-error')) {
-                inputNewPrice.classList.remove('input-error');
-                errorBox.style.display = 'none';
-            }
-        });
-    </script>
-    <script src="{% static 'js/common.js' %}"></script>
+
+           // Xử lý hiển thị thông báo thành công
+           {% if messages %}
+               {% for message in messages %}
+                   {% if 'thành công' in message.message|lower %}
+                       const successModal = document.getElementById('successModal');
+                       if(successModal) {
+                           successModal.classList.add('show-modal');
+                           setTimeout(() => {
+                               successModal.classList.remove('show-modal');
+                           }, 3000);
+                       }
+                   {% endif %}
+               {% endfor %}
+           {% endif %}
+       });
+
+
+       const updateModal = document.getElementById('updateModal');
+       const confirmCancelModal = document.getElementById('confirmCancelModal');
+
+
+       const inputNewPrice = document.getElementById('modal-new-price');
+       const errorBox = document.getElementById('price-error');
+       const errorText = document.getElementById('price-error-text');
+       const updateForm = document.getElementById('update-price-form');
+
+
+       function openUpdateModal(id, name, seats, price) {
+           document.getElementById('modal-vehicle-info').textContent = `${name} (${seats} chỗ)`;
+           const currentPriceInput = document.getElementById('modal-current-price');
+
+
+           if (!price || price === '0' || price === 'None') {
+               currentPriceInput.value = 'Chưa thiết lập';
+           } else {
+               currentPriceInput.value = new Intl.NumberFormat('vi-VN').format(price) + ' đ';
+           }
+
+
+           // Gán action URL với đúng ID thực tế của xe
+           updateForm.action = `/cap-nhat-gia/${id}/`;
+
+
+           inputNewPrice.value = '';
+           inputNewPrice.classList.remove('input-error');
+           errorBox.style.display = 'none';
+
+
+           updateModal.classList.add('show');
+       }
+
+
+       document.getElementById('btn-close-update').addEventListener('click', () => {
+           updateModal.classList.remove('show');
+       });
+
+
+       document.getElementById('btn-cancel-update').addEventListener('click', () => {
+           confirmCancelModal.classList.add('show');
+       });
+
+
+       document.getElementById('btn-no-cancel').addEventListener('click', () => {
+           confirmCancelModal.classList.remove('show');
+       });
+
+
+       document.getElementById('btn-yes-cancel').addEventListener('click', () => {
+           confirmCancelModal.classList.remove('show');
+           updateModal.classList.remove('show');
+       });
+
+
+       updateForm.addEventListener('submit', (e) => {
+           const priceValue = inputNewPrice.value.trim();
+           const priceNum = Number(priceValue);
+
+
+           if (priceNum <= 0 || isNaN(priceNum)) {
+               e.preventDefault(); // Ngăn submit form nếu không hợp lệ
+               inputNewPrice.classList.add('input-error');
+               errorText.textContent = 'Giá vé phải lớn hơn 0';
+               errorBox.style.display = 'flex';
+           }
+       });
+
+
+       inputNewPrice.addEventListener('input', () => {
+           if (inputNewPrice.classList.contains('input-error')) {
+               inputNewPrice.classList.remove('input-error');
+               errorBox.style.display = 'none';
+           }
+       });
+   </script>
+   <script src="{% static 'js/common.js' %}"></script>
 </body>
+
 
 </html>

@@ -1,3 +1,5 @@
+import requests
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
@@ -5,6 +7,8 @@ import requests
 from django.conf import settings
 from datetime import datetime
 import random
+
+
 
 # Các hàm đăng nhập / đăng xuất đã được chuyển sang auth_views.py
 
@@ -174,6 +178,47 @@ def quanly_loaixe(request):
     return render(request, 'home/quanly_loaixe.html', {'loaixe_list': loaixe_mặc_định})
 
 
+def quanly_loaixe(request):
+    # Danh sách 3 loại xe mặc định theo yêu cầu thiết kế
+    loaixe_mặc_định = [
+        {'LoaiXeId': 'LX00001', 'TenLoaiXe': 'Loại xe A', 'SoGhe': '4', 'GiaVe': None, 'NgayCapNhat': None},
+        {'LoaiXeId': 'LX00002', 'TenLoaiXe': 'Loại xe B', 'SoGhe': '7', 'GiaVe': None, 'NgayCapNhat': None},
+        {'LoaiXeId': 'LX00003', 'TenLoaiXe': 'Loại xe C', 'SoGhe': '9', 'GiaVe': None, 'NgayCapNhat': None}
+    ]
+
+    api_url = f"{settings.API_BASE_URL}/api/loaixe"
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    try:
+        response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
+        if response.status_code == 200:
+            try:
+                api_data = response.json()
+                if isinstance(api_data, list):
+                    for xe_api in api_data:
+                        # Lấy dữ liệu thực tế từ JSON của Postman
+                        api_id = xe_api.get('LoaixeID')
+                        api_so_cho = xe_api.get('SoCho')
+                        api_gia_ve = xe_api.get('GiaVe')
+                        api_ngay_cap_nhat = xe_api.get('NgayCapNhatGia')
+
+                        for xe_macdinh in loaixe_mặc_định:
+                            # Ghép dữ liệu dựa trên số chỗ ngồi (4, 7, 9)
+                            if str(api_so_cho) == str(xe_macdinh['SoGhe']):
+                                xe_macdinh['LoaiXeId'] = api_id  # Lưu lại ID thật (VD: LX00002)
+                                xe_macdinh['GiaVe'] = api_gia_ve
+                                xe_macdinh['NgayCapNhat'] = api_ngay_cap_nhat
+            except ValueError:
+                pass
+    except Exception as e:
+        print(f"GET error: {e}")
+
+    return render(request, 'home/quanly_loaixe.html', {'loaixe_list': loaixe_mặc_định})
+
+
 def capnhat_gia_loaixe(request, loaixe_id):
     if request.method == 'POST':
         gia_moi = request.POST.get('gia_ve')
@@ -227,6 +272,7 @@ def capnhat_gia_loaixe(request, loaixe_id):
                 else:
                     error_detail = response.text[:200]  # Lấy 200 ký tự đầu cho đỡ dài
                     messages.error(request, f"Lỗi {response.status_code}: {error_detail}")
+
 
         except Exception as e:
             messages.error(request, f"Lỗi kết nối đến máy chủ: {e}")
