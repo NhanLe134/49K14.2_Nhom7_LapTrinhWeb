@@ -39,6 +39,9 @@ def dangnhap(request):
     api_url = f"{settings.API_BASE_URL}/api/user-auth/"
     try:
         response = requests.get(api_url, timeout=settings.API_TIMEOUT)
+    except requests.exceptions.Timeout:
+        messages.error(request, 'Lỗi: Kết nối tới API quá hạn (Timeout). Vui lòng thử lại sau hoặc "đánh thức" server bằng cách truy cập link API trực tiếp.')
+        return render(request, 'home/index.html', {'username_value': username})
     except Exception as e:
         messages.error(request, f'Lỗi kết nối API: {str(e)}')
         return render(request, 'home/index.html', {'username_value': username})
