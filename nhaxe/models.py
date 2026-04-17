@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from django.contrib.auth.models import User
 
 # 1. Bảng Khách Hàng
 class KhachHang(models.Model):
@@ -9,6 +10,7 @@ class KhachHang(models.Model):
     AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
     def __str__(self):
         return self.KhachHangID
+
 # 2. Bảng Nhà Xe
 class Nhaxe(models.Model):
     NhaxeID = models.CharField(max_length=10, primary_key=True)
@@ -23,9 +25,11 @@ class Nhaxe(models.Model):
     )
     def __str__(self):
         return self.NhaxeID
+
 # 4. Bảng Tài Xế
 class Taixe(models.Model):
     TaixeID = models.CharField(max_length=10, primary_key=True)
+    HovaTen=models.CharField(max_length=500, null=True, blank=True)
     HinhAnhURL = models.CharField(max_length=255, null=True, blank=True)
     SoBangLai = models.CharField(max_length=20, unique=True)
     soCCCD = models.CharField(
@@ -38,6 +42,7 @@ class Taixe(models.Model):
 
     def __str__(self):
         return self.TaixeID
+
 # 5. Bảng Chi Tiết Tài Xế (Trung gian Nhà xe - Tài xế)
 class CHITIETTAIXE(models.Model):
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
@@ -48,6 +53,7 @@ class CHITIETTAIXE(models.Model):
     NgayKetThuc = models.DateField()
     class Meta:
         unique_together = ('Nhaxe', 'Taixe')
+
 # 6. Bảng Loại Xe
 class Loaixe(models.Model):
     LoaixeID = models.CharField(max_length=10, primary_key=True, blank=True)
@@ -73,6 +79,7 @@ class Loaixe(models.Model):
 
     def __str__(self):
         return self.LoaixeID
+
 # 7. Bảng Chi Tiết Loại Xe (Trung gian Nhà xe - Loại xe)
 class CHITIETLOAIXE(models.Model):
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
@@ -81,6 +88,7 @@ class CHITIETLOAIXE(models.Model):
     Tennhaxe = models.CharField(max_length=200, null=True, blank=True)
     class Meta:
         unique_together = ('Nhaxe', 'Loaixe')
+
 # 8. Bảng Xe
 class Xe(models.Model):
     XeID = models.CharField(max_length=10, primary_key=True, blank=True)
@@ -94,7 +102,6 @@ class Xe(models.Model):
     def save(self, *args, **kwargs):
         if not self.XeID:
             import re
-            # Find the highest ID that follows the XE00001 pattern
             last_record = Xe.objects.filter(XeID__regex=r'^XE\d+').order_by('XeID').last()
             
             if last_record:
@@ -103,7 +110,6 @@ class Xe(models.Model):
             else:
                 num = 1
             
-            # Safety loop to avoid UNIQUE constraint clusters
             new_id = f'XE{num:05d}'
             while Xe.objects.filter(XeID=new_id).exists():
                 num += 1
@@ -115,7 +121,6 @@ class Xe(models.Model):
 
     @property
     def ten_loai_xe(self):
-        """Lấy tên hãng xe từ bảng CHITIETLOAIXE"""
         try:
             from .models import CHITIETLOAIXE
             ct = CHITIETLOAIXE.objects.filter(Nhaxe=self.Nhaxe, Loaixe=self.Loaixe).first()
@@ -125,6 +130,7 @@ class Xe(models.Model):
 
     def __str__(self):
         return self.BienSoXe
+
 # 9. Bảng Tuyến Xe
 class TuyenXe(models.Model):
     tuyenXeID = models.CharField(max_length=10, primary_key=True)
@@ -136,6 +142,7 @@ class TuyenXe(models.Model):
     DiemTrungGian = models.CharField(max_length=500, null=True, blank=True)
     def __str__(self):
         return self.tenTuyen or self.tuyenXeID
+
 # 10. Bảng Chuyến Xe
 class ChuyenXe(models.Model):
     ChuyenXeID = models.CharField(max_length=10, primary_key=True)
@@ -145,9 +152,10 @@ class ChuyenXe(models.Model):
     NgayKhoiHanh = models.DateField(null=True, blank=True)
     GioDi = models.TimeField(null=True, blank=True)
     GioDen = models.TimeField(null=True, blank=True)
-    TrangThai = models.CharField(max_length=10, null=True, blank=True)
+    TrangThai = models.CharField(max_length=50, null=True, blank=True)
     def __str__(self):
         return self.ChuyenXeID
+
 # 11. Bảng Ghế Ngồi
 class GheNgoi(models.Model):
     gheID = models.CharField(max_length=10, primary_key=True)
@@ -156,6 +164,7 @@ class GheNgoi(models.Model):
     trangThai = models.CharField(max_length=20, null=True, blank=True)
     def __str__(self):
         return f"{self.soGhe} - {self.ChuyenXe.ChuyenXeID}"
+
 # 12. Bảng Vé
 class Ve(models.Model):
     VeID = models.CharField(max_length=10, primary_key=True)
@@ -171,6 +180,7 @@ class Ve(models.Model):
     TrangThaiThanhToan = models.CharField(max_length=20, null=True, blank=True)
     def __str__(self):
         return self.VeID
+
 # 13. Bảng Thanh Toán
 class ThanhToan(models.Model):
     ThanhToanID = models.CharField(max_length=10, primary_key=True)
@@ -181,6 +191,7 @@ class ThanhToan(models.Model):
     MaGiaoDich = models.CharField(max_length=50, null=True, blank=True)
     def __str__(self):
         return self.ThanhToanID
+
 # 14. Bảng Đánh Giá
 class DanhGia(models.Model):
     DanhGiaID = models.CharField(max_length=10, primary_key=True)
@@ -192,3 +203,20 @@ class DanhGia(models.Model):
     def __str__(self):
         return f"Review {self.DanhGiaID} - {self.Diemso}"
 
+# 15. Bảng User Authentication (Đăng nhập)
+class User_Authentication(models.Model):
+    UserID = models.CharField(max_length=10, primary_key=True)
+    KhachHang = models.ForeignKey(KhachHang, on_delete=models.SET_NULL, null=True, blank=True)
+    Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.SET_NULL, null=True, blank=True)
+    TenDangNhap = models.CharField(max_length=200, unique=True)
+    MatKhau = models.CharField(max_length=200)
+    Vaitro = models.CharField(max_length=20)
+    SoDienThoai = models.CharField(
+        max_length=12,
+        unique=True,
+        validators=[RegexValidator(regex=r'^0\d{9,}$', message="Số điện thoại phải bắt đầu bằng 0 và có ít nhất 10 số")]
+    )
+    Taixe=models.ForeignKey(Taixe, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.TenDangNhap

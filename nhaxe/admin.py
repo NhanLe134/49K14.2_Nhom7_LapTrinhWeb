@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     KhachHang, Nhaxe, Taixe, CHITIETTAIXE,
     Loaixe, CHITIETLOAIXE, Xe, TuyenXe, ChuyenXe, GheNgoi, Ve,
-    ThanhToan, DanhGia
+    ThanhToan, DanhGia, User_Authentication
 )
 
 # Customize admin site headers
@@ -71,3 +71,8 @@ class ThanhToanAdmin(admin.ModelAdmin):
 class DanhGiaAdmin(admin.ModelAdmin):
     list_display = ('DanhGiaID', 'Ve', 'KhachHang', 'Diemso', 'NgayDanhGia')
     list_filter = ('Diemso',)
+
+@admin.register(User_Authentication)
+class UserAuthenticationAdmin(admin.ModelAdmin):
+    list_display = ('TenDangNhap', 'Vaitro', 'SoDienThoai','MatKhau')
+    search_fields = ('TenDangNhap', 'SoDienThoai')

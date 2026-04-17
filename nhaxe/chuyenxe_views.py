@@ -1,68 +1,66 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.conf import settings
-import requests
-import uuid
+from .models import ChuyenXe, TuyenXe, Xe, Taixe
+import random
 
 # ==================== NHÀ XE (nx) ====================
 
 def quanlychuyenxe(request):
-    user_id = request.session.get('user_id')
+    """
+    Hiển thị danh sách chuyến xe sử dụng Django ORM kết nối Supabase.
+    """
+    # Lấy toàn bộ chuyến xe, tối ưu JOIN với Tuyến và Xe
+    trips = ChuyenXe.objects.select_related('TuyenXe', 'Xe', 'Taixe').all()
+    
     chuyen_xe_list = []
-    if user_id:
-        headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
-        try:
-            api_url = f"{settings.API_BASE_URL}/api/chuyenxe/"
-            response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
-            if response.status_code == 200:
-                chuyen_xe_list = response.json()
-            else:
-                messages.error(request, f'Lỗi lấy danh sách chuyến xe (Mã: {response.status_code}).')
-        except requests.exceptions.RequestException as e:
-            messages.error(request, f'Lỗi kết nối API: {str(e)}')
+    for cx in trips:
+        # Map dữ liệu để tương thích với template hiện tại
+        data = {
+            'ChuyenXeID': cx.ChuyenXeID,
+            'route_name': cx.TuyenXe.tenTuyen if cx.TuyenXe else '-',
+            'gio_di_fmt': cx.GioDi.strftime('%H:%M') if cx.GioDi else '-',
+            'NgayKhoiHanh': cx.NgayKhoiHanh,
+            'TrangThai': cx.TrangThai or 'Đang chờ',
+            'seat_count': cx.Xe.SoGhe if cx.Xe else '-',
+            'Xe': cx.Xe.XeID if cx.Xe else None,
+            'Taixe': cx.Taixe.TaixeID if cx.Taixe else None,
+            'TuyenXe': cx.TuyenXe.tuyenXeID if cx.TuyenXe else None,
+        }
+        chuyen_xe_list.append(data)
+        
     return render(request, 'home/quanlychuyenxe.html', {'chuyen_xe_list': chuyen_xe_list})
 
 def themchuyenxe(request):
-    user_id = request.session.get('user_id')
-    if not user_id:
-        return redirect('index')
-        
-    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
-    
+    """
+    Thêm chuyến xe mới trực tiếp vào database Supabase.
+    """
     if request.method == 'POST':
-        payload = {
-            'tuyenXeId': request.POST.get('tuyenxe'),
-            'xeId': request.POST.get('xe'),
-            'taixeId': request.POST.get('taixe'),
-            'ngayKhoiHanh': request.POST.get('date'),
-            'gioDi': request.POST.get('time'),
-            'nhaXeId': user_id,
-            'trangThai': 'Đang chờ'
-        }
         try:
-            api_url = f"{settings.API_BASE_URL}/api/chuyenxe"
-            response = requests.post(api_url, json=payload, headers=headers, timeout=settings.API_TIMEOUT)
-            if response.status_code in [200, 201]:
-                messages.success(request, 'Thêm chuyến xe thành công.')
-            else:
-                messages.error(request, f'Thêm chuyến xe thất bại (Lỗi {response.status_code}).')
-        except requests.exceptions.RequestException:
-            messages.error(request, 'Lỗi kết nối API.')
-        # Cố tình không redirect để hiển thị lại form trống như yêu cầu của user
+            # Tạo ID mới ngẫu nhiên (VD: CX12345)
+            new_id = "CX" + str(random.randint(10000, 99999))
+            
+            # Lấy các instance từ ID
+            tuyen_inst = get_object_or_404(TuyenXe, pk=request.POST.get('tuyenxe'))
+            xe_inst = get_object_or_404(Xe, pk=request.POST.get('xe'))
+            taixe_inst = get_object_or_404(Taixe, pk=request.POST.get('taixe'))
+            
+            ChuyenXe.objects.create(
+                ChuyenXeID=new_id,
+                TuyenXe=tuyen_inst,
+                Xe=xe_inst,
+                Taixe=taixe_inst,
+                NgayKhoiHanh=request.POST.get('date'),
+                GioDi=request.POST.get('time'),
+                TrangThai='Đang chờ'
+            )
+            messages.success(request, 'Thêm chuyến xe thành công.')
+        except Exception as e:
+            messages.error(request, f'Lỗi khi thêm chuyến xe: {str(e)}')
 
-    # GET request - Lấy options cho dropdown
-    tuyen_xe_list, xe_list, taixe_list = [], [], []
-    try:
-        req_tuyen = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/", headers=headers, timeout=settings.API_TIMEOUT)
-        if req_tuyen.status_code == 200: tuyen_xe_list = req_tuyen.json()
-        
-        req_xe = requests.get(f"{settings.API_BASE_URL}/api/xe/", headers=headers, timeout=settings.API_TIMEOUT)
-        if req_xe.status_code == 200: xe_list = req_xe.json()
-        
-        req_taixe = requests.get(f"{settings.API_BASE_URL}/api/taixe/", headers=headers, timeout=settings.API_TIMEOUT)
-        if req_taixe.status_code == 200: taixe_list = req_taixe.json()
-    except requests.exceptions.RequestException:
-        pass
+    # Load options cho dropdown
+    tuyen_xe_list = TuyenXe.objects.all()
+    xe_list = Xe.objects.all()
+    taixe_list = Taixe.objects.all()
     
     return render(request, 'home/themchuyenxe.html', {
         'tuyen_xe_list': tuyen_xe_list,
@@ -71,110 +69,68 @@ def themchuyenxe(request):
     })
 
 def suachuyenxe(request):
-    user_id = request.session.get('user_id')
-    if not user_id:
-        return redirect('index')
-
-    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+    """
+    Chỉnh sửa thông tin chuyến xe qua ORM.
+    """
+    chuyenxe_id = request.POST.get('id') or request.GET.get('id')
+    chuyen = get_object_or_404(ChuyenXe, pk=chuyenxe_id)
 
     if request.method == 'POST':
-        chuyenxe_id = request.POST.get('id')
-        payload = {
-            'chuyenXeId': chuyenxe_id,
-            'tuyenXeId': request.POST.get('tuyenxe'),
-            'xeId': request.POST.get('xe'),
-            'taixeId': request.POST.get('taixe'),
-            'ngayKhoiHanh': request.POST.get('date'),
-            'gioDi': request.POST.get('time')
-        }
         try:
-            api_url = f"{settings.API_BASE_URL}/api/chuyenxe/{chuyenxe_id}"
-            response = requests.put(api_url, json=payload, headers=headers, timeout=settings.API_TIMEOUT)
-            if response.status_code in [200, 204]:
-                messages.success(request, 'Sửa chuyến xe thành công.')
-            else:
-                messages.error(request, f'Sửa chuyến xe thất bại (Lỗi {response.status_code}): {response.text}')
-        except requests.exceptions.RequestException:
-            messages.error(request, 'Lỗi kết nối API lấy dữ liệu.')
-        return redirect('quanlychuyenxe')
-
-    chuyenxe_id = request.GET.get('id')
-    if not chuyenxe_id:
-        return redirect('quanlychuyenxe')
-
-    chuyen = None
-    tuyen_xe_list, xe_list, taixe_list = [], [], []
-    try:
-        req_chuyen = requests.get(f"{settings.API_BASE_URL}/api/chuyenxe/{chuyenxe_id}", headers=headers, timeout=settings.API_TIMEOUT)
-        if req_chuyen.status_code == 200:
-            chuyen = req_chuyen.json()
-            
-        req_tuyen = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/", headers=headers, timeout=settings.API_TIMEOUT)
-        if req_tuyen.status_code == 200: tuyen_xe_list = req_tuyen.json()
-        
-        req_xe = requests.get(f"{settings.API_BASE_URL}/api/xe/", headers=headers, timeout=settings.API_TIMEOUT)
-        if req_xe.status_code == 200: xe_list = req_xe.json()
-        
-        req_taixe = requests.get(f"{settings.API_BASE_URL}/api/taixe/", headers=headers, timeout=settings.API_TIMEOUT)
-        if req_taixe.status_code == 200: taixe_list = req_taixe.json()
-    except requests.exceptions.RequestException:
-        pass
-
-    if not chuyen:
-        messages.error(request, 'Không tìm thấy chuyến xe này hoặc lỗi kết nối.')
-        return redirect('quanlychuyenxe')
+            chuyen.TuyenXe = get_object_or_404(TuyenXe, pk=request.POST.get('tuyenxe'))
+            chuyen.Xe = get_object_or_404(Xe, pk=request.POST.get('xe'))
+            chuyen.Taixe = get_object_or_404(Taixe, pk=request.POST.get('taixe'))
+            chuyen.NgayKhoiHanh = request.POST.get('date')
+            chuyen.GioDi = request.POST.get('time')
+            chuyen.save()
+            messages.success(request, 'Sửa chuyến xe thành công.')
+            return redirect('quanlychuyenxe')
+        except Exception as e:
+            messages.error(request, f'Lỗi khi cập nhật: {str(e)}')
 
     return render(request, 'home/suachuyenxe.html', {
         'chuyen': chuyen,
-        'tuyen_xe_list': tuyen_xe_list,
-        'xe_list': xe_list,
-        'taixe_list': taixe_list
+        'tuyen_xe_list': TuyenXe.objects.all(),
+        'xe_list': Xe.objects.all(),
+        'taixe_list': Taixe.objects.all()
     })
+
+def hoanthanh_chuyenxe(request, pk):
+    """Cập nhật trạng thái chuyến xe thành 'Hoàn thành'."""
+    if request.method == 'POST':
+        try:
+            ChuyenXe.objects.filter(pk=pk).update(TrangThai='Hoàn thành')
+            messages.success(request, 'Đã cập nhật trạng thái: Hoàn thành.')
+        except Exception as e:
+            messages.error(request, f'Lỗi: {str(e)}')
+    return redirect('quanlychuyenxe')
 
 # ==================== TÀI XẾ (tx) ====================
 
 def taixe_quanlychuyenxe(request):
+    """Danh sách chuyến xe của riêng tài xế đang đăng nhập."""
     user_id = request.session.get('user_id')
     chuyen_xe_list = []
     if user_id:
-        headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
-        try:
-            api_url = f"{settings.API_BASE_URL}/api/chuyenxe/"
-            response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
-            if response.status_code == 200:
-                chuyen_xe_list = [c for c in response.json() if str(c.get('Taixe')).strip() == str(user_id)]
-        except requests.exceptions.RequestException:
-            pass
+        # Lọc chuyến xe theo TaixeID
+        chuyen_xe_list = ChuyenXe.objects.filter(Taixe__TaixeID=user_id).select_related('TuyenXe', 'Xe')
+        
     return render(request, 'home/taixe_quanlychuyenxe.html', {'chuyen_xe_list': chuyen_xe_list})
 
 def taixe_chitietchuyenxe(request):
-    headers = {'Authorization': f"Bearer {request.session.get('token', '')}"}
+    """Chi tiết chuyến xe cho tài xế."""
+    chuyenxe_id = request.POST.get('id') or request.GET.get('id')
+    if not chuyenxe_id:
+        return redirect('taixe_quanlychuyenxe')
+        
+    chuyen = get_object_or_404(ChuyenXe, pk=chuyenxe_id)
     
     if request.method == 'POST':
-        chuyenxe_id = request.POST.get('id')
         new_status = request.POST.get('status')
-        if chuyenxe_id and new_status:
-            payload = {'trangThai': new_status}
-            try:
-                api_url = f"{settings.API_BASE_URL}/api/chuyenxe/{chuyenxe_id}/status"
-                response = requests.put(api_url, json=payload, headers=headers, timeout=settings.API_TIMEOUT)
-                if response.status_code in [200, 204]:
-                    messages.success(request, 'Cập nhật trạng thái thành công.')
-                else:
-                    messages.error(request, 'Cập nhật trạng thái thất bại trên server.')
-            except requests.exceptions.RequestException:
-                messages.error(request, 'Lỗi kết nối API Server.')
+        if new_status:
+            chuyen.TrangThai = new_status
+            chuyen.save()
+            messages.success(request, 'Cập nhật trạng thái thành công.')
             return redirect(f"/taixe_chitietchuyenxe?id={chuyenxe_id}")
             
-    chuyenxe_id = request.GET.get('id')
-    if chuyenxe_id:
-        try:
-            api_url = f"{settings.API_BASE_URL}/api/chuyenxe/{chuyenxe_id}"
-            response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
-            if response.status_code == 200:
-                chuyen = response.json()
-                return render(request, 'home/taixe_chitietchuyenxe.html', {'chuyen': chuyen})
-        except requests.exceptions.RequestException:
-            pass
-            
-    return redirect('taixe_quanlychuyenxe')
+    return render(request, 'home/taixe_chitietchuyenxe.html', {'chuyen': chuyen})

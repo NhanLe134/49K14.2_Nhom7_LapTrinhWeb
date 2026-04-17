@@ -3,14 +3,9 @@ from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
-import requests
 from django.conf import settings
-from datetime import datetime
 import random
-
-
-
-# Các hàm đăng nhập / đăng xuất đã được chuyển sang auth_views.py
+from .models import ChuyenXe, Taixe, TuyenXe, Nhaxe, Xe
 
 
 # ==================== TRANG CHUNG ====================
@@ -44,10 +39,54 @@ def thongtin_khachhang(request):
 
 
 def lotrinh(request):
-    return render(request, 'home/lotrinh.html')
+    trip_id = request.GET.get('id', '')
+    return render(request, 'home/lotrinh.html', {'trip_id': trip_id})
 
 def chitietchuyenxe(request):
-    return render(request, 'home/chitietchuyenxe.html')
+    import json
+    chuyenxe_id = request.GET.get('id')
+    
+    if not chuyenxe_id:
+        return redirect('index')
+    
+    # Xử lý cập nhật trạng thái (POST) qua ORM
+    if request.method == 'POST':
+        post_id = request.POST.get('id')
+        new_status = request.POST.get('status')
+        if post_id and new_status:
+            try:
+                ChuyenXe.objects.filter(pk=post_id).update(TrangThai=new_status)
+                messages.success(request, f'Đã cập nhật trạng thái thành "{new_status}".')
+            except Exception as e:
+                messages.error(request, f"Lỗi: {e}")
+            return redirect(f"/chitietchuyenxe?id={post_id}")
+
+    # Lấy thông tin chi tiết chuyến xe (GET)
+    try:
+        cx = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe', 'Taixe'), pk=chuyenxe_id)
+        
+        # Format dữ liệu cho template
+        route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
+        if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
+            route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+            
+        trip_data = {
+            'id': cx.ChuyenXeID,
+            'route': route_name,
+            'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
+            'carType': str(cx.Xe.SoGhe) if cx.Xe else '4',
+            'status': cx.TrangThai or 'pending',
+            'driver': cx.Taixe.HovaTen if cx.Taixe else 'Chưa phân công'
+        }
+    except Exception:
+        messages.error(request, "Không tìm thấy thông tin chuyến xe.")
+        return redirect('index')
+            
+    return render(request, 'home/chitietchuyenxe.html', {
+        'trip_json': json.dumps(trip_data),
+        'chuyenxe_id': chuyenxe_id,
+        'trip_status': cx.TrangThai or ''
+    })
 
 def vecuatoi(request):
     return render(request, 'home/vecuatoi.html')
@@ -66,7 +105,41 @@ def danhgiachuyenxe(request):
 # ==================== NHÀ XE (nx) ====================
 
 def nhaxe(request):
-    return render(request, 'home/nhaxe.html')
+    import json
+    
+    # Sử dụng Django ORM kết nối trực tiếp Supabase
+    try:
+        # Lấy danh sách chuyến xe và các thông tin liên quan (Optimize JOINs)
+        trips_queryset = ChuyenXe.objects.select_related('TuyenXe', 'Taixe').all()
+        
+        formatted_trips = []
+        for cx in trips_queryset:
+            # Lấy tên lộ trình
+            route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
+            if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
+                route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+                
+            formatted_trips.append({
+                'driver': cx.Taixe.HovaTen if cx.Taixe else 'Chưa phân công',
+                'date': cx.NgayKhoiHanh.strftime('%Y-%m-%d') if cx.NgayKhoiHanh else '',
+                'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
+                'route': route_name
+            })
+            
+        # Lấy danh sách tên tài xế duy nhất
+        taixe_names = list(Taixe.objects.exclude(HovaTen__isnull=True).values_list('HovaTen', flat=True).distinct())
+        unique_drivers = taixe_names if taixe_names else ['Chưa có tài xế']
+        
+    except Exception as e:
+        print(f"Error in ORM nhaxe view: {e}")
+        formatted_trips = []
+        unique_drivers = ['Lỗi kết nối database']
+
+    context = {
+        'drivers_json': json.dumps(unique_drivers),
+        'trips_json': json.dumps(formatted_trips)
+    }
+    return render(request, 'home/nhaxe.html', context)
 
 def thong_tin_nha_xe(request):
     user_id = request.session.get('user_id')
