@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.conf import settings
 import random
-from .models import ChuyenXe, Taixe, TuyenXe, Nhaxe, Xe
+from .models import ChuyenXe, Taixe, TuyenXe, Nhaxe, Xe, Loaixe, CHITIETLOAIXE
 
 
 # ==================== TRANG CHUNG ====================
@@ -210,46 +210,6 @@ def thong_tin_nha_xe(request):
 def quanlytuyenxe(request):
     return render(request, 'home/quanlytuyenxe.html')
 
-def quanly_loaixe(request):
-    # Danh sách 3 loại xe mặc định
-    loaixe_mặc_định = [
-        {'LoaiXeId': 'LX00001', 'TenLoaiXe': 'Loại xe A', 'SoGhe': '4', 'GiaVe': None, 'NgayCapNhat': None},
-        {'LoaiXeId': 'LX00002', 'TenLoaiXe': 'Loại xe B', 'SoGhe': '7', 'GiaVe': None, 'NgayCapNhat': None},
-        {'LoaiXeId': 'LX00003', 'TenLoaiXe': 'Loại xe C', 'SoGhe': '9', 'GiaVe': None, 'NgayCapNhat': None}
-    ]
-
-    api_url = f"{settings.API_BASE_URL}/api/loaixe"
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-    }
-
-    try:
-        response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
-        if response.status_code == 200:
-            try:
-                api_data = response.json()
-                if isinstance(api_data, list):
-                    for xe_api in api_data:
-                        # Lấy dữ liệu thực tế từ JSON của Postman
-                        api_id = xe_api.get('LoaixeID')
-                        api_so_cho = xe_api.get('SoCho')
-                        api_gia_ve = xe_api.get('GiaVe')
-                        api_ngay_cap_nhat = xe_api.get('NgayCapNhatGia')
-
-                        for xe_macdinh in loaixe_mặc_định:
-                            # Ghép dữ liệu dựa trên số chỗ ngồi (4, 7, 9)
-                            if str(api_so_cho) == str(xe_macdinh['SoGhe']):
-                                xe_macdinh['LoaiXeId'] = api_id  # Lưu lại ID thật (VD: LX00002)
-                                xe_macdinh['GiaVe'] = api_gia_ve
-                                xe_macdinh['NgayCapNhat'] = api_ngay_cap_nhat
-            except ValueError:
-                pass
-    except Exception as e:
-        print(f"GET error: {e}")
-
-    return render(request, 'home/quanly_loaixe.html', {'loaixe_list': loaixe_mặc_định})
-
 
 def quanly_loaixe(request):
     # Danh sách 3 loại xe mặc định theo yêu cầu thiết kế
@@ -259,35 +219,22 @@ def quanly_loaixe(request):
         {'LoaiXeId': 'LX00003', 'TenLoaiXe': 'Loại xe C', 'SoGhe': '9', 'GiaVe': None, 'NgayCapNhat': None}
     ]
 
-    api_url = f"{settings.API_BASE_URL}/api/loaixe"
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-    }
-
     try:
-        response = requests.get(api_url, headers=headers, timeout=settings.API_TIMEOUT)
-        if response.status_code == 200:
-            try:
-                api_data = response.json()
-                if isinstance(api_data, list):
-                    for xe_api in api_data:
-                        # Lấy dữ liệu thực tế từ JSON của Postman
-                        api_id = xe_api.get('LoaixeID')
-                        api_so_cho = xe_api.get('SoCho')
-                        api_gia_ve = xe_api.get('GiaVe')
-                        api_ngay_cap_nhat = xe_api.get('NgayCapNhatGia')
+        api_data = Loaixe.objects.all()
+        for xe_api in api_data:
+            api_id = xe_api.LoaixeID
+            api_so_cho = xe_api.SoCho
+            api_gia_ve = xe_api.GiaVe
+            api_ngay_cap_nhat = xe_api.NgayCapNhatGia
 
-                        for xe_macdinh in loaixe_mặc_định:
-                            # Ghép dữ liệu dựa trên số chỗ ngồi (4, 7, 9)
-                            if str(api_so_cho) == str(xe_macdinh['SoGhe']):
-                                xe_macdinh['LoaiXeId'] = api_id  # Lưu lại ID thật (VD: LX00002)
-                                xe_macdinh['GiaVe'] = api_gia_ve
-                                xe_macdinh['NgayCapNhat'] = api_ngay_cap_nhat
-            except ValueError:
-                pass
+            for xe_macdinh in loaixe_mặc_định:
+                # Ghép dữ liệu dựa trên số chỗ ngồi (4, 7, 9)
+                if str(api_so_cho) == str(xe_macdinh['SoGhe']):
+                    xe_macdinh['LoaiXeId'] = api_id  # Lưu lại ID thật (VD: LX00002)
+                    xe_macdinh['GiaVe'] = api_gia_ve
+                    xe_macdinh['NgayCapNhat'] = api_ngay_cap_nhat.strftime('%Y-%m-%d') if api_ngay_cap_nhat else None
     except Exception as e:
-        print(f"GET error: {e}")
+        print(f"Lỗi lấy dữ liệu từ database: {e}")
 
     return render(request, 'home/quanly_loaixe.html', {'loaixe_list': loaixe_mặc_định})
 
@@ -296,59 +243,32 @@ def capnhat_gia_loaixe(request, loaixe_id):
     if request.method == 'POST':
         gia_moi = request.POST.get('gia_ve')
 
-        get_api_url = f"{settings.API_BASE_URL}/api/loaixe"
-        # Xóa dấu '/' ở cuối đi vì đôi khi API không nhận diện được dấu '/' thừa
-        put_api_url = f"{settings.API_BASE_URL}/api/loaixe/{loaixe_id}/"
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-
         try:
-            # 1. Lấy dữ liệu cũ của xe (rất quan trọng vì hàm PUT thường yêu cầu gửi đủ các trường)
-            response_get = requests.get(get_api_url, headers=headers, timeout=settings.API_TIMEOUT)
-            existing_data = {}
-
-            if response_get.status_code == 200:
-                for xe in response_get.json():
-                    if str(xe.get('LoaixeID')) == str(loaixe_id):
-                        existing_data = xe
-                        break
-
-            # 2. Ghi đè giá vé mới và ngày cập nhật vào dữ liệu cũ
-            ngay_hien_tai = datetime.now().strftime('%Y-%m-%d')
-
-            if existing_data:
-                existing_data["GiaVe"] = str(gia_moi)
-                existing_data["NgayCapNhatGia"] = ngay_hien_tai
-            else:
-                # Nếu không tìm thấy, gửi payload cơ bản nhất
-                existing_data = {
-                    "LoaixeID": loaixe_id,
-                    "GiaVe": str(gia_moi),
-                    "NgayCapNhatGia": ngay_hien_tai
-                }
-
-            # 3. Gửi PUT
-            response = requests.put(put_api_url, json=existing_data, headers=headers, timeout=settings.API_TIMEOUT)
-
-            if response.status_code in [200, 204]:
-                messages.success(request, "Cập nhật giá vé thành công!")
-            else:
-                # Nếu nhận 403 Forbidden do lỗi CSRF/Django từ URL nội bộ, nó sẽ ném ra HTML
-
-                if response.status_code == 403 and "<html" in response.text.lower():
-                    messages.error(request,
-                                   f"Lỗi 403: Không thể thực hiện cập nhật do bảo mật CSRF (URL không đúng hoặc máy chủ chặn).")
-                else:
-                    error_detail = response.text[:200]  # Lấy 200 ký tự đầu cho đỡ dài
-                    messages.error(request, f"Lỗi {response.status_code}: {error_detail}")
-
-
+            xe = Loaixe.objects.get(LoaixeID=loaixe_id)
+            ngay_hien_tai = datetime.now().date()
+            xe.GiaVe = gia_moi
+            xe.NgayCapNhatGia = ngay_hien_tai
+            xe.save()
+            messages.success(request, "Cập nhật giá vé thành công!")
+        except Loaixe.DoesNotExist:
+            # Nếu không tìm thấy, bạn có thể tạo mới ở đây nếu muốn
+            try:
+                ngay_hien_tai = datetime.now().date()
+                # Giả định SoCho dựa trên ID mặc định (cần điều chỉnh logic thực tế)
+                so_cho = 4
+                if loaixe_id == 'LX00002': so_cho = 7
+                if loaixe_id == 'LX00003': so_cho = 9
+                Loaixe.objects.create(
+                    LoaixeID=loaixe_id,
+                    GiaVe=gia_moi,
+                    NgayCapNhatGia=ngay_hien_tai,
+                    SoCho=so_cho
+                )
+                messages.success(request, "Đã tạo mới và cập nhật giá vé thành công!")
+            except Exception as e:
+                 messages.error(request, f"Lỗi tạo mới loại xe: {e}")
         except Exception as e:
-            messages.error(request, f"Lỗi kết nối đến máy chủ: {e}")
+            messages.error(request, f"Lỗi cập nhật CSDL: {e}")
 
     return redirect('quanly_loaixe')
 
