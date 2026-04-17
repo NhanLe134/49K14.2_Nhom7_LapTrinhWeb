@@ -23,7 +23,7 @@
             <div class="trip-cards-grid">
                 {% if chuyen_xe_cho_danh_gia %}
                     {% for item in chuyen_xe_cho_danh_gia %}
-                    <div class="trip-card">
+                    <div class="trip-card" id="trip-{{ item.ve.VeID }}">
                         <div class="trip-card-content">
                             <div class="trip-date">
                                 <span class="trip-day">{{ item.chuyen.NgayKhoiHanh|date:"d" }}</span>
@@ -36,7 +36,7 @@
                                 <div class="trip-status">Đã hoàn thành</div>
                             </div>
                         </div>
-                        <a href="{% url 'vietdanhgia' item.ve.VeID %}" class="review-btn" style="text-decoration:none;">
+                        <a href="{% url 'vietdanhgia' item.ve.VeID %}" class="review-btn" id="btn-review-{{ item.ve.VeID }}" style="text-decoration:none;">
                             <i class="fa-solid fa-pen"></i> Viết nhận xét
                         </a>
                     </div>
@@ -52,14 +52,14 @@
             <div class="evaluated-list">
                 {% if danh_sach_da_danh_gia %}
                     {% for dg in danh_sach_da_danh_gia %}
-                    <div class="evaluated-card">
+                    <div class="evaluated-card" id="eval-{{ dg.DanhGiaID }}">
                         <div class="eval-card-header" style="display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center;">
                                 <img src="{% static 'img/Vexeapp_logo.png' %}" class="eval-logo" alt="logo">
                                 <div class="eval-bus-name">{{ dg.TenNhaxe_Display }}</div>
                             </div>
                             {% if dg.is_editable %}
-                            <a href="{% url 'vietdanhgia' dg.Ve.VeID %}" class="edit-review-icon" title="Chỉnh sửa đánh giá">
+                            <a href="{% url 'suadanhgia' dg.Ve.VeID %}" class="edit-review-icon" title="Chỉnh sửa đánh giá">
                                 <i class="fa-solid fa-pen-to-square"></i> Sửa
                             </a>
                             {% endif %}
@@ -99,19 +99,28 @@
         }
     }
 
-    // Xử lý sự kiện click tab
+    // Xử lý sự kiện click tab (Chuyển trang thực sự)
     document.querySelectorAll('.review-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-            switchTab(tab.getAttribute('data-target'));
+            const target = tab.getAttribute('data-target');
+            if (target === 'pending') {
+                window.location.href = "{% url 'danhgiachuyenxe' %}";
+            } else {
+                window.location.href = "{% url 'dadanhgia' %}";
+            }
         });
     });
 
-    // TỰ ĐỘNG BẬT TAB KHI CÓ THAM SỐ ?tab=evaluated TRÊN URL
+    // TỰ ĐỘNG BẬT TAB KHI CÓ THAM SỐ ?tab=evaluated HOẶC TỪ SERVER TRUYỀN XUỐNG
     window.addEventListener('DOMContentLoaded', (event) => {
         const urlParams = new URLSearchParams(window.location.search);
         const tabParam = urlParams.get('tab');
-        if (tabParam === 'evaluated') {
+        const serverTab = "{{ active_tab|default:'' }}"; // Nhận tab từ Django
+
+        if (tabParam === 'evaluated' || serverTab === 'evaluated') {
             switchTab('evaluated');
+        } else if (tabParam === 'pending' || serverTab === 'pending') {
+            switchTab('pending');
         }
     });
 </script>

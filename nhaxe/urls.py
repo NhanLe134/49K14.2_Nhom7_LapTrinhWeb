@@ -23,9 +23,12 @@ urlpatterns = [
     path('lotrinh', views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', views.vecuatoi, name='vecuatoi'),
-    path('vietdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='vietdanhgia'),
-    path('danhgiachuyenxe', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
-    path('submit_danhgia', feedback_views.submit_danhgia, name='submit_danhgia'),
+    # ==================== ĐÁNH GIÁ ====================
+    path('danhgiachuyenxe/', feedback_views.danhgiachuyenxe, {'tab': 'pending'}, name='danhgiachuyenxe'),
+    path('danhgiachuyenxe/dadanhgia/', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
+    path('danhgiachuyenxe/vietdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='vietdanhgia'),
+    path('danhgiachuyenxe/suadanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='suadanhgia'),
+    path('submit_danhgia/', feedback_views.submit_danhgia, name='submit_danhgia'),
 
     # ==================== NHÀ XE ====================
     path('nhaxe', views.nhaxe, name='nhaxe'),

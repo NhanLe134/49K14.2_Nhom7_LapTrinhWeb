@@ -6,11 +6,14 @@ import uuid
 
 from datetime import timedelta
 
-def danhgiachuyenxe(request):
+def danhgiachuyenxe(request, tab=None):
     """Lấy danh sách các chuyến xe khách hàng đã đi để đánh giá (Hạn 7 ngày)."""
     khach_hang_id = request.session.get('user_id')
     if not khach_hang_id:
         return redirect('dangnhap')
+
+    # Ưu tiên lấy tab từ URL parameter, nếu không có thì lấy tham số truyền từ urls.py
+    active_tab = request.GET.get('tab', tab) if request.GET.get('tab') else tab
 
     bay_gio = timezone.now()
     han_7_ngay = bay_gio - timedelta(days=7)
@@ -27,17 +30,23 @@ def danhgiachuyenxe(request):
     for ve in ve_cho_danh_gia:
         chuyen_xe_cho_danh_gia.append({'chuyen': ve.ChuyenXe, 've': ve})
 
-    # 2. Lấy danh sách đã đánh giá và đánh dấu các bản được phép sửa (trong 3 ngày)
-    danh_sach_da_danh_gia = DanhGia.objects.filter(KhachHang_id=khach_hang_id).select_related('Nhaxe', 'Ve').order_by('-NgayDanhGia')
+    # 2. Lấy danh sách đã đánh giá (Lấy tất cả, không lọc thời gian)
+    danh_sach_da_danh_gia = DanhGia.objects.filter(KhachHang_id=khach_hang_id).order_by('-NgayDanhGia')
     
     for dg in danh_sach_da_danh_gia:
-        dg.TenNhaxe_Display = dg.Nhaxe.TenNhaXe if dg.Nhaxe.TenNhaXe else dg.Nhaxe.NhaxeID
+        # Lấy tên hiển thị an toàn
+        try:
+            dg.TenNhaxe_Display = dg.Nhaxe.TenNhaXe if dg.Nhaxe.TenNhaXe else dg.Nhaxe.NhaxeID
+        except:
+            dg.TenNhaxe_Display = "Nhà xe"
+            
         # Kiểm tra xem có nằm trong hạn 3 ngày để sửa không
         dg.is_editable = dg.NgayDanhGia >= han_3_ngay
 
     return render(request, 'khachhang/danhgiachuyenxe.html', {
         'chuyen_xe_cho_danh_gia': chuyen_xe_cho_danh_gia,
-        'danh_sach_da_danh_gia': danh_sach_da_danh_gia
+        'danh_sach_da_danh_gia': danh_sach_da_danh_gia,
+        'active_tab': active_tab
     })
 
 def vietdanhgia(request, ve_id):
@@ -106,18 +115,20 @@ def submit_danhgia(request):
                     if match: num = int(match.group()) + 1
                 new_id = f"DG{num:04d}"
 
-                DanhGia.objects.create(
+                print(f"--- ĐANG TẠO ĐÁNH GIÁ MỚI: {new_id} ---")
+                dg_new = DanhGia.objects.create(
                     DanhGiaID=new_id, Nhaxe_id=nhaxe_id, KhachHang_id=khach_hang_id,
                     Ve_id=ve_id, Diemso=diem_so, Nhanxet=nhan_xet,
                     AnDanh=an_danh, NgayDanhGia=timezone.now()
                 )
+                print(f"--- LƯU THÀNH CÔNG: {dg_new.DanhGiaID} ---")
                 nhaxe.SoLuotDanhGia += 1
                 nhaxe.TongDiemDanhGia += diem_so
                 nhaxe.save()
 
-            return redirect('/danhgiachuyenxe?tab=evaluated')
+            return redirect('dadanhgia')
         except Exception as e:
             messages.error(request, f"Lỗi: {e}")
-            return redirect('danhgiachuyenxe')
+            return redirect('chodanhgia')
 
-    return redirect('danhgiachuyenxe')
+    return redirect('chodanhgia')
