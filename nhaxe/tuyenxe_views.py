@@ -43,6 +43,7 @@ def quanlytuyenxe(request):
     nha_xe_id = request.session.get('user_id')
     
     # Lấy danh sách tuyến xe của nhà xe này từ Database
+    print(f"DEBUG: Dang truy cap voi nha_xe_id trong session = {nha_xe_id}")
     danh_sach_tuyen = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
     
     # Lấy tất cả tên tuyến xe để gửi xuống JS (xử lý trùng tên)
