@@ -2,9 +2,16 @@
 
 /* The content header title */
 .content-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important; /* Forces items to opposite ends */
+    width: 100% !important;
+    margin-bottom: 30px !important;
+}
+
+.content-title {
     display: flex;
     align-items: center;
-    margin-bottom: 30px;
     font-size: 1.6rem;
     font-weight: 700;
     color: #111;
@@ -105,14 +112,18 @@
     background-color: #15baf6;
     color: white;
     border: none;
-    padding: 14px 60px;
-    font-size: 1.1rem;
+    padding: 10px 25px; /* More compact for top placement */
+    font-size: 1rem;
     border-radius: 6px;
     cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s;
-    /* Slight shadow like the image */
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 4px 6px rgba(21, 186, 246, 0.2);
+    margin-left: auto; /* Push specifically to the right in flex row */
+}
+
+.btn-create:active {
+    transform: scale(0.98);
 }
 
 .btn-create:hover {

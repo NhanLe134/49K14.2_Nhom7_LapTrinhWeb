@@ -26,6 +26,7 @@ class Nhaxe(models.Model):
 # 4. Bảng Tài Xế
 class Taixe(models.Model):
     TaixeID = models.CharField(max_length=10, primary_key=True)
+    HoTen = models.CharField(max_length=200, null=True, blank=True)
     HinhAnhURL = models.CharField(max_length=255, null=True, blank=True)
     SoBangLai = models.CharField(max_length=20, unique=True)
     soCCCD = models.CharField(
@@ -33,8 +34,19 @@ class Taixe(models.Model):
         unique=True,
         validators=[RegexValidator(regex=r'^\d{12}$', message="CCCD phải có đúng 12 chữ số")]
     )
-    LoaiBangLai = models.CharField(max_length=20, null=True, blank=True)
-    NgayHetHanBangLai = models.DateField(null=True, blank=True)
+    LOAI_BANG_CHOICES = [
+        ('B1', 'B1'),
+        ('B', 'B'),
+        ('C', 'C'),
+        ('C1', 'C1'),
+    ]
+    LoaiBangLai = models.CharField(
+        max_length=2, 
+        choices=LOAI_BANG_CHOICES, 
+        default='B1',
+        null=True, 
+        blank=True
+    )
 
     def __str__(self):
         return self.TaixeID
@@ -191,4 +203,21 @@ class DanhGia(models.Model):
     NgayDanhGia = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Review {self.DanhGiaID} - {self.Diemso}"
+
+# 15. Bảng User Authentication (Tự định nghĩa)
+class User_Authentication(models.Model):
+    UserID = models.CharField(max_length=10, primary_key=True)
+    TenDangNhap = models.CharField(max_length=200, unique=True)
+    MatKhau = models.CharField(max_length=200)
+    Vaitro = models.CharField(max_length=20)
+    SoDienThoai = models.CharField(
+        max_length=12,
+        unique=True,
+        validators=[RegexValidator(regex=r'^0\d{9,}$', message="Số điện thoại phải bắt đầu bằng 0 và có ít nhất 10 số")]
+    )
+    KhachHang = models.ForeignKey(KhachHang, on_delete=models.SET_NULL, null=True, blank=True)
+    Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.TenDangNhap
 

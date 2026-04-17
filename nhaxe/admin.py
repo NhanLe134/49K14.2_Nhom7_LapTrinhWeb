@@ -24,8 +24,8 @@ class NhaxeAdmin(admin.ModelAdmin):
 
 @admin.register(Taixe)
 class TaixeAdmin(admin.ModelAdmin):
-    list_display = ('TaixeID', 'SoBangLai', 'soCCCD', 'LoaiBangLai')
-    search_fields = ('TaixeID', 'SoBangLai', 'soCCCD')
+    list_display = ('TaixeID', 'HoTen', 'SoBangLai', 'soCCCD', 'LoaiBangLai')
+    search_fields = ('TaixeID', 'HoTen', 'SoBangLai', 'soCCCD')
 
 @admin.register(CHITIETTAIXE)
 class ChiTietTaiXeAdmin(admin.ModelAdmin):

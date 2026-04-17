@@ -1,40 +1,46 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.conf import settings
-import requests
-import json
+from .models import TuyenXe, Nhaxe, ChuyenXe
 
 def quanlytuyenxe(request):
     nha_xe_id = request.session.get('user_id')
+    if not nha_xe_id:
+        return redirect('index')
 
-    danh_sach_tuyen = []
-    tat_ca_ten_tuyen = []
-    
-    response = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/")
-    if response.status_code == 200:
-        tat_ca_tuyen = response.json()
+    try:
+        # Lấy danh sách tuyến xe trực tiếp từ Database
+        danh_sach_tuyen = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
         
-        for tuyen in tat_ca_tuyen:
-            if tuyen.get('tenTuyen'):
-                tat_ca_ten_tuyen.append(tuyen.get('tenTuyen'))
-                
-            nha_xe_cua_tuyen = tuyen.get('nhaXe')
-            
-            if nha_xe_cua_tuyen == nha_xe_id:
-                danh_sach_tuyen.append(tuyen)
-    else:
-        messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
+        # Danh sách tên tuyến để gợi ý hoặc kiểm tra (nếu cần)
+        tat_ca_ten_tuyen = list(TuyenXe.objects.values_list('tenTuyen', flat=True))
         
-    context = {
-        'nha_xe_id': nha_xe_id,
-        'danh_sach_tuyen': danh_sach_tuyen,
-        'tat_ca_ten_tuyen_json': json.dumps(tat_ca_ten_tuyen)
-    }
-    return render(request, 'home/quanlytuyenxe.html', context)
+        # Tính toán ID mới
+        import re
+        all_ids = TuyenXe.objects.values_list('tuyenXeID', flat=True)
+        max_id = 0
+        for tx_id in all_ids:
+            if tx_id and tx_id.startswith('TX') and tx_id[2:].isdigit():
+                num = int(tx_id[2:])
+                if num > max_id:
+                    max_id = num
+        
+        ma_tuyen_xe_moi = f"TX{max_id + 1:04d}"
+
+        context = {
+            'nha_xe_id': nha_xe_id,
+            'danh_sach_tuyen': danh_sach_tuyen,
+            'ma_tuyen_xe_moi': ma_tuyen_xe_moi
+        }
+        return render(request, 'home/quanlytuyenxe.html', context)
+    except Exception as e:
+        messages.error(request, f'Lỗi lấy dữ liệu tuyến xe: {str(e)}')
+        return render(request, 'home/quanlytuyenxe.html', {'danh_sach_tuyen': []})
 
 def them_tuyen_xe(request):
     if request.method == 'POST':
         nha_xe_id = request.session.get('user_id')
+        if not nha_xe_id:
+            return redirect('index')
 
         ten_tuyen = request.POST.get('tenTuyen')
         diem_di = request.POST.get('diemDi')
@@ -42,82 +48,67 @@ def them_tuyen_xe(request):
         quang_duong = request.POST.get('quangDuong')
         diem_trung_gian = request.POST.get('diemTrungGian')
         
-        response_get = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/")
-        max_id = 0
-        if response_get.status_code == 200:
-            tat_ca_tuyen = response_get.json()
-            for tuyen in tat_ca_tuyen:
-                tx_id = tuyen.get('tuyenXeID', '')
+        try:
+            # 1. Tính ID mới
+            all_ids = TuyenXe.objects.values_list('tuyenXeID', flat=True)
+            max_id = 0
+            for tx_id in all_ids:
                 if tx_id and tx_id.startswith('TX') and tx_id[2:].isdigit():
                     num = int(tx_id[2:])
                     if num > max_id:
                         max_id = num
-        
-        next_id = f"TX{max_id + 1:04d}"
+            next_id = f"TX{max_id + 1:04d}"
 
-        payload = {
-            "tuyenXeID": next_id,
-            "tenTuyen": ten_tuyen,
-            "diemDi": diem_di,
-            "diemDen": diem_den,
-            "QuangDuong": quang_duong if quang_duong else None,
-            "DiemTrungGian": diem_trung_gian if diem_trung_gian else None,
-            "nhaXe": nha_xe_id
-        }
-        
-        response = requests.post(f"{settings.API_BASE_URL}/api/tuyenxe/", json=payload)
-        if response.status_code in [200, 201]:
+            # 2. Lưu vào Database
+            nha_xe_obj = Nhaxe.objects.get(NhaxeID=nha_xe_id)
+            TuyenXe.objects.create(
+                tuyenXeID=next_id,
+                nhaXe=nha_xe_obj,
+                tenTuyen=ten_tuyen,
+                diemDi=diem_di,
+                diemDen=diem_den,
+                QuangDuong=quang_duong if quang_duong else None,
+                DiemTrungGian=diem_trung_gian if diem_trung_gian else None
+            )
             messages.success(request, 'Thêm tuyến xe thành công')
-        else:
-            messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
+        except Exception as e:
+            messages.error(request, f'Lỗi khi thêm tuyến xe: {str(e)}')
             
     return redirect('quanlytuyenxe')
 
 def sua_tuyen_xe(request, pk):
     if request.method == 'POST':
-        nha_xe_id = request.session.get('user_id')
-
         ten_tuyen = request.POST.get('tenTuyen')
         diem_di = request.POST.get('diemDi')
         diem_den = request.POST.get('diemDen')
         quang_duong = request.POST.get('quangDuong')
         diem_trung_gian = request.POST.get('diemTrungGian')
         
-        payload = {
-            "tuyenXeID": pk,
-            "tenTuyen": ten_tuyen,
-            "diemDi": diem_di,
-            "diemDen": diem_den,
-            "QuangDuong": quang_duong if quang_duong else None,
-            "DiemTrungGian": diem_trung_gian if diem_trung_gian else None,
-            "nhaXe": nha_xe_id
-        }
-        
-        response = requests.put(f"{settings.API_BASE_URL}/api/tuyenxe/{pk}/", json=payload)
-        if response.status_code in [200, 204]:
+        try:
+            TuyenXe.objects.filter(tuyenXeID=pk).update(
+                tenTuyen=ten_tuyen,
+                diemDi=diem_di,
+                diemDen=diem_den,
+                QuangDuong=quang_duong if quang_duong else None,
+                DiemTrungGian=diem_trung_gian if diem_trung_gian else None
+            )
             messages.success(request, 'Cập nhật tuyến xe thành công')
-        else:
-            messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
+        except Exception as e:
+            messages.error(request, f'Lỗi khi cập nhật: {str(e)}')
             
     return redirect('quanlytuyenxe')
 
 def xoa_tuyen_xe(request, pk):
     if request.method == 'POST':
-        nha_xe_id = request.session.get('user_id')
+        try:
+            # Kiểm tra xem có chuyến xe nào đang sử dụng tuyến này không
+            if ChuyenXe.objects.filter(TuyenXe_id=pk).exists():
+                messages.error(request, 'Không thể xóa tuyến xe, có chuyến đang hoạt động')
+                return redirect('quanlytuyenxe')
 
-        response_chuyen = requests.get(f"{settings.API_BASE_URL}/api/chuyenxe/")
-        if response_chuyen.status_code == 200:
-            tat_ca_chuyen = response_chuyen.json()
-            for chuyen in tat_ca_chuyen:
-                tuyen_cua_chuyen = chuyen.get('tuyenXe')
-                if tuyen_cua_chuyen == pk or (isinstance(tuyen_cua_chuyen, dict) and tuyen_cua_chuyen.get('tuyenXeID') == pk):
-                    messages.error(request, 'Không thể xóa tuyến xe, có chuyến đang hoạt động')
-                    return redirect('quanlytuyenxe')
-
-        response = requests.delete(f"{settings.API_BASE_URL}/api/tuyenxe/{pk}/")
-        if response.status_code in [200, 204]:
+            TuyenXe.objects.filter(tuyenXeID=pk).delete()
             messages.success(request, 'Xóa tuyến xe thành công')
-        else:
-            messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
+        except Exception as e:
+            messages.error(request, f'Lỗi khi xóa: {str(e)}')
             
     return redirect('quanlytuyenxe')

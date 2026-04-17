@@ -13,7 +13,7 @@
     <!-- Base styling -->
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <!-- Page specific styling -->
-    <link rel="stylesheet" href="{% static 'css/quanlytaixe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/quanlytaixe.css' %}?v={% now 'U' %}">
 </head>
 
 <body>
@@ -66,9 +66,12 @@
             <!-- LIST VIEW -->
             <div id="driverListView">
                 <!-- Content Header -->
-                <div class="content-header">
-                    <i class="fa-regular fa-calendar-days"></i> Theo dõi lịch làm việc <i
-                        class="fa-solid fa-arrow-right-long arrow"></i>
+                <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="content-title">
+                        <i class="fa-regular fa-calendar-days"></i> Theo dõi lịch làm việc <i
+                            class="fa-solid fa-arrow-right-long arrow"></i>
+                    </div>
+                    <button class="btn-create" onclick="openCreateModal()">+ Tạo tài xế</button>
                 </div>
 
                 {% if messages %}
@@ -87,9 +90,7 @@
                     <!-- Drivers will be rendered here by JS -->
                 </div>
 
-                <div class="action-container">
-                    <button class="btn-create" onclick="openCreateModal()">+ Tạo tài xế</button>
-                </div>
+
             </div>
 
             <!-- DETAILS VIEW -->
@@ -134,10 +135,6 @@
                                 <input type="text" class="form-input" id="detailLicenseType" value="" disabled>
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Ngày hết hạn bằng lái <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="detailLicenseExpiry" value="" disabled>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -162,102 +159,7 @@
 
 
 
-    <!-- Edit Modal -->
-    <div id="editModal" class="edit-modal-overlay"
-        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-        <div class="edit-modal-box"
-            style="background: white; padding: 30px; border-radius: 12px; width: 650px; text-align: left;">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
-                <span class="edit-modal-title" style="font-size: 1.4rem; font-weight: bold; color: #06A0E2;">Chỉnh sửa
-                    thông tin tài xế</span>
-                <button onclick="closeEditModal()"
-                    style="font-size: 1.5rem; background: none; border: none; cursor: pointer;">&times;</button>
-            </div>
-            <form id="editDriverForm" method="POST" action="">
-                {% csrf_token %}
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">Mã số tài xế (Chỉ xem)</label>
-                            <input type="text" id="editName" class="form-input"
-                                style="width: 100%; border: 1px solid #ccc; border-radius: 5px; padding: 10px; background:#f9f9f9;"
-                                disabled>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Số CCCD (Chỉ xem)</label>
-                            <input type="text" id="editCCCD" class="form-input"
-                                style="width: 100%; border: 1px solid #ccc; border-radius: 5px; padding: 10px; background:#f9f9f9;"
-                                disabled>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Đổi ảnh đại diện</label>
-                            <input type="file" id="editImage" accept=".jpg, .jpeg, .png"
-                                style="display:block; margin-top: 5px; font-size: 13px;">
-                        </div>
-                    </div>
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">Số bằng lái <span class="required"
-                                    style="color:red">*</span></label>
-                            <input type="text" name="license" id="editLicense" class="form-input editable"
-                                style="width: 100%; border: 1px solid #ccc; border-radius: 5px; padding: 10px;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Loại bằng lái</label>
-                            <select name="licenseType" id="editLicenseType" class="form-input editable"
-                                style="width: 100%; border: 1px solid #ccc; border-radius: 5px; padding: 10px;">
-                                <option value="B1">B1</option>
-                                <option value="B2">B2</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                                <option value="E">E</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Ngày hết hạn <span class="required"
-                                    style="color:red">*</span></label>
-                            <input type="date" name="licenseExpiry" id="editLicenseExpiry" class="form-input editable"
-                                style="width: 100%; border: 1px solid #ccc; border-radius: 5px; padding: 10px;">
-                        </div>
-                    </div>
-                </div>
-                <div class="edit-modal-actions"
-                    style="justify-content: flex-end; margin-top: 25px; gap: 10px; display:flex;">
-                    <button type="button" class="btn-close" onclick="closeEditModal()"
-                        style="padding: 10px 20px; background: #eee; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Hủy
-                        bỏ</button>
-                    <button type="button" class="btn-save-modal" onclick="submitEditForm()"
-                        style="padding: 10px 20px; background: #06A0E2; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Lưu
-                        thay đổi</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Delete Modal -->
-    <div id="deleteModal" class="delete-modal-overlay"
-        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-        <div class="delete-modal-box"
-            style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 450px;">
-            <i class="fa-solid fa-circle-exclamation delete-modal-icon"
-                style="font-size: 50px; color: #f59e0b; margin-bottom: 20px;"></i>
-            <div class="delete-modal-title" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">Xác nhận
-                xóa</div>
-            <div class="delete-modal-msg" style="color: #666; margin-bottom: 25px;">Bạn có chắc chắn muốn xóa tài khoản
-                tài xế này khỏi hệ thống?</div>
-            <form id="deleteDriverForm" method="POST" action="">
-                {% csrf_token %}
-                <div class="delete-modal-actions" style="display: flex; gap: 15px; justify-content: center;">
-                    <button type="button" class="btn-delete-cancel" onclick="closeDeleteModal()"
-                        style="padding: 10px 25px; background: #eee; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Hủy</button>
-                    <button type="submit" class="btn-delete-confirm"
-                        style="padding: 10px 25px; background: #dc2626; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Xác
-                        nhận xóa</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <script src="{% static 'js/common.js' %}"></script>
     <script id="djangoMessages" type="application/json">
@@ -303,7 +205,6 @@
                             cccd: "{{ tx.soCCCD }}",
                                 license: "{{ tx.soBangLai }}",
                                     licenseType: "{{ tx.loaiBangLai }}",
-                                        licenseExpiry: "{{ tx.ngayHetHan }}",
                                             avatar: "{{ tx.hinhAnh }}" || "https://ui-avatars.com/api/?name={{ tx.ten|urlencode }}&background=random"
         },
         {% endfor %}
@@ -326,7 +227,7 @@
                 item.innerHTML = `
                     <img src="${driver.avatar}" alt="Avatar" class="driver-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=random'">
                     <div class="driver-info">
-                        <div class="driver-name">${driver.id}</div>
+                        <div class="driver-name">${driver.name}</div>
                         <div class="driver-phone">${driver.phone}</div>
                     </div>
                     <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal('${driver.id}')">
@@ -348,7 +249,6 @@
             document.getElementById('detailCCCD').value = driver.cccd;
             document.getElementById('detailLicense').value = driver.license;
             document.getElementById('detailLicenseType').value = driver.licenseType;
-            document.getElementById('detailLicenseExpiry').value = driver.licenseExpiry;
 
             document.getElementById('driverListView').style.display = 'none';
             document.getElementById('driverDetailsView').style.display = 'flex';
@@ -365,11 +265,8 @@
         }
 
         function closeCreateModal() {
-            let config = confirm('Các thay đổi chưa được lưu, bạn có chắc chắn muốn thoát?');
-            if (config) {
-                document.getElementById('createModal').style.display = 'none';
-                document.getElementById('createDriverForm').reset();
-            }
+            document.getElementById('createModal').style.display = 'none';
+            document.getElementById('createDriverForm').reset();
         }
 
         // Validators
@@ -378,16 +275,7 @@
         function submitCreateForm() {
             const cccd = document.getElementById('createCCCD').value.trim();
             const license = document.getElementById('createLicense').value.trim();
-            const expiry = document.getElementById('createLicenseExpiry').value;
-            const imgFile = document.getElementById('createImage').files[0];
-
-            if (!cccd) return showGlobalPopup('error', 'Vui lòng nhập Số CCCD.');
-            if (!isValidCCCD(cccd)) return showGlobalPopup('error', 'Số CCCD phải bao gồm 12 chữ số.');
             if (!license) return showGlobalPopup('error', 'Vui lòng nhập Số bằng lái.');
-            if (!expiry) return showGlobalPopup('error', 'Vui lòng nhập Ngày hết hạn.');
-
-            const expDate = new Date(expiry);
-            if (expDate <= new Date()) return showGlobalPopup('error', 'Ngày hết hạn bằng lái phải lớn hơn ngày hiện tại.');
 
             if (imgFile && imgFile.size > 2 * 1024 * 1024) return showGlobalPopup('error', 'Ảnh vượt quá 2MB.');
 
@@ -398,21 +286,19 @@
             const driver = drivers.find(d => String(d.id) === String(selectedDriverId));
             if (!driver) return;
 
-            document.getElementById('editName').value = driver.name;
-            document.getElementById('editPhone').value = driver.phone; // Added Phone
-            document.getElementById('editCCCD').value = driver.cccd;
-            document.getElementById('editLicense').value = driver.license;
-            document.getElementById('editLicenseType').value = driver.licenseType;
+            document.getElementById('editName').value = driver.name || '';
+            document.getElementById('editPhone').value = driver.phone || '';
+            document.getElementById('editCCCD').value = driver.cccd || '';
+            document.getElementById('editLicense').value = driver.license || '';
+            document.getElementById('editLicenseType').value = driver.licenseType || 'B';
 
-            let fmtDate = '';
-            if (driver.licenseExpiry) {
-                const [yyyy, mm, dd] = driver.licenseExpiry.split('-');
-                if (yyyy && mm && dd) fmtDate = `${yyyy}-${mm.padStart(2, '0')}-${dd.split('T')[0].padStart(2, '0')}`;
+            document.getElementById('editLicenseType').value = driver.licenseType || 'B1';
+
+            if (driver.avatar) {
+                document.getElementById('editAvatarPreview').src = driver.avatar;
             }
-            if (fmtDate) document.getElementById('editLicenseExpiry').value = fmtDate;
-            else document.getElementById('editLicenseExpiry').value = driver.licenseExpiry;
 
-            let form = document.getElementById('editDriverForm');
+            let form = document.querySelector('#editModal form');
             form.action = `/sua-tai-xe/${selectedDriverId}/`;
 
             document.getElementById('editModal').style.display = 'flex';
@@ -420,6 +306,21 @@
 
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside on overlay
+        window.onclick = function (event) {
+            const createModal = document.getElementById('createModal');
+            const editModal = document.getElementById('editModal');
+            const deleteModal = document.getElementById('deleteModal');
+
+            if (event.target == createModal) closeCreateModal();
+            if (event.target == editModal) closeEditModal();
+            if (event.target == deleteModal) closeDeleteModal();
         }
 
         function saveEditModal() {
@@ -489,8 +390,8 @@
                 <div class="account-row">
                     <div class="form-group">
                         <label class="form-label">Tên đăng nhập <span class="required">*</span></label>
-                        <input type="text" name="username" class="form-input editable highlight" placeholder="nhaxe1"
-                            required>
+                        <input type="text" name="username" class="form-input editable highlight" value="{{ ma_tai_xe_moi }}"
+                            readonly required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Mật khẩu <span class="required">*</span></label>
@@ -526,12 +427,10 @@
                     <div class="form-group">
                         <label class="form-label">Loại bằng lái</label>
                         <select name="license_type" class="form-input editable">
+                            <option value="B1" selected>B1</option>
                             <option value="B">B</option>
-                            <option value="B1">B1</option>
-                            <option value="B2">B2</option>
                             <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
+                            <option value="C1">C1</option>
                         </select>
                     </div>
 
@@ -540,10 +439,6 @@
                         <label class="form-label">Số CCCD</label>
                         <input type="text" name="cccd" id="createCCCD" class="form-input editable"
                             placeholder="Nhập số CCCD">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ngày hết hạn bằng lái</label>
-                        <input type="date" name="expiry_date" id="createLicenseExpiry" class="form-input editable">
                     </div>
 
                     <!-- Row 5: Avatar on the right -->
@@ -595,15 +490,11 @@
                     <div class="form-group">
                         <label class="form-label">Loại bằng lái</label>
                         <select id="editLicenseType" name="license_type" class="form-input editable">
-                            <option value="B">B</option>
                             <option value="B1">B1</option>
+                            <option value="B">B</option>
                             <option value="C">C</option>
                             <option value="C1">C1</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ngày hết hạn (YYYY-MM-DD)</label>
-                        <input type="text" id="editLicenseExpiry" name="expiry_date" class="form-input editable">
                     </div>
                 </div>
             </div>
