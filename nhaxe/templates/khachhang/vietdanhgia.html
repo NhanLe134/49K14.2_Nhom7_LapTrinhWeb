@@ -1,0 +1,85 @@
+{% extends "home/khachhang.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/danhgiachuyenxe.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="review-main">
+    <div class="review-container">
+        <div class="review-form-box">
+            <h2 class="review-title">Đánh giá chuyến xe</h2>
+            
+            <div class="form-section-title">Thông tin chuyến đi</div>
+            <hr class="divider">
+            
+            <div class="trip-info-summary">
+                <div class="bus-name-blue">Khang Limousine</div>
+                <div class="info-row"><strong>Lộ trình:</strong> {{ chuyen.TuyenXe.tenTuyen }}</div>
+                <div class="info-row"><strong>Ngày:</strong> {{ chuyen.NgayKhoiHanh|date:"d/m/Y" }}</div>
+                <div class="info-row"><strong>Giờ:</strong> {{ chuyen.GioDi|time:"H:i" }} - {{ chuyen.GioDen|time:"H:i" }}</div>
+            </div>
+
+            <form action="{% url 'submit_danhgia' %}" method="POST" class="evaluation-form">
+                {% csrf_token %}
+                <input type="hidden" name="nhaxe_id" value="{{ nhaxe.NhaxeID }}">
+                <input type="hidden" name="ve_id" value="{{ ve.VeID }}">
+                
+                <div class="rating-section">
+                    <span class="rating-label">Đánh giá chất lượng dịch vụ</span>
+                    <div class="stars" id="ratingStars">
+                        {% for i in "12345"|make_list %}
+                        <i class="fa-solid fa-star {% if danh_gia_cu and forloop.counter <= danh_gia_cu.Diemso %}active-star{% endif %}" data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="diem_so" id="diem_so_input" value="{{ danh_gia_cu.Diemso|default:'' }}" required>
+                </div>
+
+                <div class="review-content-section">
+                    <label class="review-label">Nội dung đánh giá:</label>
+                    <textarea name="nhan_xet" class="review-textarea" rows="4" placeholder="Vui lòng nội dung đánh giá">{{ danh_gia_cu.Nhanxet|default:'' }}</textarea>
+                </div>
+
+                <div class="form-actions">
+                    <div class="anonymous-checkbox">
+                        <input type="checkbox" name="an_danh" id="an_danh" class="mr-2" {% if danh_gia_cu and danh_gia_cu.AnDanh %}checked{% endif %}>
+                        <label for="an_danh" style="cursor:pointer; margin-bottom:0;">Đánh giá ẩn danh</label>
+                    </div>
+                    <button type="submit" class="submit-review-btn">{% if danh_gia_cu %}Cập nhật{% else %}Gửi{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Hàm cập nhật màu sao
+    function updateStars(value) {
+        document.querySelectorAll('#ratingStars i').forEach(s => {
+            if (parseInt(s.getAttribute('data-value')) <= parseInt(value)) {
+                s.classList.add('active-star');
+            } else {
+                s.classList.remove('active-star');
+            }
+        });
+    }
+
+    // Xử lý chọn sao bằng JS
+    const stars = document.querySelectorAll('#ratingStars i');
+    const input = document.getElementById('diem_so_input');
+
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const value = star.getAttribute('data-value');
+            input.value = value;
+        });
+
+        star.addEventListener('mouseout', () => {
+            stars.forEach(s => {
+                s.style.color = '';
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -14,15 +14,18 @@
     background-color: #fff;
     border-radius: 8px;
     padding: 25px 30px 0 30px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
     margin-bottom: 30px;
 }
 
 .review-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 25px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #06A0E2 !important;
+    margin-bottom: 30px;
+    text-align: center !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .review-tabs {
@@ -164,7 +167,7 @@
     background-color: #fff;
     border-radius: 8px;
     padding: 30px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
     margin-bottom: 30px;
     max-width: 800px;
 }
@@ -314,13 +317,13 @@
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
 .eval-card-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 20px; /* Tăng khoảng cách từ 12px lên 20px */
     margin-bottom: 12px;
 }
 
@@ -360,4 +363,29 @@
 .eval-date {
     font-size: 0.95rem;
     color: #888;
+}
+
+/* Mẫu nút Sửa bạn gửi */
+.edit-review-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #06A0E2;
+    text-decoration: none;
+    background-color: #eff6ff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    border: 1px solid #dbeafe;
+}
+
+.edit-review-icon i {
+    font-size: 1rem;
+}
+
+.edit-review-icon:hover {
+    background-color: #dbeafe;
+    color: #1d4ed8;
 }

@@ -4,6 +4,7 @@ from . import auth_views
 from . import chuyenxe_views
 from . import taixe_views
 from . import tuyenxe_views
+from . import feedback_views
 
 urlpatterns = [
 
@@ -22,9 +23,9 @@ urlpatterns = [
     path('lotrinh', views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', views.vecuatoi, name='vecuatoi'),
-    path('vietdanhgia', views.vietdanhgia, name='vietdanhgia'),
-    path('dadanhgia', views.dadanhgia, name='dadanhgia'),
-    path('danhgiachuyenxe', views.danhgiachuyenxe, name='danhgiachuyenxe'),
+    path('vietdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='vietdanhgia'),
+    path('danhgiachuyenxe', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
+    path('submit_danhgia', feedback_views.submit_danhgia, name='submit_danhgia'),
 
     # ==================== NHÀ XE ====================
     path('nhaxe', views.nhaxe, name='nhaxe'),
