@@ -137,3 +137,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # URL gốc của API backend (.NET Core hoặc API ngoài)
 API_BASE_URL = 'https://api-vexeapp.onrender.com'   # ← Thay bằng URL thật của API
 API_TIMEOUT = 60  # giây
+
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
