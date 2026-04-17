@@ -1,94 +1,53 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.conf import settings
-import requests
+from .models import TuyenXe, Nhaxe, ChuyenXe # Import models trực tiếp
 import json
 
-def anh_xa_dia_diem(ten_dia_diem):
-    """Bản đồ ánh xạ các tên điểm đặc biệt sang tọa độ Plus Code cụ thể."""
-    ten_thap_len = ten_dia_diem.strip().lower()
-    if ten_thap_len == "huế":
-        return "FH7V+7Q Thuận Hóa, Huế, Việt Nam"
-    elif ten_thap_len == "đà nẵng":
-        return "36CJ+H3 An Hải, Đà Nẵng, Việt Nam"
-    elif ten_thap_len == "hội an":
-        return "V8GG+7MR, An Hội, Hội An, Đà Nẵng, Việt Nam"
-    return ten_dia_diem
-
+# Giữ nguyên các hàm tính toán bổ trợ
 def lay_toa_do(ten_dia_diem):
-    """Lấy tọa độ từ Nominatim (OpenStreetMap) - Miễn phí."""
-    if not ten_dia_diem:
-        return None
+    import requests
+    if not ten_dia_diem: return None
     try:
         duong_dan = "https://nominatim.openstreetmap.org/search"
-        tham_so = {
-            "q": f"{ten_dia_diem}, Việt Nam",
-            "format": "json",
-            "limit": 1
-        }
-        tieu_de = {'User-Agent': 'VexeApp/1.0'}
-        phan_hoi = requests.get(duong_dan, params=tham_so, headers=tieu_de)
+        tham_so = {"q": f"{ten_dia_diem}, Việt Nam", "format": "json", "limit": 1}
+        phan_hoi = requests.get(duong_dan, params=tham_so, headers={'User-Agent': 'VexeApp/1.0'})
         if phan_hoi.status_code == 200:
             du_lieu = phan_hoi.json()
-            if du_lieu:
-                return {"lat": du_lieu[0]["lat"], "lon": du_lieu[0]["lon"]}
-    except Exception as e:
-        print(f"Lỗi lấy tọa độ: {e}")
+            if du_lieu: return {"lat": du_lieu[0]["lat"], "lon": du_lieu[0]["lon"]}
+    except: pass
     return None
 
 def tinh_quang_duong_osrm(diem_di, diem_den, ds_trung_gian_str=None):
-    """Tính quãng đường bằng OSRM (Open Source Routing Machine) - Miễn phí."""
+    import requests
     try:
         toa_do_di = lay_toa_do(diem_di)
         toa_do_den = lay_toa_do(diem_den)
-        
-        if not toa_do_di or not toa_do_den:
-            return None
-
-        # Xây dựng chuỗi tọa độ: lon,lat;lon,lat...
+        if not toa_do_di or not toa_do_den: return None
         danh_sach_toa_do = [f"{toa_do_di['lon']},{toa_do_di['lat']}"]
-        
         if ds_trung_gian_str:
-            cac_diem_tg = [p.strip() for p in ds_trung_gian_str.split(",") if p.strip()]
-            for p in cac_diem_tg:
-                toa_do_tg = lay_toa_do(p)
-                if toa_do_tg:
-                    danh_sach_toa_do.append(f"{toa_do_tg['lon']},{toa_do_tg['lat']}")
-        
+            for p in [x.strip() for x in ds_trung_gian_str.split(",") if x.strip()]:
+                toa_tg = lay_toa_do(p)
+                if toa_tg: danh_sach_toa_do.append(f"{toa_tg['lon']},{toa_tg['lat']}")
         danh_sach_toa_do.append(f"{toa_do_den['lon']},{toa_do_den['lat']}")
-        duong_di_toa_do = ";".join(danh_sach_toa_do)
-
-        duong_dan = f"https://router.project-osrm.org/route/v1/driving/{duong_di_toa_do}?overview=false"
+        duong_dan = f"https://router.project-osrm.org/route/v1/driving/{';'.join(danh_sach_toa_do)}?overview=false"
         phan_hoi = requests.get(duong_dan)
         if phan_hoi.status_code == 200:
             du_lieu = phan_hoi.json()
-            if du_lieu.get("code") == "Ok" and du_lieu.get("routes"):
-                quang_duong_met = du_lieu["routes"][0]["distance"]
-                return round(quang_duong_met / 1000.0, 1) # Trả về KM
-    except Exception as e:
-        print(f"Lỗi OSRM: {e}")
+            if du_lieu.get("code") == "Ok": return round(du_lieu["routes"][0]["distance"] / 1000.0, 1)
+    except: pass
     return None
+
+# --- CÁC HÀM VIEW SỬ DỤNG DATABASE (ORM) ---
 
 def quanlytuyenxe(request):
     nha_xe_id = request.session.get('user_id')
-
-    danh_sach_tuyen = []
-    tat_ca_ten_tuyen = []
     
-    phan_hoi = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/")
-    if phan_hoi.status_code == 200:
-        tat_ca_tuyen = phan_hoi.json()
-        
-        for tuyen in tat_ca_tuyen:
-            if tuyen.get('tenTuyen'):
-                tat_ca_ten_tuyen.append(tuyen.get('tenTuyen'))
-                
-            nha_xe_cua_tuyen = tuyen.get('nhaXe')
-            if nha_xe_cua_tuyen == nha_xe_id:
-                danh_sach_tuyen.append(tuyen)
-    else:
-        messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
-        
+    # Lấy danh sách tuyến xe của nhà xe này từ Database
+    danh_sach_tuyen = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
+    
+    # Lấy tất cả tên tuyến xe để gửi xuống JS (xử lý trùng tên)
+    tat_ca_ten_tuyen = list(TuyenXe.objects.values_list('tenTuyen', flat=True))
+    
     context = {
         'nha_xe_id': nha_xe_id,
         'danh_sach_tuyen': danh_sach_tuyen,
@@ -99,48 +58,39 @@ def quanlytuyenxe(request):
 def them_tuyen_xe(request):
     if request.method == 'POST':
         nha_xe_id = request.session.get('user_id')
-
         ten_tuyen = request.POST.get('tenTuyen')
         diem_di = request.POST.get('diemDi')
         diem_den = request.POST.get('diemDen')
         quang_duong = request.POST.get('quangDuong')
         diem_trung_gian = request.POST.get('diemTrungGian')
         
-        # Tự động tính quãng đường nếu để trống
+        # Tự động tính quãng đường
         if not quang_duong or not quang_duong.strip():
-            kq_tinh_toan = tinh_quang_duong_osrm(diem_di, diem_den, diem_trung_gian)
-            if kq_tinh_toan is not None:
-                quang_duong = str(kq_tinh_toan)
+            kq = tinh_quang_duong_osrm(diem_di, diem_den, diem_trung_gian)
+            if kq: quang_duong = str(kq)
 
-        phan_hoi_get = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/")
-        max_id = 0
-        if phan_hoi_get.status_code == 200:
-            tat_ca_tuyen = phan_hoi_get.json()
-            for tuyen in tat_ca_tuyen:
-                tx_id = tuyen.get('tuyenXeID', '')
-                if tx_id and tx_id.startswith('TX') and tx_id[2:].isdigit():
-                    num = int(tx_id[2:])
-                    if num > max_id:
-                        max_id = num
-        
-        id_moi = f"TX{max_id + 1:04d}"
+        # Tạo ID tự động (TX0001, TX0002...)
+        last_tuyen = TuyenXe.objects.all().order_by('tuyenXeID').last()
+        num = 1
+        if last_tuyen and last_tuyen.tuyenXeID.startswith('TX'):
+            num = int(last_tuyen.tuyenXeID[2:]) + 1
+        id_moi = f"TX{num:04d}"
 
-        du_lieu = {
-            "tuyenXeID": id_moi,
-            "tenTuyen": ten_tuyen,
-            "diemDi": diem_di,
-            "diemDen": diem_den,
-            "QuangDuong": quang_duong if quang_duong else None,
-            "DiemTrungGian": diem_trung_gian if diem_trung_gian else None,
-            "nhaXe": nha_xe_id
-        }
-        
-        phan_hoi = requests.post(f"{settings.API_BASE_URL}/api/tuyenxe/", json=du_lieu)
-        if phan_hoi.status_code in [200, 201]:
+        try:
+            nha_xe_obj = Nhaxe.objects.get(NhaxeID=nha_xe_id)
+            TuyenXe.objects.create(
+                tuyenXeID=id_moi,
+                nhaXe=nha_xe_obj,
+                tenTuyen=ten_tuyen,
+                diemDi=diem_di,
+                diemDen=diem_den,
+                QuangDuong=quang_duong,
+                DiemTrungGian=diem_trung_gian
+            )
             messages.success(request, 'Thêm tuyến xe thành công')
             return redirect('quanlytuyenxe')
-        else:
-            messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
+        except Exception as e:
+            messages.error(request, f'Lỗi khi lưu vào Database: {e}')
             
     return render(request, 'home/form_tuyen_xe.html', {
         'tieu_de_form': 'Thêm tuyến mới',
@@ -148,63 +98,38 @@ def them_tuyen_xe(request):
     })
 
 def sua_tuyen_xe(request, pk):
-    du_lieu_tuyen = {}
-    phan_hoi_get = requests.get(f"{settings.API_BASE_URL}/api/tuyenxe/{pk}/")
-    if phan_hoi_get.status_code == 200:
-        du_lieu_tuyen = phan_hoi_get.json()
+    # Lấy đối tượng từ DB
+    tuyen_obj = get_object_or_404(TuyenXe, pk=pk)
 
     if request.method == 'POST':
-        nha_xe_id = request.session.get('user_id')
-
-        ten_tuyen = request.POST.get('tenTuyen')
-        diem_di = request.POST.get('diemDi')
-        diem_den = request.POST.get('diemDen')
+        tuyen_obj.tenTuyen = request.POST.get('tenTuyen')
+        tuyen_obj.diemDi = request.POST.get('diemDi')
+        tuyen_obj.diemDen = request.POST.get('diemDen')
         quang_duong = request.POST.get('quangDuong')
-        diem_trung_gian = request.POST.get('diemTrungGian')
+        tuyen_obj.DiemTrungGian = request.POST.get('diemTrungGian')
         
         if not quang_duong or not quang_duong.strip():
-            kq_tinh_toan = tinh_quang_duong_osrm(diem_di, diem_den, diem_trung_gian)
-            if kq_tinh_toan is not None:
-                quang_duong = str(kq_tinh_toan)
-
-        du_lieu = {
-            "tuyenXeID": pk,
-            "tenTuyen": ten_tuyen,
-            "diemDi": diem_di,
-            "diemDen": diem_den,
-            "QuangDuong": quang_duong if quang_duong else None,
-            "DiemTrungGian": diem_trung_gian if diem_trung_gian else None,
-            "nhaXe": nha_xe_id
-        }
+            kq = tinh_quang_duong_osrm(tuyen_obj.diemDi, tuyen_obj.diemDen, tuyen_obj.DiemTrungGian)
+            if kq: quang_duong = str(kq)
         
-        phan_hoi = requests.put(f"{settings.API_BASE_URL}/api/tuyenxe/{pk}/", json=du_lieu)
-        if phan_hoi.status_code in [200, 204]:
-            messages.success(request, 'Cập nhật tuyến xe thành công')
-            return redirect('quanlytuyenxe')
-        else:
-            messages.error(request, 'Lỗi hệ thống. Vui lòng thử lại sau.')
+        tuyen_obj.QuangDuong = quang_duong
+        tuyen_obj.save()
+        
+        messages.success(request, 'Cập nhật tuyến xe thành công')
+        return redirect('quanlytuyenxe')
             
     return render(request, 'home/form_tuyen_xe.html', {
         'tieu_de_form': 'Chỉnh sửa tuyến',
-        'tuyen': du_lieu_tuyen
+        'tuyen': tuyen_obj
     })
 
 def xoa_tuyen_xe(request, pk):
     if request.method == 'POST':
-        phan_hoi_chuyen = requests.get(f"{settings.API_BASE_URL}/api/chuyenxe/")
-        if phan_hoi_chuyen.status_code == 200:
-            tat_ca_chuyen = phan_hoi_chuyen.json()
-            for chuyen in tat_ca_chuyen:
-                tuyen_chuyen = chuyen.get('tuyenXe')
-                actual_id = tuyen_chuyen.get('tuyenXeID') if isinstance(tuyen_chuyen, dict) else tuyen_chuyen
-                if actual_id == pk:
-                    messages.error(request, 'Không thể xóa tuyến xe, có chuyến đang hoạt động')
-                    return redirect('quanlytuyenxe')
-
-        phan_hoi = requests.delete(f"{settings.API_BASE_URL}/api/tuyenxe/{pk}/")
-        if phan_hoi.status_code in [200, 204]:
-            messages.success(request, 'Xóa tuyến xe thành công')
+        # Kiểm tra xem có chuyến xe nào đang dùng tuyến này không
+        if ChuyenXe.objects.filter(TuyenXe_id=pk).exists():
+            messages.error(request, 'Không thể xóa tuyến xe, có chuyến đang hoạt động')
         else:
-            messages.error(request, 'Lỗi hệ thống khi xóa.')
+            TuyenXe.objects.filter(pk=pk).delete()
+            messages.success(request, 'Xóa tuyến xe thành công')
             
     return redirect('quanlytuyenxe')

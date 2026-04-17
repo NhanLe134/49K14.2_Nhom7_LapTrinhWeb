@@ -76,10 +76,15 @@ WSGI_APPLICATION = 'nhom7.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.hvlpysoytevbadlvupbq',
+        'PASSWORD': 'P1N2N3T4H5@',
+        'HOST': 'aws-1-ap-southeast-1.pooler.supabase.com', # Lấy từ URI ở Bước 2
+        'PORT': '6543',
     }
 }
+
 
 
 # Password validation
@@ -131,11 +136,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+API_BASE_URL = 'https://api-vexeapp.onrender.com'
+API_TIMEOUT = 60
 
-# ==================== CẤU HÌNH API ====================
-# URL gốc của API backend (.NET Core hoặc API ngoài)
-API_BASE_URL = 'https://api-vexeapp.onrender.com'   # ← Thay bằng URL thật của API
-API_TIMEOUT = 60  # giây
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
