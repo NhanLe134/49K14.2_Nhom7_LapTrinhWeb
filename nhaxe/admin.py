@@ -69,7 +69,7 @@ class ThanhToanAdmin(admin.ModelAdmin):
 
 @admin.register(DanhGia)
 class DanhGiaAdmin(admin.ModelAdmin):
-    list_display = ('DanhGiaID', 'Ve', 'KhachHang', 'Diemso', 'NgayDanhGia')
+    list_display = ('DanhGiaID', 'Nhaxe', 'KhachHang', 'Diemso', 'NgayDanhGia')
     list_filter = ('Diemso',)
 
 @admin.register(User_Authentication)
