@@ -1,0 +1,106 @@
+{% extends 'home/nhaxe.html' %}
+{% load static %}
+
+{% block title %}{{ tieu_de_form }} - Vexeapp{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/quanlytuyenxe.css' %}">
+{% endblock %}
+
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#444{% endblock %}
+{% block active_tuyenxe %}active{% endblock %}
+{% block color_tuyenxe %}#06A0E2{% endblock %}
+
+{% block content %}
+    <div class="add-route-container">
+        <div class="add-route-title">{{ tieu_de_form }}</div>
+        
+        <form class="add-route-form" method="POST" onsubmit="return validateForm()">
+            {% csrf_token %}
+            
+            <div class="add-route-field">
+                <label class="field-label">Tên tuyến</label>
+                <input type="text" name="tenTuyen" id="routeName" class="field-input" 
+                       value="{{ tuyen.tenTuyen|default:'' }}" placeholder="Ví dụ: Đà Nẵng - Huế">
+                <div class="error-msg" id="nameError" style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+            </div>
+
+            <div class="add-route-field">
+                <label class="field-label">Điểm đi</label>
+                <input type="text" name="diemDi" id="startPoint" class="field-input" 
+                       value="{{ tuyen.diemDi|default:'' }}" placeholder="Ví dụ: Đà Nẵng">
+                <div class="error-msg" id="startError" style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+            </div>
+
+            <div class="add-route-field">
+                <label class="field-label">Điểm đến</label>
+                <input type="text" name="diemDen" id="endPoint" class="field-input" 
+                       value="{{ tuyen.diemDen|default:'' }}" placeholder="Ví dụ: Huế">
+                <div class="error-msg" id="endError" style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
+            </div>
+
+            <div class="add-route-field">
+                <label class="field-label">Khoảng cách (km)</label>
+                <input type="number" step="0.1" name="quangDuong" id="distance" class="field-input" 
+                       value="{{ tuyen.QuangDuong|default:'' }}" placeholder="Hệ thống sẽ tự tính nếu để trống">
+            </div>
+
+            <div class="add-route-field">
+                <label class="field-label">Điểm trung gian</label>
+                <input type="text" name="diemTrungGian" id="diemTrungGian" class="field-input" 
+                       value="{{ tuyen.DiemTrungGian|default:'' }}" placeholder="Ví dụ: Lăng Cô">
+            </div>
+
+            <div class="add-route-buttons">
+                <a href="{% url 'quanlytuyenxe' %}" class="btn-cancel-add-route" style="text-decoration: none; text-align: center; line-height: 40px;">Quay lại</a>
+                <button type="submit" class="btn-save-add-route" id="btnSubmit">Lưu tuyến</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function validateForm() {
+        // Xóa thông báo lỗi cũ
+        document.getElementById('nameError').textContent = '';
+        document.getElementById('startError').textContent = '';
+        document.getElementById('endError').textContent = '';
+        
+        const ten = document.getElementById('routeName').value.trim();
+        const bd = document.getElementById('startPoint').value.trim();
+        const kt = document.getElementById('endPoint').value.trim();
+        const nhap_quang_duong = document.getElementById('distance');
+        const nut_luu = document.getElementById('btnSubmit');
+        
+        let hop_le = true;
+
+        if (!ten) {
+            document.getElementById('nameError').textContent = 'Vui lòng nhập Tên tuyến xe.';
+            hop_le = false;
+        }
+        if (!bd) {
+            document.getElementById('startError').textContent = 'Vui lòng nhập Điểm đi.';
+            hop_le = false;
+        }
+        if (!kt) {
+            document.getElementById('endError').textContent = 'Vui lòng nhập Điểm đến.';
+            hop_le = false;
+        }
+        if (bd && kt && bd.toLowerCase() === kt.toLowerCase()) {
+            document.getElementById('endError').textContent = 'Điểm đi và điểm đến không được trùng nhau.';
+            hop_le = false;
+        }
+
+        if (hop_le) {
+            if (!nhap_quang_duong.value) {
+                nut_luu.disabled = true;
+                nut_luu.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+            }
+        }
+        
+        return hop_le;
+    }
+</script>
+{% endblock %}

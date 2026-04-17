@@ -58,9 +58,6 @@
             <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
                 <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
             </a>
-            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
-                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
-            </a>
         </aside>
 
         <!-- Main Content -->
@@ -91,21 +88,23 @@
                         <select id="route" name="tuyenxe" class="form-control" required>
                             <option value="">Chọn tuyến xe</option>
                             {% for tuyen in tuyen_xe_list %}
-                            <option value="{{ tuyen.tuyenXeID }}" {% if chuyen.TuyenXe_id == tuyen.tuyenXeID %}selected{% endif %}>
+                            {% with tid=tuyen.tuyenXeID|stringformat:"s" %}
+                            <option value="{{ tuyen.tuyenXeID }}" {% if chuyen.TuyenXe|stringformat:"s" == tid %}selected{% endif %}>
                                 {{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})
                             </option>
+                            {% endwith %}
                             {% endfor %}
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="date">Ngày chạy</label>
-                        <input type="date" name="date" id="date" class="form-control" value="{{ chuyen.NgayKhoiHanh|date:'Y-m-d' }}" required>
+                        <input type="date" name="date" id="date" class="form-control" value="{{ chuyen.NgayKhoiHanh }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="time">Giờ xuất phát</label>
-                        <input type="time" name="time" id="time" class="form-control" value="{{ chuyen.GioDi|time:'H:i' }}" required>
+                        <input type="time" name="time" id="time" class="form-control" value="{{ chuyen.GioDi|slice:':5' }}" required>
                     </div>
 
                     <div class="form-group">
@@ -113,23 +112,20 @@
                         <select id="carType" name="xe" class="form-control" required>
                             <option value="">Chọn xe</option>
                             {% for xe in xe_list %}
-                            <option value="{{ xe.XeID }}" {% if chuyen.Xe_id == xe.XeID %}selected{% endif %}>
+                            {% with xid=xe.XeID|stringformat:"s" %}
+                            <option value="{{ xe.XeID }}" {% if chuyen.Xe|stringformat:"s" == xid %}selected{% endif %}>
                                 {{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ
                             </option>
+                            {% endwith %}
                             {% endfor %}
                         </select>
                     </div>
 
-                    <!-- Tài xế -->
-                    <div class="form-group">
+                    <!-- Tài xế (Ẩn) -->
+                    <div class="form-group" style="display: none;">
                         <label for="taixe">Tài xế</label>
-                        <select id="taixe" name="taixe" class="form-control" required>
-                            <option value="" disabled>Chọn tài xế</option>
-                            {% for tx in taixe_list %}
-                            <option value="{{ tx.TaixeID }}" {% if chuyen.Taixe_id == tx.TaixeID %}selected{% endif %}>
-                                Tài xế ID: {{ tx.TaixeID }} - CCCD: {{ tx.soCCCD }}
-                            </option>
-                            {% endfor %}
+                        <select id="taixe" name="taixe" class="form-control">
+                            <option value="{{ chuyen.Taixe_id|default:chuyen.Taixe|default:'' }}" selected></option>
                         </select>
                     </div>
 

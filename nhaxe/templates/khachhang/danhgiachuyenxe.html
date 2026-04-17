@@ -1,0 +1,127 @@
+{% extends "home/khachhang.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/danhgiachuyenxe.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="review-main">
+    <div class="review-container">
+        <div class="review-header-box">
+            <h2 class="review-title">Đánh giá chuyến xe</h2>
+            
+            <!-- Tabs -->
+            <div class="review-tabs">
+                <div class="review-tab active" data-target="pending">CHỜ ĐÁNH GIÁ</div>
+                <div class="review-tab" data-target="evaluated">ĐÃ ĐÁNH GIÁ</div>
+            </div>
+        </div>
+
+        <!-- Section: Chờ đánh giá -->
+        <div id="pending-section">
+            <div class="trip-cards-grid">
+                {% if chuyen_xe_cho_danh_gia %}
+                    {% for item in chuyen_xe_cho_danh_gia %}
+                    <div class="trip-card" id="trip-{{ item.ve.VeID }}">
+                        <div class="trip-card-content">
+                            <div class="trip-date">
+                                <span class="trip-day">{{ item.chuyen.NgayKhoiHanh|date:"d" }}</span>
+                                <span class="trip-month">{{ item.chuyen.NgayKhoiHanh|date:"m/Y" }}</span>
+                            </div>
+                            <div class="trip-details">
+                                <div class="trip-time">{{ item.chuyen.GioDi|time:"H:i" }} - {{ item.chuyen.GioDen|time:"H:i" }}</div>
+                                <div class="trip-bus">Khang Limousine</div>
+                                <div class="trip-route">{{ item.chuyen.TuyenXe.tenTuyen }}</div>
+                                <div class="trip-status">Đã hoàn thành</div>
+                            </div>
+                        </div>
+                        <a href="{% url 'vietdanhgia' item.ve.VeID %}" class="review-btn" id="btn-review-{{ item.ve.VeID }}" style="text-decoration:none;">
+                            <i class="fa-solid fa-pen"></i> Viết nhận xét
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center py-4 text-muted">Không có chuyến xe nào chờ đánh giá.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section: Đã đánh giá (Ẩn mặc định) -->
+        <div id="evaluated-section" style="display: none;">
+            <div class="evaluated-list">
+                {% if danh_sach_da_danh_gia %}
+                    {% for dg in danh_sach_da_danh_gia %}
+                    <div class="evaluated-card" id="eval-{{ dg.DanhGiaID }}">
+                        <div class="eval-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center;">
+                                <img src="{% static 'img/Vexeapp_logo.png' %}" class="eval-logo" alt="logo">
+                                <div class="eval-bus-name">{{ dg.TenNhaxe_Display }}</div>
+                            </div>
+                            {% if dg.is_editable %}
+                            <a href="{% url 'suadanhgia' dg.Ve.VeID %}" class="edit-review-icon" title="Chỉnh sửa đánh giá">
+                                <i class="fa-solid fa-pen-to-square"></i> Sửa
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="eval-stars">
+                            {% for i in "12345"|make_list %}
+                                <i class="fa-solid fa-star" {% if forloop.counter > dg.Diemso %}style="color:#ccc;"{% endif %}></i>
+                            {% endfor %}
+                        </div>
+                        <div class="eval-text">{{ dg.Nhanxet }}</div>
+                        <div class="eval-date">
+                            Ngày đánh giá: {{ dg.NgayDanhGia|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center py-4 text-muted">Bạn chưa thực hiện đánh giá nào.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Hàm chuyển tab
+    function switchTab(target) {
+        document.querySelectorAll('.review-tab').forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`.review-tab[data-target="${target}"]`);
+        if (activeTab) activeTab.classList.add('active');
+
+        if (target === 'pending') {
+            document.getElementById('pending-section').style.display = 'block';
+            document.getElementById('evaluated-section').style.display = 'none';
+        } else {
+            document.getElementById('pending-section').style.display = 'none';
+            document.getElementById('evaluated-section').style.display = 'block';
+        }
+    }
+
+    // Xử lý sự kiện click tab (Chuyển trang thực sự)
+    document.querySelectorAll('.review-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.getAttribute('data-target');
+            if (target === 'pending') {
+                window.location.href = "{% url 'danhgiachuyenxe' %}";
+            } else {
+                window.location.href = "{% url 'dadanhgia' %}";
+            }
+        });
+    });
+
+    // TỰ ĐỘNG BẬT TAB KHI CÓ THAM SỐ ?tab=evaluated HOẶC TỪ SERVER TRUYỀN XUỐNG
+    window.addEventListener('DOMContentLoaded', (event) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        const serverTab = "{{ active_tab|default:'' }}"; // Nhận tab từ Django
+
+        if (tabParam === 'evaluated' || serverTab === 'evaluated') {
+            switchTab('evaluated');
+        } else if (tabParam === 'pending' || serverTab === 'pending') {
+            switchTab('pending');
+        }
+    });
+</script>
+{% endblock %}

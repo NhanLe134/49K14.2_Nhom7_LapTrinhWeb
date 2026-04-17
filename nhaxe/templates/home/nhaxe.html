@@ -165,8 +165,9 @@
             }
             header.innerHTML = headerHTML;
 
-            const trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-            const drivers = ['Huy Phong', 'Thanh Nhã', 'Quang Khôi'];
+            // Dữ liệu từ API Render thông qua backend Django
+            const trips = JSON.parse('{{ trips_json|escapejs }}' || '[]');
+            const drivers = JSON.parse('{{ drivers_json|escapejs }}' || '[]');
 
             let bodyHTML = '';
             let totalAssignedTrips = 0;

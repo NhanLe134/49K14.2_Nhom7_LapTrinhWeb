@@ -18,8 +18,8 @@
     <div id="routeListView">
         <div class="content-header-flex">
             <h2 class="page-title">Quản lý tuyến xe</h2>
-            <button class="btn-add-route" onclick="showAddRouteView()"><i class="fa-solid fa-circle-plus"></i>
-                Thêm tuyến</button>
+            <a href="{% url 'them_tuyen_xe' %}" class="btn-add-route" style="text-decoration: none;"><i class="fa-solid fa-circle-plus"></i>
+                Thêm tuyến</a>
         </div>
 
         <!-- Route Grid -->
@@ -53,9 +53,9 @@
                     <span class="status-badge active">Đang hoạt động</span>
                 </div>
                 <div class="route-actions">
-                    <button class="btn-action-edit"
-                        onclick="openEditRoute('{{ route.tuyenXeID }}', '{{ route.tenTuyen|escapejs }}', '{{ route.diemDi|escapejs }}', '{{ route.diemDen|escapejs }}', '{{ route.QuangDuong|escapejs }}', '{{ route.DiemTrungGian|escapejs }}')"><i
-                            class="fa-solid fa-pen"></i> Sửa</button>
+                    <a href="{% url 'sua_tuyen_xe' route.tuyenXeID %}" class="btn-action-edit" style="text-decoration: none;">
+                        <i class="fa-solid fa-pen"></i> Sửa
+                    </a>
                     <button class="btn-action-delete" onclick="showDeleteConfirm('{{ route.tuyenXeID }}')"><i
                             class="fa-solid fa-trash"></i> Xóa</button>
                 </div>
@@ -67,51 +67,6 @@
             </div>
             {% endfor %}
         </div>
-    </div>
-
-    <!-- VIEW 2: ADD/EDIT ROUTE -->
-    <div id="addRouteView" class="add-route-container" style="display: none;">
-        <div class="add-route-title" id="formTitle">Thêm tuyến mới</div>
-        <form class="add-route-form" id="routeForm" method="POST" action="{% url 'them_tuyen_xe' %}"
-            onsubmit="validateAndSubmitAddRoute(event)">
-            {% csrf_token %}
-            <div class="add-route-field">
-                <label class="field-label">Tên tuyến</label>
-                <input type="text" name="tenTuyen" id="routeName" class="field-input"
-                    placeholder="Ví dụ: Đà Nẵng - Huế">
-                <div class="error-msg" id="nameError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
-                </div>
-            </div>
-            <div class="add-route-field">
-                <label class="field-label">Điểm đi</label>
-                <input type="text" name="diemDi" id="startPoint" class="field-input"
-                    placeholder="Ví dụ: Đà Nẵng">
-                <div class="error-msg" id="startError"
-                    style="color: #dc3545; font-size: 13px; margin-top: 5px;"></div>
-            </div>
-            <div class="add-route-field">
-                <label class="field-label">Điểm đến</label>
-                <input type="text" name="diemDen" id="endPoint" class="field-input" placeholder="Ví dụ: Huế">
-                <div class="error-msg" id="endError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
-                </div>
-            </div>
-            <div class="add-route-field">
-                <label class="field-label">Khoảng cách (km)</label>
-                <input type="number" step="0.1" name="quangDuong" id="distance" class="field-input"
-                    placeholder="100">
-                <div class="error-msg" id="distError" style="color: #dc3545; font-size: 13px; margin-top: 5px;">
-                </div>
-            </div>
-            <div class="add-route-field">
-                <label class="field-label">Điểm trung gian</label>
-                <input type="text" name="diemTrungGian" id="diemTrungGian" class="field-input"
-                    placeholder="Ví dụ: Lăng Cô">
-            </div>
-            <div class="add-route-buttons">
-                <button type="button" class="btn-cancel-add-route" onclick="hideAddRouteView()">Hủy</button>
-                <button type="submit" class="btn-save-add-route">Lưu tuyến</button>
-            </div>
-        </form>
     </div>
 
     <!-- Modal: Delete Confirmation -->
@@ -131,113 +86,7 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script id="routesData" type="application/json">{{ tat_ca_ten_tuyen_json|safe }}</script>
-    <script id="djangoMessages" type="application/json">
-        [
-            {% for msg in messages %}
-                {"text": "{{ msg.message|escapejs }}", "tags": "{{ msg.tags|escapejs }}"}{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ]
-    </script>
     <script>
-        let currentEditingRouteName = null;
-
-        function clearErrors() {
-            document.getElementById('nameError').textContent = '';
-            document.getElementById('startError').textContent = '';
-            document.getElementById('endError').textContent = '';
-            document.getElementById('distError').textContent = '';
-        }
-
-        function showAddRouteView() {
-            currentEditingRouteName = null;
-            document.getElementById('formTitle').textContent = 'Thêm tuyến mới';
-            document.getElementById('routeName').value = '';
-            document.getElementById('startPoint').value = '';
-            document.getElementById('endPoint').value = '';
-            document.getElementById('distance').value = '';
-            document.getElementById('diemTrungGian').value = '';
-            clearErrors();
-
-            let form = document.getElementById('routeForm');
-            form.action = "{% url 'them_tuyen_xe' %}";
-
-            document.getElementById('routeListView').style.display = 'none';
-            document.getElementById('addRouteView').style.display = 'block';
-        }
-
-        function hideAddRouteView() {
-            if (confirm("Bạn có chắc chắn muốn hủy thao tác này?")) {
-                document.getElementById('routeListView').style.display = 'block';
-                document.getElementById('addRouteView').style.display = 'none';
-                clearErrors();
-            }
-        }
-
-        function openEditRoute(id, name, start, end, dist, dur) {
-            currentEditingRouteName = name;
-            document.getElementById('formTitle').textContent = 'Chỉnh sửa tuyến';
-            document.getElementById('routeName').value = name && name !== 'None' ? name : '';
-            document.getElementById('startPoint').value = start && start !== 'None' ? start : '';
-            document.getElementById('endPoint').value = end && end !== 'None' ? end : '';
-            document.getElementById('distance').value = dist && dist !== 'None' ? dist : '';
-            document.getElementById('diemTrungGian').value = dur && dur !== 'None' ? dur : '';
-            clearErrors();
-
-            let form = document.getElementById('routeForm');
-            let baseUrl = "{% url 'sua_tuyen_xe' 'PLACEHOLDER' %}";
-            form.action = baseUrl.replace('PLACEHOLDER', id);
-
-            document.getElementById('routeListView').style.display = 'none';
-            document.getElementById('addRouteView').style.display = 'block';
-        }
-
-        function validateAndSubmitAddRoute(event) {
-            event.preventDefault();
-            clearErrors();
-            let isValid = true;
-
-            const name = document.getElementById('routeName').value.trim();
-            const start = document.getElementById('startPoint').value.trim();
-            const end = document.getElementById('endPoint').value.trim();
-            const dist = document.getElementById('distance').value.trim();
-
-            if (!name) {
-                document.getElementById('nameError').textContent = 'Vui lòng nhập Tên tuyến xe.';
-                isValid = false;
-            } else {
-                const existingNames = JSON.parse(document.getElementById('routesData').textContent || "[]");
-                if (existingNames.includes(name) && name !== currentEditingRouteName) {
-                    document.getElementById('nameError').textContent = 'Tên tuyến xe đã tồn tại.';
-                    isValid = false;
-                }
-            }
-
-            if (!start) {
-                document.getElementById('startError').textContent = 'Vui lòng nhập Điểm đi.';
-                isValid = false;
-            }
-
-            if (!end) {
-                document.getElementById('endError').textContent = 'Vui lòng nhập Điểm đến.';
-                isValid = false;
-            }
-
-            if (start && end && start.toLowerCase() === end.toLowerCase()) {
-                document.getElementById('endError').textContent = 'Điểm đi và điểm đến không được trùng nhau.';
-                isValid = false;
-            }
-
-            if (!dist) {
-                document.getElementById('distError').textContent = 'Vui lòng nhập Quãng đường.';
-                isValid = false;
-            }
-
-            if (isValid) {
-                event.target.submit();
-            }
-        }
-
         function showDeleteConfirm(id) {
             let form = document.getElementById('deleteForm');
             let baseUrl = "{% url 'xoa_tuyen_xe' 'PLACEHOLDER' %}";
@@ -249,15 +98,17 @@
             document.getElementById('deleteConfirmModal').style.display = 'none';
         }
 
-        function showGlobalPopup(type, msg) {
+        function hien_thong_bao(loai, loi_nhan) {
             const popup = document.getElementById('globalPopup');
             const icon = document.getElementById('globalPopupIcon');
             const message = document.getElementById('globalPopupMessage');
 
+            if (!popup) return;
+
             icon.className = 'global-popup-icon';
             message.className = 'global-popup-message';
 
-            if (type === 'success') {
+            if (loai === 'success') {
                 icon.classList.add('fa-regular', 'fa-circle-check', 'success');
                 message.classList.add('success');
             } else {
@@ -265,7 +116,7 @@
                 message.classList.add('error');
             }
 
-            message.textContent = msg;
+            message.textContent = loi_nhan;
             popup.style.display = 'flex';
             setTimeout(() => {
                 popup.style.display = 'none';
@@ -273,18 +124,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const msgsText = document.getElementById('djangoMessages').textContent.trim();
-            if (msgsText && msgsText !== '[]') {
-                try {
-                    const msgs = JSON.parse(msgsText);
-                    msgs.forEach(msg => {
-                        if (msg.tags.includes('success') || msg.text.toLowerCase().includes('thành công')) {
-                            showGlobalPopup('success', msg.text);
-                        } else {
-                            showGlobalPopup('error', msg.text);
-                        }
-                    });
-                } catch (e) { }
+            let thong_bao_django = [];
+            {% if messages %}
+                {% for msg in messages %}
+                    thong_bao_django.push({"text": "{{ msg.message|escapejs }}", "tags": "{{ msg.tags|escapejs }}"});
+                {% endfor %}
+            {% endif %}
+
+            if (thong_bao_django.length > 0) {
+                thong_bao_django.forEach(tin_nhan => {
+                    if (tin_nhan.tags.includes('success') || tin_nhan.text.toLowerCase().includes('thành công')) {
+                        hien_thong_bao('success', tin_nhan.text);
+                    } else {
+                        hien_thong_bao('error', tin_nhan.text);
+                    }
+                });
             }
         });
     </script>

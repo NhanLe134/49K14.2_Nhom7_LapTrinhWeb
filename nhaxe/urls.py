@@ -4,6 +4,7 @@ from . import auth_views
 from . import chuyenxe_views
 from . import taixe_views
 from . import tuyenxe_views
+from . import feedback_views
 
 urlpatterns = [
 
@@ -22,9 +23,12 @@ urlpatterns = [
     path('lotrinh', views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', views.vecuatoi, name='vecuatoi'),
-    path('vietdanhgia', views.vietdanhgia, name='vietdanhgia'),
-    path('dadanhgia', views.dadanhgia, name='dadanhgia'),
-    path('danhgiachuyenxe', views.danhgiachuyenxe, name='danhgiachuyenxe'),
+    # ==================== ĐÁNH GIÁ ====================
+    path('danhgiachuyenxe/', feedback_views.danhgiachuyenxe, {'tab': 'pending'}, name='danhgiachuyenxe'),
+    path('danhgiachuyenxe/dadanhgia/', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
+    path('danhgiachuyenxe/vietdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='vietdanhgia'),
+    path('danhgiachuyenxe/suadanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='suadanhgia'),
+    path('submit_danhgia/', feedback_views.submit_danhgia, name='submit_danhgia'),
 
     # ==================== NHÀ XE ====================
     path('nhaxe', views.nhaxe, name='nhaxe'),
@@ -32,6 +36,7 @@ urlpatterns = [
     path('quanlychuyenxe', chuyenxe_views.quanlychuyenxe, name='quanlychuyenxe'),
     path('themchuyenxe', chuyenxe_views.themchuyenxe, name='themchuyenxe'),
     path('suachuyenxe', chuyenxe_views.suachuyenxe, name='suachuyenxe'),
+    path('hoanthanh-chuyenxe/<str:pk>/', chuyenxe_views.hoanthanh_chuyenxe, name='hoanthanh_chuyenxe'),
     path('quanlytuyenxe', tuyenxe_views.quanlytuyenxe, name='quanlytuyenxe'),
     path('them-tuyen-xe', tuyenxe_views.them_tuyen_xe, name='them_tuyen_xe'),
     path('sua-tuyen-xe/<str:pk>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),

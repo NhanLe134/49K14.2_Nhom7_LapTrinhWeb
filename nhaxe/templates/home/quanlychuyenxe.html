@@ -9,6 +9,47 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}">
+    <style>
+        /* Popup overlay */
+        .popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-box {
+            background: white;
+            padding: 40px 50px;
+            border-radius: 16px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 350px;
+        }
+
+        .popup-icon {
+            color: #22c55e;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .popup-message {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #111;
+        }
+    </style>
 </head>
 
 <body>
@@ -80,19 +121,21 @@
                     <div class="trip-info-main">
                         <div class="trip-title">
                             <strong>{{ chuyen.ChuyenXeID }}</strong>
-                            <p>{{ chuyen.TuyenXe.diemDi }} - {{ chuyen.TuyenXe.diemDen }}</p>
+                            <p>{{ chuyen.route_name }}</p>
                         </div>
                         <div class="trip-details">
-                            <p>Giờ xuất phát: {{ chuyen.GioDi|time:"H:i" }}</p>
-                            <p>Loại xe: {{ chuyen.Xe.Loaixe.SoCho }} chỗ</p>
+                            <p>Giờ xuất phát: {{ chuyen.gio_di_fmt }}</p>
+                            <p>Loại xe: {{ chuyen.seat_count }} chỗ</p>
                         </div>
                     </div>
                     <div class="trip-actions">
-                        {% if chuyen.TrangThai == 'completed' or chuyen.TrangThai == 'Hoàn thành' %}
-                            <span class="status-badge" style="background-color: #DCFCE7; color: #16a34a;">Hoàn thành</span>
+                        {% with status=chuyen.TrangThai|lower|cut:" " %}
+                        {% if 'hoan' in status and 'thanh' in status or status == 'completed' %}
+                            <span class="status-badge" style="background-color: #E8F5E9; color: #1B5E20; padding: 6px 15px; border-radius: 20px;">Hoàn thành</span>
                         {% else %}
-                            <span class="status-badge">Chưa hoàn thành</span>
+                            <span class="status-badge" style="background-color: #FEF9C3; color: #854d0e;">{{ chuyen.TrangThai|default:'Chưa hoàn thành' }}</span>
                         {% endif %}
+                        {% endwith %}
                         <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' %}?id={{ chuyen.ChuyenXeID }}'">Chỉnh sửa</button>
                     </div>
                 </div>
@@ -101,6 +144,14 @@
                 {% endfor %}
             </div>
         </main>
+    </div>
+
+    <!-- Popup -->
+    <div class="popup-overlay" id="successPopup">
+        <div class="popup-box">
+            <i class="fa-regular fa-circle-check popup-icon"></i>
+            <div class="popup-message" id="popupMsgText">Thành công!</div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -121,6 +172,34 @@
 
             document.addEventListener('click', () => {
                 userMenu.classList.remove('show');
+            });
+
+            // Logic Popup thành công
+            const popup = document.getElementById('successPopup');
+            const popupText = document.getElementById('popupMsgText');
+            
+            // Tìm tất cả message success từ Django
+            const successMsgs = document.querySelectorAll('.msg-success');
+            if (successMsgs.length > 0) {
+                // Lấy nội dung message đầu tiên
+                const msgContent = successMsgs[0].innerText;
+                popupText.innerText = msgContent;
+                
+                // Hiển thị popup
+                popup.classList.add('active');
+                
+                // Ẩn alert mặc định nếu là success để không bị lặp
+                successMsgs.forEach(m => m.style.display = 'none');
+                
+                // Tự động đóng sau 2 giây
+                setTimeout(() => {
+                    popup.classList.remove('active');
+                }, 2000);
+            }
+            
+            // Click ra ngoài popup để đóng
+            popup.addEventListener('click', () => {
+                popup.classList.remove('active');
             });
         });
     </script>

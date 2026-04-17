@@ -2,8 +2,6 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
-
-
 from .models import User_Authentication
 
 # ==================== ĐĂNG NHẬP / ĐĂNG XUẤT ====================
@@ -28,7 +26,7 @@ def dangnhap(request):
             return _redirect_by_role(role)
         return render(request, 'home/index.html')
 
-    # Xử lý POST
+    # Xử lý đăng nhập trực tiếp qua Supabase (ORM)
     username = request.POST.get('username', '').strip()
     password = request.POST.get('password', '')
     
@@ -42,7 +40,7 @@ def dangnhap(request):
             TenDangNhap=username, 
             MatKhau=password
         ).first()
-        
+
         if matched_user:
             # Thiết lập session
             request.session['user_id']  = matched_user.UserID
@@ -62,7 +60,7 @@ def dangnhap(request):
         else:
             messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
     except Exception as e:
-        messages.error(request, f'Lỗi hệ thống khi đăng nhập: {str(e)}')
+        messages.error(request, f'Lỗi kết nối database: {str(e)}')
 
     return render(request, 'home/index.html', {'username_value': username})
 

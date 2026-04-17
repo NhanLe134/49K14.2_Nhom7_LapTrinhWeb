@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/lotrinh.css' %}">
+    <!-- Leaflet.js - Miễn phí, không cần API key -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
@@ -68,11 +70,7 @@
         <main class="main-content-lotrinh">
             <div class="lotrinh-container">
                 <div class="map-section">
-                    <iframe
-                        src="https://maps.google.com/maps?saddr=1+Tố+Hữu,+Thừa+Thiên+Huế&daddr=25+Bà+Triệu,+Thừa+Thiên+Huế+to:1+Nguyễn+Huệ,+Thừa+Thiên+Huế+to:1+Hùng+Vương,+Đà+Nẵng+to:1+Tố+Hữu,+Đà+Nẵng+to:25+Phan+Thanh,+Đà+Nẵng&output=embed"
-                        width="100%" height="400"
-                        style="border:0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
-                        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <div id="map" style="width:100%; height:400px; border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1;"></div>
                     <button class="btn-complete" onclick="openCompletePopup()">Hoàn thành</button>
                 </div>
 
@@ -143,6 +141,11 @@
         </main>
     </div>
 
+    <!-- Hidden form for status update -->
+    <form id="completeForm" method="POST" action="{% url 'hoanthanh_chuyenxe' pk=trip_id %}">
+        {% csrf_token %}
+    </form>
+
     <!-- Complete Popup -->
     <div class="popup-overlay" id="completePopup"
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
@@ -168,21 +171,72 @@
         <div>Liên hệ: Nhóm 07 - Lập trình web</div>
     </footer>
 
+    <!-- Leaflet.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // Geocode địa chỉ bằng Nominatim (miễn phí)
+        async function geocode(address) {
+            const q = encodeURIComponent(address + ', Việt Nam');
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
+            const data = await res.json();
+            if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+            return null;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Dropdown
             const userBtn = document.getElementById('userDropdownBtn');
             const userMenu = document.getElementById('userMenu');
+            userBtn.addEventListener('click', (e) => { e.stopPropagation(); userMenu.classList.toggle('show'); });
+            document.addEventListener('click', () => userMenu.classList.remove('show'));
 
-            userBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                userMenu.classList.toggle('show');
-            });
+            // Khởi tạo bản đồ Leaflet
+            const map = L.map('map').setView([16.0544, 108.2022], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
 
-            document.addEventListener('click', () => {
-                userMenu.classList.remove('show');
-            });
+            // Lấy danh sách điểm dừng từ DOM
+            const pickups = [...document.querySelectorAll('.loc-row.loc-up .loc-text')].map(el => el.textContent.trim());
+            const drops = [...document.querySelectorAll('.loc-row.loc-down .loc-text')].map(el => el.textContent.trim());
+            const allStops = [];
+            pickups.forEach(p => { if (!allStops.includes(p)) allStops.push(p); });
+            drops.forEach(d => { if (!allStops.includes(d)) allStops.push(d); });
+
+            if (allStops.length < 2) return;
+
+            // Geocode tất cả điểm dừng
+            const coords = [];
+            for (let i = 0; i < allStops.length; i++) {
+                const c = await geocode(allStops[i]);
+                if (c) {
+                    coords.push(c);
+                    // Thêm marker
+                    const icon = i === 0 ? '🟢' : (i === allStops.length - 1 ? '🔴' : '🔵');
+                    L.marker(c).addTo(map)
+                        .bindPopup(`<b>${icon} ${allStops[i]}</b><br>Điểm ${i + 1}/${allStops.length}`);
+                }
+            }
+
+            if (coords.length >= 2) {
+                // Vẽ đường đi bằng OSRM (miễn phí)
+                const coordStr = coords.map(c => c[1] + ',' + c[0]).join(';');
+                try {
+                    const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`);
+                    const routeData = await routeRes.json();
+                    if (routeData.code === 'Ok' && routeData.routes.length > 0) {
+                        const routeCoords = routeData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                        L.polyline(routeCoords, { color: '#06A0E2', weight: 5, opacity: 0.8 }).addTo(map);
+                    }
+                } catch(e) {
+                    // Nếu OSRM lỗi, vẽ đường thẳng
+                    L.polyline(coords, { color: '#06A0E2', weight: 4, dashArray: '10, 10' }).addTo(map);
+                }
+                // Zoom vừa khít tất cả điểm
+                map.fitBounds(coords, { padding: [30, 30] });
+            }
         });
 
         function openCompletePopup() {
@@ -196,17 +250,7 @@
         }
 
         function confirmComplete() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tripId = urlParams.get('id');
-            if (tripId) {
-                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                const idx = trips.findIndex(t => t.id === tripId);
-                if (idx !== -1) {
-                    trips[idx].status = 'completed';
-                    localStorage.setItem('app_trips', JSON.stringify(trips));
-                }
-            }
-            window.location.href = URL_QUANLYCHUYENXE;
+            document.getElementById('completeForm').submit();
         }
     </script>
     <script src="{% static 'js/common.js' %}"></script>
