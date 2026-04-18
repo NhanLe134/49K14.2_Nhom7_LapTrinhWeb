@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/lotrinh.css' %}">
+    <!-- Leaflet.js -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
@@ -61,11 +63,7 @@
 
                 <!-- MAP -->
                 <div class="map-section">
-                    <iframe
-                        src="https://maps.google.com/maps?saddr=1+Tố+Hữu,+Huế&daddr=25+Bà+Triệu,+Huế+to:1+Nguyễn+Huệ,+Huế+to:1+Hùng+Vương,+Đà+Nẵng+to:1+Tố+Hữu,+Đà+Nẵng+to:25+Phan+Thanh,+Đà+Nẵng&output=embed"
-                        width="100%" height="400"
-                        style="border:0; border-radius:12px;">
-                    </iframe>
+                    <div id="map" style="width:100%; height:400px; border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1;"></div>
 
                     <button class="btn-complete" onclick="openCompletePopup()">
                         Hoàn thành
@@ -77,31 +75,23 @@
                     <h3 class="list-title">Danh sách điểm đón</h3>
 
                     <div class="pickup-list">
-
+                        {% for ve in ve_list %}
                         <div class="pickup-card">
-                            <strong>Phan Thị Quỳnh Trâm</strong>
-                            <p>Ghế: A1</p>
-                            <p>0123456789</p>
-                            <p>Lên: 1 Tố Hữu, Huế</p>
-                            <p>Xuống: 1 Hùng Vương, Đà Nẵng</p>
+                            <strong>{{ ve.HoTen|default:"Khách hàng" }}</strong>
+                            <p>Ghế: {{ ve.Ghe.soGhe|default:"-" }}</p>
+                            <p>{{ ve.SoDienThoai|default:"Chưa có" }}</p>
+                            <div class="loc-row loc-up">
+                                <i class="fa-solid fa-location-dot"></i> Lên: 
+                                <span class="loc-text">{{ ve.DiemDon|default:"N/A" }}</span>
+                            </div>
+                            <div class="loc-row loc-down">
+                                <i class="fa-solid fa-location-dot"></i> Xuống: 
+                                <span class="loc-text">{{ ve.DiemTra|default:"N/A" }}</span>
+                            </div>
                         </div>
-
-                        <div class="pickup-card">
-                            <strong>Lê Văn Hùng</strong>
-                            <p>Ghế: A2</p>
-                            <p>0123456789</p>
-                            <p>Lên: 25 Bà Triệu, Huế</p>
-                            <p>Xuống: 1 Tố Hữu, Đà Nẵng</p>
-                        </div>
-
-                        <div class="pickup-card">
-                            <strong>Vương Tuệ Nhi</strong>
-                            <p>Ghế: A3</p>
-                            <p>0123456789</p>
-                            <p>Lên: 1 Nguyễn Huệ, Huế</p>
-                            <p>Xuống: 25 Phan Thanh, Đà Nẵng</p>
-                        </div>
-
+                        {% empty %}
+                        <p style="text-align: center; color: #666; margin-top: 20px;">Chưa có dữ liệu hành khách.</p>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -133,7 +123,82 @@
         <div>ĐH Kinh Tế Đà Nẵng</div>
     </footer>
 
+    <!-- Leaflet.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Geocode địa chỉ ưu tiên vùng Huế - Đà Nẵng
+        async function geocode(address) {
+            if (!address || address === 'N/A' || address === '') return null;
+            
+            const q = encodeURIComponent(address + ', Việt Nam');
+            try {
+                // Giới hạn tìm kiếm trong khu vực Huế - Đà Nẵng (viewbox & bounded=1)
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.0,16.8,108.8,15.5&bounded=1`);
+                const data = await res.json();
+                if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+            } catch (e) {
+                console.error("Lỗi Geocode:", e);
+            }
+            return null;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Dropdown
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => { e.stopPropagation(); userMenu.classList.toggle('show'); });
+                document.addEventListener('click', () => userMenu.classList.remove('show'));
+            }
+
+            // Khởi tạo bản đồ Leaflet
+            const map = L.map('map').setView([16.0544, 108.2022], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // Lấy danh sách điểm dừng từ DOM
+            const pickups = [...document.querySelectorAll('.loc-row.loc-up .loc-text')].map(el => el.textContent.trim());
+            const drops = [...document.querySelectorAll('.loc-row.loc-down .loc-text')].map(el => el.textContent.trim());
+            const allStops = [];
+            pickups.forEach(p => { if (p !== 'N/A' && !allStops.includes(p)) allStops.push(p); });
+            drops.forEach(d => { if (d !== 'N/A' && !allStops.includes(d)) allStops.push(d); });
+
+            if (allStops.length < 1) return;
+
+            // Geocode tất cả điểm dừng
+            const coords = [];
+            for (let i = 0; i < allStops.length; i++) {
+                const c = await geocode(allStops[i]);
+                if (c) {
+                    coords.push(c);
+                    // Thêm marker
+                    const icon = i === 0 ? '🟢' : (i === allStops.length - 1 ? '🔴' : '🔵');
+                    L.marker(c).addTo(map)
+                        .bindPopup(`<b>${icon} ${allStops[i]}</b><br>Điểm ${i + 1}/${allStops.length}`);
+                }
+            }
+
+            if (coords.length >= 2) {
+                // Vẽ đường đi bằng OSRM (miễn phí)
+                const coordStr = coords.map(c => c[1] + ',' + c[0]).join(';');
+                try {
+                    const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`);
+                    const routeData = await routeRes.json();
+                    if (routeData.code === 'Ok' && routeData.routes.length > 0) {
+                        const routeCoords = routeData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                        L.polyline(routeCoords, { color: '#06A0E2', weight: 5, opacity: 0.8 }).addTo(map);
+                    }
+                } catch(e) {
+                    L.polyline(coords, { color: '#06A0E2', weight: 4, dashArray: '10, 10' }).addTo(map);
+                }
+                // Zoom vừa khít
+                map.fitBounds(coords, { padding: [30, 30] });
+            } else if (coords.length === 1) {
+                map.setView(coords[0], 15);
+            }
+        });
+
         function openCompletePopup() {
             document.getElementById('completePopup').style.opacity = '1';
             document.getElementById('completePopup').style.pointerEvents = 'auto';

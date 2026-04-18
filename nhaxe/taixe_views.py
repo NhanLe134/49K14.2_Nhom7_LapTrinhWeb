@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Taixe, User_Authentication, CHITIETTAIXE, Nhaxe
-from datetime import datetime
+from .models import Taixe, User_Authentication, CHITIETTAIXE, Nhaxe, ChuyenXe, Ve
+from datetime import datetime, timedelta
 import re
 
 # ==================== NHÀ XE (Quản lý Tài Xế) ====================
@@ -166,7 +166,73 @@ def xoa_tai_xe(request, pk):
     return redirect('quanlytaixe')
 
 # Giữ lại các view tĩnh cũ (nếu có dùng)
-def taixe(request): return render(request, 'home/taixe.html')
+def taixe(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
+
+    # 1. Lấy thông tin tài xế
+    driver = get_object_or_404(Taixe, pk=user_id)
+    
+    # 2. Tính toán khoảng thời gian trong tuần (Thứ 2 -> Chủ Nhật)
+    now = datetime.now()
+    today = now.date()
+    # today.weekday() trả về 0 (Thứ 2) -> 6 (Chủ Nhật)
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # 3. Lấy danh sách chuyến xe trong tuần của tài xế
+    trips_in_week = ChuyenXe.objects.filter(
+        Taixe_id=user_id,
+        NgayKhoiHanh__range=[start_of_week, end_of_week]
+    ).select_related('TuyenXe').order_by('NgayKhoiHanh', 'GioDi')
+
+    # 4. Nhóm chuyến xe theo các ngày trong tuần
+    schedule_data = []
+    days_in_week = [start_of_week + timedelta(days=i) for i in range(7)]
+    dow_names = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN']
+
+    for i, day in enumerate(days_in_week):
+        day_trips = [t for t in trips_in_week if t.NgayKhoiHanh == day]
+        schedule_data.append({
+            'dow': dow_names[i],
+            'date_str': day.strftime('%d-%m'),
+            'is_today': day == today,
+            'trips': day_trips
+        })
+
+    # 5. Tính toán thống kê
+    # Tổng chuyến tuần
+    tong_tuan = trips_in_week.count()
+    
+    # Tổng chuyến hôm nay
+    tong_hom_nay = trips_in_week.filter(NgayKhoiHanh=today).count()
+    
+    # Tổng chuyến đã chạy (Hoàn thành) - tính tất cả thời gian
+    da_hoan_thanh = ChuyenXe.objects.filter(Taixe_id=user_id, TrangThai='Hoàn thành').count()
+
+    return render(request, 'home/taixe.html', {
+        'schedule_data': schedule_data,
+        'tong_tuan': tong_tuan,
+        'tong_hom_nay': tong_hom_nay,
+        'da_hoan_thanh': da_hoan_thanh
+    })
 def thongtin_taixe(request): return render(request, 'home/thongtin_taixe.html')
-def taixe_lotrinh(request): return render(request, 'home/taixe_lotrinh.html')
+def taixe_lotrinh(request):
+    trip_id = request.GET.get('id', '')
+    if not trip_id:
+        return redirect('taixe')
+
+    try:
+        chuyen = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe'), pk=trip_id)
+        ve_list = Ve.objects.filter(ChuyenXe_id=trip_id).select_related('Ghe')
+    except Exception as e:
+        messages.error(request, f"Lỗi: {e}")
+        return redirect('taixe')
+
+    return render(request, 'home/taixe_lotrinh.html', {
+        'trip_id': trip_id,
+        'chuyen': chuyen,
+        've_list': ve_list
+    })
 def phancongtaixe(request): return render(request, 'home/phancongtaixe.html')

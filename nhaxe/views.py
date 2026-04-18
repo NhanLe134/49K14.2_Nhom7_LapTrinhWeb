@@ -31,7 +31,21 @@ def thongtin_khachhang(request):
 
 def lotrinh(request):
     trip_id = request.GET.get('id', '')
-    return render(request, 'home/lotrinh.html', {'trip_id': trip_id})
+    if not trip_id:
+        return redirect('nhaxe')
+
+    try:
+        chuyen = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe'), pk=trip_id)
+        ve_list = Ve.objects.filter(ChuyenXe_id=trip_id).select_related('Ghe')
+    except Exception as e:
+        messages.error(request, f"Lỗi: {e}")
+        return redirect('nhaxe')
+
+    return render(request, 'home/lotrinh.html', {
+        'trip_id': trip_id,
+        'chuyen': chuyen,
+        've_list': ve_list
+    })
 
 def chitietchuyenxe(request):
     chuyenxe_id = request.GET.get('id')
@@ -72,10 +86,14 @@ def chitietchuyenxe(request):
         messages.error(request, "Không tìm thấy thông tin chuyến xe.")
         return redirect('index')
             
+    # Lấy danh sách hành khách từ bảng vé
+    ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
+
     return render(request, 'home/chitietchuyenxe.html', {
         'trip_json': json.dumps(trip_data),
         'chuyenxe_id': chuyenxe_id,
-        'trip_status': cx.TrangThai or ''
+        'trip_status': cx.TrangThai or '',
+        've_list': ve_list
     })
 
 def vecuatoi(request):

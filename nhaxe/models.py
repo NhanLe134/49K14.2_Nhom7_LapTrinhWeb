@@ -167,6 +167,9 @@ class Ve(models.Model):
         max_length=20, # Nới rộng thành 20
         validators=[RegexValidator(regex=r'^\d{10,12}$', message="SĐT phải có từ 10-12 số")]
     )
+    HoTen = models.CharField(max_length=200, null=True, blank=True, db_column='Hoten')
+    DiemDon = models.CharField(max_length=500, null=True, blank=True, db_column='DiemDon')
+    DiemTra = models.CharField(max_length=500, null=True, blank=True, db_column='DiemTra')
     NgayDat = models.DateTimeField(auto_now_add=True)
     GiaVe = models.DecimalField(max_digits=12, decimal_places=0)
     TrangThaiThanhToan = models.CharField(max_length=50, null=True, blank=True) # Nới rộng thành 50

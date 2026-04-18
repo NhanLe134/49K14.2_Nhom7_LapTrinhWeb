@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication
+from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve
 from datetime import datetime
 import random
 
@@ -133,7 +133,7 @@ def hoanthanh_chuyenxe(request, pk):
             messages.success(request, 'Đã cập nhật trạng thái: Hoàn thành.')
         except Exception as e:
             messages.error(request, f'Lỗi: {str(e)}')
-    return redirect('quanlychuyenxe')
+    return redirect(f"/chitietchuyenxe?id={pk}")
 
 # ==================== TÀI XẾ (tx) ====================
 
@@ -172,6 +172,10 @@ def taixe_chitietchuyenxe(request):
                 messages.success(request, 'Cập nhật trạng thái thành công.')
             except Exception as e:
                 messages.error(request, f'Lỗi cập nhật: {str(e)}')
-            return redirect(f"/taixe_chitietchuyenxe?id={chuyenxe_id}")
+    # Lấy danh sách hành khách
+    ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
             
-    return render(request, 'home/taixe_chitietchuyenxe.html', {'chuyen': chuyen})
+    return render(request, 'home/taixe_chitietchuyenxe.html', {
+        'chuyen': chuyen,
+        've_list': ve_list
+    })

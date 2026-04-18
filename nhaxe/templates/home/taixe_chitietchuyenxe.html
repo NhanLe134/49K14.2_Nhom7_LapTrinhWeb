@@ -88,16 +88,22 @@
                 <button class="btn-assign" id="btnAssignDriver" onclick="window.location.href='{% url 'taixe_lotrinh' %}?id={{ chuyen.ChuyenXeID }}'">Hiển thị lộ trình</button>
             </div>
 
-            <h2 class="section-title">Danh sách hành khách (Ví dụ mẫu)</h2>
+            <h2 class="section-title">Danh sách hành khách</h2>
             <div class="passenger-list">
+                {% for ve in ve_list %}
                 <div class="passenger-card">
                     <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">Hành Khách A</div>
+                    <div class="passenger-name">{{ ve.HoTen|default:"Khách hàng" }}</div>
                     <div class="passenger-contact">
-                        <p>SĐT: 0123456789</p>
+                        <p>SĐT: {{ ve.SoDienThoai|default:"Chưa có" }}</p>
+                        <p>Điểm đón: {{ ve.DiemDon|default:"N/A" }}</p>
+                        <p>Điểm trả: {{ ve.DiemTra|default:"N/A" }}</p>
                     </div>
-                    <div class="passenger-seat">A1</div>
+                    <div class="passenger-seat">{{ ve.Ghe.soGhe|default:"-" }}</div>
                 </div>
+                {% empty %}
+                <p style="text-align: center; color: #666; width: 100%; margin-top: 20px;">Chưa có hành khách nào đặt vé.</p>
+                {% endfor %}
             </div>
         </main>
     </div>

@@ -61,9 +61,6 @@
             <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
                 <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
             </a>
-            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
-                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
-            </a>
         </aside>
 
         <!-- Main Content -->
@@ -78,62 +75,27 @@
                     <h3 class="list-title">Danh sách điểm đón</h3>
                     <div class="pickup-list">
 
-                        <!-- Passenger 1 -->
+                        {% for ve in ve_list %}
                         <div class="pickup-card">
                             <div class="pickup-header">
-                                <strong>Phan Thị Quỳnh Trâm</strong>
+                                <strong>{{ ve.HoTen|default:"Khách hàng" }}</strong>
                             </div>
                             <div class="pickup-details">
-                                <p>Ghế: <span class="seat-text">A1</span></p>
-                                <p>0123456789</p>
+                                <p>Ghế: <span class="seat-text">{{ ve.Ghe.soGhe|default:"-" }}</span></p>
+                                <p>{{ ve.SoDienThoai|default:"Chưa có" }}</p>
                                 <div class="loc-row loc-up">
                                     <i class="fa-solid fa-location-dot"></i> Lên:
-                                    <span class="loc-text">1 Tố Hữu, Thành Phố Huế</span>
+                                    <span class="loc-text">{{ ve.DiemDon|default:"N/A" }}</span>
                                 </div>
                                 <div class="loc-row loc-down">
                                     <i class="fa-solid fa-location-dot"></i> Xuống:
-                                    <span class="loc-text">1 Hùng Vương, Đà Nẵng</span>
+                                    <span class="loc-text">{{ ve.DiemTra|default:"N/A" }}</span>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Passenger 2 -->
-                        <div class="pickup-card">
-                            <div class="pickup-header">
-                                <strong>Lê Văn Hùng</strong>
-                            </div>
-                            <div class="pickup-details">
-                                <p>Ghế: <span class="seat-text">A2</span></p>
-                                <p>0123456789</p>
-                                <div class="loc-row loc-up">
-                                    <i class="fa-solid fa-location-dot"></i> Lên:
-                                    <span class="loc-text">25 Bà Triệu, Thành Phố Huế</span>
-                                </div>
-                                <div class="loc-row loc-down">
-                                    <i class="fa-solid fa-location-dot"></i> Xuống:
-                                    <span class="loc-text">1 Tố Hữu, Đà Nẵng</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Passenger 3 -->
-                        <div class="pickup-card">
-                            <div class="pickup-header">
-                                <strong>Vương Tuệ Nhi</strong>
-                            </div>
-                            <div class="pickup-details">
-                                <p>Ghế: <span class="seat-text">A3</span></p>
-                                <p>0123456789</p>
-                                <div class="loc-row loc-up">
-                                    <i class="fa-solid fa-location-dot"></i> Lên:
-                                    <span class="loc-text">1 Nguyễn Huệ, Thành Phố Huế</span>
-                                </div>
-                                <div class="loc-row loc-down">
-                                    <i class="fa-solid fa-location-dot"></i> Xuống:
-                                    <span class="loc-text">25 Phan Thanh, Đà Nẵng</span>
-                                </div>
-                            </div>
-                        </div>
+                        {% empty %}
+                        <p style="text-align: center; color: #666; margin-top: 20px;">Chưa có dữ liệu hành khách.</p>
+                        {% endfor %}
 
                     </div>
                 </div>
@@ -177,11 +139,20 @@
         const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
 
         // Geocode địa chỉ bằng Nominatim (miễn phí)
+        // Geocode địa chỉ ưu tiên vùng Huế - Đà Nẵng
         async function geocode(address) {
-            const q = encodeURIComponent(address + ', Việt Nam');
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
-            const data = await res.json();
-            if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+            if (!address || address === 'N/A') return null;
+            
+            const query = address + ', Thừa Thiên Huế hoặc Đà Nẵng, Việt Nam';
+            const q = encodeURIComponent(query);
+            try {
+                // Thêm viewbox để giới hạn khu vực miền Trung (Huế - Đà Nẵng)
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.5,16.6,108.5,15.8&bounded=1`);
+                const data = await res.json();
+                if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+            } catch (e) {
+                console.error("Lỗi Geocode:", e);
+            }
             return null;
         }
 

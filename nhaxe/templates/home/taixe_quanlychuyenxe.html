@@ -75,13 +75,11 @@
                         </div>
                     </div>
                     <div class="trip-actions">
-                        {% with status=chuyen.TrangThai|lower|cut:" " %}
-                        {% if 'hoan' in status and 'thanh' in status or status == 'completed' %}
+                        {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai|lower == 'completed' %}
                             <span class="status-badge" style="background-color: #E8F5E9; color: #1B5E20; padding: 6px 15px; border-radius: 20px;">Hoàn thành</span>
                         {% else %}
                             <span class="status-badge">Đang chờ</span>
                         {% endif %}
-                        {% endwith %}
                     </div>
                 </div>
                 {% empty %}

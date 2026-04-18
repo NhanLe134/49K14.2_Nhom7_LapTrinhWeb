@@ -98,9 +98,6 @@
             <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
                 <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
             </a>
-            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
-                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
-            </a>
         </aside>
 
         <!-- Main Content -->
@@ -125,8 +122,7 @@
                     <p>Ghế trống: <span id="detailEmptySeats">...</span></p>
                 </div>
                 <div class="status-dropdown" style="position: relative; display: inline-block; cursor: pointer;">
-                    {% with status=trip_status|lower|cut:" " %}
-                    {% if 'hoan' in status and 'thanh' in status or status == 'completed' %}
+                    {% if trip_status == 'Hoàn thành' or trip_status|lower == 'completed' %}
                         <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" 
                              style="user-select: none; background-color: #E8F5E9; color: #1B5E20; padding: 6px 20px; border-radius: 20px;">Hoàn thành</div>
                         <div id="statusMenu" class="status-menu"
@@ -141,7 +137,6 @@
                             <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #E8F5E9; color: #1B5E20;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>
                         </div>
                     {% endif %}
-                    {% endwith %}
                 </div>
             </div>
 
@@ -152,38 +147,20 @@
             <h2 class="section-title">Danh sách hành khách</h2>
 
             <div class="passenger-list">
+                {% for ve in ve_list %}
                 <div class="passenger-card">
                     <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">Phan Thị Quỳnh Trâm</div>
+                    <div class="passenger-name">{{ ve.HoTen|default:"Khách hàng" }}</div>
                     <div class="passenger-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>Điểm đón: 1 Tố Hữu, Thành Phố Huế</p>
-                        <p>Điểm trả: 1 Hùng Vương, Đà Nẵng</p>
+                        <p>SĐT: {{ ve.SoDienThoai|default:"Chưa có" }}</p>
+                        <p>Điểm đón: {{ ve.DiemDon|default:"N/A" }}</p>
+                        <p>Điểm trả: {{ ve.DiemTra|default:"N/A" }}</p>
                     </div>
-                    <div class="passenger-seat">A1</div>
+                    <div class="passenger-seat">{{ ve.Ghe.soGhe|default:"-" }}</div>
                 </div>
-
-                <div class="passenger-card">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">Lê Văn Hùng</div>
-                    <div class="passenger-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>Điểm đón: 25 Bà Triệu, Thành Phố Huế</p>
-                        <p>Điểm trả: 1 Tố Hữu, Đà Nẵng</p>
-                    </div>
-                    <div class="passenger-seat">A2</div>
-                </div>
-
-                <div class="passenger-card">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">Vương Tuệ Nhi</div>
-                    <div class="passenger-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>Điểm đón: 1 Nguyễn Huệ, Thành Phố Huế</p>
-                        <p>Điểm trả: 25 Phan Thanh, Đà Nẵng</p>
-                    </div>
-                    <div class="passenger-seat">A3</div>
-                </div>
+                {% empty %}
+                <p style="text-align: center; color: #666; width: 100%; margin-top: 20px;">Chưa có hành khách nào đặt vé.</p>
+                {% endfor %}
             </div>
         </main>
     </div>
