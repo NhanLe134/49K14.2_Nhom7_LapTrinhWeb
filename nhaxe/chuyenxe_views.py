@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve
+from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve, CHITIETTAIXE
 from datetime import datetime
 import random
 
@@ -85,8 +85,8 @@ def themchuyenxe(request):
     # Dropdown options lọc theo nhà xe
     tuyen_xe_list = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
     xe_list = Xe.objects.filter(Nhaxe_id=nha_xe_id)
-    # Lấy tài xế thuộc nhà xe này (qua CHITIETTAIXE)
-    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id)
+    # Lấy tài xế thuộc nhà xe này trực tiếp từ bảng CHITIETTAIXE
+    taixe_list = CHITIETTAIXE.objects.filter(Nhaxe_id=nha_xe_id).select_related('Taixe')
     
     return render(request, 'home/themchuyenxe.html', {
         'tuyen_xe_list': tuyen_xe_list,
@@ -122,7 +122,7 @@ def suachuyenxe(request):
         'chuyen': chuyen,
         'tuyen_xe_list': TuyenXe.objects.filter(nhaXe_id=nha_xe_id),
         'xe_list': Xe.objects.filter(Nhaxe_id=nha_xe_id),
-        'taixe_list': Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id)
+        'taixe_list': CHITIETTAIXE.objects.filter(Nhaxe_id=nha_xe_id).select_related('Taixe')
     })
 
 def hoanthanh_chuyenxe(request, pk):

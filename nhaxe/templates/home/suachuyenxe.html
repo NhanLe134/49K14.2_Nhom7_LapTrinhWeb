@@ -121,11 +121,18 @@
                         </select>
                     </div>
 
-                    <!-- Tài xế (Ẩn) -->
-                    <div class="form-group" style="display: none;">
+                    <!-- Tài xế -->
+                    <div class="form-group">
                         <label for="taixe">Tài xế</label>
-                        <select id="taixe" name="taixe" class="form-control">
-                            <option value="{{ chuyen.Taixe_id|default:chuyen.Taixe|default:'' }}" selected></option>
+                        <select id="taixe" name="taixe" class="form-control" required>
+                            <option value="">Chọn tài xế</option>
+                            {% for ct in taixe_list %}
+                            {% with txid=ct.Taixe.TaixeID|stringformat:"s" %}
+                            <option value="{{ ct.Taixe.TaixeID }}" {% if chuyen.Taixe|stringformat:"s" == txid %}selected{% endif %}>
+                                {{ ct.HoTen }} ({{ ct.Taixe.TaixeID }})
+                            </option>
+                            {% endwith %}
+                            {% endfor %}
                         </select>
                     </div>
 

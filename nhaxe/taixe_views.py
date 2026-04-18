@@ -58,6 +58,7 @@ def them_tai_xe(request):
         full_name = request.POST.get('full_name')
         phone = request.POST.get('phone')
         cccd = request.POST.get('cccd')
+        license_no = request.POST.get('license_no')
         license_type = request.POST.get('license_type', 'B1')
         
         # 2. Validation
@@ -127,6 +128,10 @@ def sua_tai_xe(request, pk):
         license_type = request.POST.get('license_type', 'B1')
         
         try:
+            full_name = request.POST.get('full_name')
+            license_no = request.POST.get('license_no')
+            cccd = request.POST.get('cccd')
+
             # 1. Cập nhật User
             User_Authentication.objects.filter(UserID=pk).update(
                 SoDienThoai=phone
@@ -135,8 +140,8 @@ def sua_tai_xe(request, pk):
             # 2. Cập nhật Taixe
             Taixe.objects.filter(TaixeID=pk).update(
                 HoTen=full_name,
-                SoBangLai=request.POST.get('license_no'),
-                soCCCD=request.POST.get('cccd'),
+                SoBangLai=license_no,
+                soCCCD=cccd,
                 LoaiBangLai=license_type,
             )
             

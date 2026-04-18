@@ -56,9 +56,22 @@
 
         <!-- Main Content -->
         <main class="main-content search-page-content">
-            <div id="search-view">
+            <!-- Hiển thị thông báo (Messages) -->
+            {% if messages %}
+                <div class="messages-container" style="margin: 10px 20px;">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; {% if message.tags == 'error' %}color: #a94442; background-color: #f2dede; border-color: #ebccd1;{% elif message.tags == 'success' %}color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6;{% else %}color: #31708f; background-color: #d9edf7; border-color: #bce8f1;{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div id="search-view" {% if chuyen_xe_list %}style="display: none;"{% endif %}>
                 <div class="search-card">
-                    <div class="search-form">
+                    <form method="GET" action="{% url 'timkiem' %}">
+                        <input type="hidden" name="search_submitted" value="1">
+                        <div class="search-form">
                         <div class="form-row locations-row">
                             <div class="form-group">
                                 <label>Nơi xuất phát</label>
@@ -159,10 +172,11 @@
                         </div>
 
                         <div class="form-actions-center">
-                            <button class="btn-search">
+                            <button type="submit" class="btn-search">
                                 <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
                             </button>
                         </div>
+                    </form>
                     </div>
                 </div>
 
@@ -193,8 +207,58 @@
                 </div>
             </div>
 
-            <div id="results-view" style="display: none;">
-                <div class="tickets-grid"></div>
+            <div id="results-view" {% if chuyen_xe_list %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                <div class="tickets-grid">
+                    {% for cx in chuyen_xe_list %}
+                    <div class="ticket-card">
+                        <div class="ticket-top">
+                            <div class="route-line-vertical">
+                                <div class="route-point">
+                                    <span class="dot-green"></span>
+                                    <div class="point-info">
+                                        <span class="time">{{ cx.GioDi|time:"H:i" }}</span>
+                                        <span class="place">{{ origin }}</span>
+                                    </div>
+                                </div>
+                                <div class="route-point">
+                                    <span class="dot-red"></span>
+                                    <div class="point-info">
+                                        <span class="time">--:--</span>
+                                        <span class="place">{{ destination }}</span>
+                                    </div>
+                                </div>
+                                <div class="line-dotted-vertical"></div>
+                            </div>
+                            <div class="ticket-price-info">
+                                <div class="price" style="font-size:20px; color:#13B5F6; font-weight:bold;">{{ cx.GiaVe|floatformat:0 }}đ</div>
+                                <div class="seats">{{ cx.SoChoTrong }} chỗ trống</div>
+                            </div>
+                        </div>
+                        
+                        <div class="ticket-middle">
+                            <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=150&h=100&fit=crop" alt="Xe khách" class="car-img">
+                            <div class="car-details">
+                                <div class="car-name">{{ cx.TenNhaXe }}</div>
+                                <div class="car-type">{{ cx.LoaiXe }} | {{ cx.BienSoXe }}</div>
+                                <div class="car-rating">
+                                    <i class="fa-solid fa-star" style="color: #FFC107;"></i> 
+                                    <span>Tài xế: {{ cx.TenTaiXe }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ticket-bottom">
+                            <div class="instant-confirm">
+                                <i class="fa-solid fa-check"></i> Xác nhận chỗ ngay
+                            </div>
+                            <button class="btn-choose-seat" data-trip-id="{{ cx.ChuyenXeID }}">Chọn chỗ</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="location.href='{% url 'timkiem' %}'" class="btn-info-continue" style="display: inline-block; padding: 10px 30px; border-radius: 30px; cursor: pointer;">Tìm kiếm khác</button>
+                </div>
             </div>
 
             <div id="seat-view" style="display: none;">
@@ -554,7 +618,7 @@
                     datepicker.classList.toggle('active');
                 });
 
-                let currentDate = new Date(2026, 1, 1); // Feb 2026
+                let currentDate = new Date(); // Sử dụng ngày hiện tại thay vì tháng 2/2026
 
                 function renderCalendar(date) {
                     const today = new Date();
@@ -661,164 +725,85 @@
             window.currentBookingTrip = null;
 
             if (btnSearch && searchView && resultsView) {
+                // Đã chuyển sang xử lý Backend, không chặn e.preventDefault() để form được gửi đi.
+                // Logic JS bên dưới đã được vô hiệu hóa để tránh xung đột với Backend.
+                /*
                 btnSearch.addEventListener('click', (e) => {
                     e.preventDefault();
-
-                    const originInput = document.querySelector('input[name="origin"]');
-                    const destInput = document.querySelector('input[name="destination"]');
-                    const dateInput = document.querySelector('input[name="depart_date"]'); // format YYYY-MM-DD
-
-                    const origin = originInput ? originInput.value.trim() : '';
-                    const dest = destInput ? destInput.value.trim() : '';
-                    let departDateStr = dateInput ? dateInput.value : ''; // "2026-02-28"
-
-                    if (!origin) { alert('Vui lòng chọn Nơi xuất phát'); return; }
-                    if (!dest) { alert('Vui lòng chọn Nơi đến'); return; }
-                    if (!departDateStr) { alert('Vui lòng chọn Ngày đi (bằng cách click vào lịch)'); return; }
-
-                    // Filter trips
-                    let allTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-
-                    const now = new Date();
-
-                    // Check if selected date is strictly in the past (only date part)
-                    const selectedDate = new Date(departDateStr);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    if (selectedDate < today) {
-                        // Past date -> no trips
-                        allTrips = [];
-                    }
-
-                    // Filter by date & route & future time
-                    let filteredTrips = allTrips.filter(t => {
-                        // 1. Route match (t.route usually looks like "Đà Nẵng - Huế")
-                        const isRouteMatch = (t.route.toLowerCase().includes(origin.toLowerCase()) && t.route.toLowerCase().includes(dest.toLowerCase()));
-
-                        // 2. Date match
-                        const isDateMatch = t.date === departDateStr;
-
-                        // 3. Time match (if it's today, trip time must be > current time)
-                        let isFutureTime = true;
-                        if (t.date === departDateStr && t.time) {
-                            const [h, m] = t.time.split(':');
-                            const tripDateTime = new Date(departDateStr);
-                            tripDateTime.setHours(parseInt(h), parseInt(m), 0, 0);
-
-                            if (tripDateTime < now) {
-                                isFutureTime = false; // trip has already departed today
-                            }
-                        }
-                        return isRouteMatch && isDateMatch && isFutureTime;
-                    });
-
-                    searchView.style.display = 'none';
-                    resultsView.style.display = 'block';
-
-                    let html = '';
-
-                    if (filteredTrips.length === 0) {
-                        html = '<div style="padding:40px; text-align:center; font-size:18px; color:#555; grid-column: 1 / -1;">Không có tuyến xe nào trong thời gian này.</div>';
-                    } else {
-                        filteredTrips.forEach(trip => {
-                            const carImg = 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=150&h=100&fit=crop';
-                            const carName = 'Nhà xe Đà Nẵng - Huế';
-
-                            let numPrice = parseInt(String(trip.price || '150000').replace(/\D/g, '')) || 150000;
-                            const priceText = numPrice.toLocaleString('vi-VN').replace(',', '.') + 'đ';
-
-                            const is4Seat = trip.type && trip.type.includes('4');
-                            const is7Seat = trip.type && trip.type.includes('7');
-                            const totalSeats = is4Seat ? 4 : (is7Seat ? 7 : 9);
-                            const bookedCount = trip.bookedSeats ? trip.bookedSeats.length : 0;
-                            const emptySeats = totalSeats - bookedCount;
-
-                            html += `
-                            <div class="ticket-card">
-                                <div class="ticket-top">
-                                    <div class="route-line-vertical">
-                                        <div class="route-point">
-                                            <span class="dot-green"></span>
-                                            <div class="point-info">
-                                                <span class="time">${trip.time}</span>
-                                                <span class="place">${origin}</span>
-                                            </div>
-                                        </div>
-                                        <div class="route-point">
-                                            <span class="dot-red"></span>
-                                            <div class="point-info">
-                                                <span class="time">--:--</span>
-                                                <span class="place">${dest}</span>
-                                            </div>
-                                        </div>
-                                        <div class="line-dotted-vertical"></div>
-                                    </div>
-                                    <div class="ticket-price-info">
-                                        <div class="price" style="font-size:20px; color:#13B5F6; font-weight:bold;">${priceText}</div>
-                                        <div class="seats">${emptySeats} chỗ trống</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="ticket-middle">
-                                    <img src="${carImg}" alt="Xe khách" class="car-img" onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=150&h=100&fit=crop'">
-                                    <div class="car-details">
-                                        <div class="car-name">${carName}</div>
-                                        <div class="car-type">${trip.type || 'Xe khách'}</div>
-                                        <div class="car-rating">
-                                            <i class="fa-solid fa-star" style="color: #FFC107;"></i> 
-                                            <span>4.8 (120 đánh giá)</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="ticket-bottom">
-                                    <div class="instant-confirm">
-                                        <i class="fa-solid fa-check"></i> Xác nhận chỗ ngay
-                                    </div>
-                                    <button class="btn-choose-seat" data-trip-id="${trip.id}">Chọn chỗ</button>
-                                </div>
-                            </div>
-                            `;
-                        });
-                    }
-                    ticketsGrid.innerHTML = html;
+                    // ... (Old Local Search Logic)
                 });
+                */
 
                 // Seat view trigger
                 ticketsGrid.addEventListener('click', (e) => {
                     const btn = e.target.closest('.btn-choose-seat');
                     if (btn) {
                         const tripId = btn.getAttribute('data-trip-id');
-                        const allTrips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                        window.currentBookingTrip = allTrips.find(t => t.id === tripId);
+                        const card = btn.closest('.ticket-card');
+                        const priceStr = card.querySelector('.price').textContent;
+                        window.currentBookingTrip = { id: tripId, price: priceStr };
 
-                        // Render Seats dynamically
-                        const seatsGrid = document.querySelector('.seat-grid');
-                        if (seatsGrid && window.currentBookingTrip) {
-                            const trip = window.currentBookingTrip;
-                            const is4Seat = trip.type && trip.type.includes('4');
-                            const is7Seat = trip.type && trip.type.includes('7');
-                            const totalSeats = is4Seat ? 4 : (is7Seat ? 7 : 9);
-                            const booked = trip.bookedSeats || [];
+                        // Gọi API để lấy sơ đồ ghế thực tế từ Backend
+                        fetch(`/api/lay_so_do_ghe?chuyen_id=${tripId}`)
+                            .then(response => response.json())
+                            .then(res => {
+                                if (res.status === 'success') {
+                                    const seatMapCard = document.querySelector('.seat-map-card');
+                                    if (seatMapCard) {
+                                        const seatsData = res.data;
+                                        const seatCount = seatsData.length;
+                                        
+                                        // Quy tắc sắp xếp theo loại xe
+                                        let layout = [];
+                                        if (seatCount <= 3) { // Xe 4 chỗ
+                                            layout = [['A2', null, 'A3'], ['A1', null, 'STEERING']];
+                                        } else if (seatCount <= 7) { // Xe 7 chỗ
+                                            layout = [['B7', 'B6', 'B5'], ['B2', 'B3', 'B4'], ['B1', null, 'STEERING']];
+                                        } else { // Xe 9 chỗ
+                                            layout = [['C8', 'C7', 'C6'], ['C5', 'C4', 'C3'], [null, 'C2', null], ['C1', null, 'STEERING']];
+                                        }
 
-                            let seatHtml = '';
-                            for (let i = 1; i <= totalSeats; i++) {
-                                const seatLabel = "A" + i;
-                                const isBooked = booked.includes(seatLabel);
-                                const statusClass = isBooked ? 'booked' : 'available';
-                                seatHtml += `
-                                    <div class="seat-item ${statusClass}" data-seat="${seatLabel}">
-                                        <i class="fa-solid fa-chair"></i>
-                                        <span>${seatLabel}</span>
-                                    </div>
-                                 `;
-                            }
-                            seatsGrid.innerHTML = seatHtml;
+                                        let seatHtml = '';
+                                        layout.forEach(row => {
+                                            seatHtml += '<div class="seat-row">';
+                                            row.forEach(cell => {
+                                                if (cell === 'STEERING') {
+                                                    seatHtml += `
+                                                        <div class="steering-wheel">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="steering-svg" style="width: 45px; height: 45px; fill: #333;">
+                                                                <circle cx="50" cy="50" r="36" stroke="currentColor" stroke-width="12" fill="none" />
+                                                                <path d="M 14 46 Q 32 40 50 45 Q 68 40 86 46 L 86 54 L 60 54 L 56 86 L 44 86 L 40 54 L 14 54 Z" stroke="#333" stroke-width="2" stroke-linejoin="round" />
+                                                                <circle cx="50" cy="50" r="16" fill="#333"/>
+                                                                <circle cx="50" cy="50" r="6" fill="white" />
+                                                            </svg>
+                                                        </div>`;
+                                                } else if (cell === null) {
+                                                    seatHtml += '<div style="width: 50px;"></div>';
+                                                } else {
+                                                    const seatInfo = seatsData.find(s => s.soGhe.toUpperCase() === cell.toUpperCase());
+                                                    const statusClass = seatInfo ? seatInfo.trangThai : 'available';
+                                                    seatHtml += `
+                                                        <div class="seat-item ${statusClass}" data-seat="${cell}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                                                                <path d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z" fill="currentColor" />
+                                                            </svg>
+                                                            <span>${cell}</span>
+                                                        </div>`;
+                                                }
+                                            });
+                                            seatHtml += '</div>';
+                                        });
+                                        seatMapCard.innerHTML = seatHtml;
+                                    }
+                                } else {
+                                    alert('Không thể tải sơ đồ ghế: ' + res.message);
+                                }
+                            })
+                            .catch(err => console.error('Lỗi fetch ghế:', err));
 
-                            // Reset count and price
-                            document.getElementById('seatCount').textContent = '0';
-                            document.getElementById('totalPrice').textContent = '0 vnđ';
-                        }
+                        // Reset UI
+                        document.getElementById('seatCount').textContent = '0';
+                        document.getElementById('totalPrice').textContent = '0 vnđ';
 
                         resultsView.style.display = 'none';
                         seatView.style.display = 'block';

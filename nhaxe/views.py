@@ -293,7 +293,8 @@ def quan_ly_xe(request):
         return redirect('quan_ly_xe')
 
     # GET
-    vehicles = Xe.objects.filter(Nhaxe_id=nha_xe_id)
+    vehicles = Xe.objects.filter(Nhaxe_id=nha_xe_id).select_related('Loaixe')
+    # Lấy danh sách loại xe từ bảng Loaixe chính
     vehicle_types = Loaixe.objects.all()
     
     return render(request, 'home/quan_ly_xe.html', {

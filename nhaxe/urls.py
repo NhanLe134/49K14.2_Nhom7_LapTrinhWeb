@@ -5,6 +5,7 @@ from . import chuyenxe_views
 from . import taixe_views
 from . import tuyenxe_views
 from . import feedback_views
+from . import dieu_huong_tim_kiem
 
 urlpatterns = [
 
@@ -12,7 +13,8 @@ urlpatterns = [
     path('', auth_views.index, name='index'),
     path('dangnhap', auth_views.dangnhap, name='dangnhap'),
     path('dangxuat', auth_views.dangxuat, name='dangxuat'),
-    path('timkiem', views.timkiem, name='timkiem'),
+    path('timkiem', dieu_huong_tim_kiem.view_tim_kiem_ve, name='timkiem'),
+    path('api/lay_so_do_ghe', dieu_huong_tim_kiem.lay_so_do_ghe_api, name='api_lay_so_do_ghe'),
     path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
     path('dangky_nhaxe', views.dangky_nhaxe, name='dangky_nhaxe'),

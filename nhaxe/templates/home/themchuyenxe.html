@@ -113,8 +113,8 @@
                         <label for="taixe">Tài xế</label>
                         <select id="taixe" name="taixe" class="form-control" required>
                             <option value="" disabled selected>Chọn tài xế</option>
-                            {% for tx in taixe_list %}
-                            <option value="{{ tx.TaixeID }}">{{ tx.ten|default:tx.TaixeID }}</option>
+                            {% for ct in taixe_list %}
+                            <option value="{{ ct.Taixe.TaixeID }}">{{ ct.HoTen }} ({{ ct.Taixe.TaixeID }})</option>
                             {% endfor %}
                         </select>
                     </div>
