@@ -81,9 +81,11 @@
                                         <i class="fa-solid fa-angle-down"></i>
                                     </div>
                                     <ul class="dropdown-list">
-                                        <li class="dropdown-option">Đà Nẵng</li>
-                                        <li class="dropdown-option">Hội An</li>
-                                        <li class="dropdown-option">Huế</li>
+                                        {% for diem in cac_diem_di %}
+                                            <li class="dropdown-option">{{ diem }}</li>
+                                        {% empty %}
+                                            <li class="dropdown-option">Đà Nẵng</li>
+                                        {% endfor %}
                                     </ul>
                                     <input type="hidden" name="origin" value="">
                                 </div>
@@ -106,9 +108,11 @@
                                         <i class="fa-solid fa-angle-down"></i>
                                     </div>
                                     <ul class="dropdown-list">
-                                        <li class="dropdown-option">Huế</li>
-                                        <li class="dropdown-option">Đà Nẵng</li>
-                                        <li class="dropdown-option">Hội An</li>
+                                        {% for diem in cac_diem_den %}
+                                            <li class="dropdown-option">{{ diem }}</li>
+                                        {% empty %}
+                                            <li class="dropdown-option">Huế</li>
+                                        {% endfor %}
                                     </ul>
                                     <input type="hidden" name="destination" value="">
                                 </div>
@@ -269,7 +273,7 @@
                                 <label>Nơi xuất phát</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    Đà Nẵng <i class="fa-solid fa-caret-down"></i>
+                                    <span class="dynamic-origin">{{ origin }}</span> <i class="fa-solid fa-caret-down"></i>
                                 </div>
                             </div>
 
@@ -286,7 +290,7 @@
                                 <label>Nơi đến</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    Huế <i class="fa-solid fa-caret-down"></i>
+                                    <span class="dynamic-destination">{{ destination }}</span> <i class="fa-solid fa-caret-down"></i>
                                 </div>
                             </div>
                         </div>
@@ -296,14 +300,14 @@
                                 <label>Ngày đi</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    02/26/2026 <i class="fa-regular fa-calendar"></i>
+                                    <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Giờ đi</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    07:00 - 09:30 <i class="fa-regular fa-clock"></i>
+                                    <span class="dynamic-time">07:00 - 09:30</span> <i class="fa-regular fa-clock"></i>
                                 </div>
                             </div>
                         </div>
@@ -428,7 +432,7 @@
                                 <label>Nơi xuất phát</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    Đà Nẵng <i class="fa-solid fa-caret-down"></i>
+                                    <span class="dynamic-origin">{{ origin }}</span> <i class="fa-solid fa-caret-down"></i>
                                 </div>
                             </div>
 
@@ -445,7 +449,7 @@
                                 <label>Nơi đến</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    Huế <i class="fa-solid fa-caret-down"></i>
+                                    <span class="dynamic-destination">{{ destination }}</span> <i class="fa-solid fa-caret-down"></i>
                                 </div>
                             </div>
                         </div>
@@ -455,14 +459,14 @@
                                 <label>Ngày đi</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    02/26/2026 <i class="fa-regular fa-calendar"></i>
+                                    <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Giờ đi</label>
                                 <div class="form-control"
                                     style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    07:00 - 09:30 <i class="fa-regular fa-clock"></i>
+                                    <span class="dynamic-time">07:00 - 09:30</span> <i class="fa-regular fa-clock"></i>
                                 </div>
                             </div>
                         </div>
@@ -471,37 +475,43 @@
 
                 <div class="info-card">
                     <h3 class="info-title">Hãy điền thông tin cụ thể</h3>
-                    <div class="info-form">
-                        <div class="info-row">
-                            <div class="info-group">
-                                <label>Điểm đón của bạn</label>
-                                <input type="text" class="info-input" id="pickupInput"
-                                    placeholder="Vd: 123 Nguyễn Văn Linh, Hải Châu, Đà Nẵng">
-                                <span class="error-msg" id="pickupError"></span>
+                        <form action="{% url 'xac_nhan_dat_ve' %}" method="POST" id="finalBookingForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="chuyen_id" id="postChuyenID">
+                            <div id="selectedSeatsInputs"></div>
+
+                            <div class="info-row">
+                                <div class="info-group">
+                                    <label>Điểm đón của bạn</label>
+                                    <input type="text" class="info-input" name="diem_don" id="pickupInput"
+                                        placeholder="Vd: 123 Nguyễn Văn Linh, Hải Châu, Đà Nẵng" required>
+                                    <span class="error-msg" id="pickupError"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Điểm trả của bạn</label>
+                                    <input type="text" class="info-input" name="diem_tra" id="dropoffInput"
+                                        placeholder="Vd: 38 Trần Phú, Huế" required>
+                                    <span class="error-msg" id="dropoffError"></span>
+                                </div>
                             </div>
-                            <div class="info-group">
-                                <label>Điểm trả của bạn</label>
-                                <input type="text" class="info-input" id="dropoffInput"
-                                    placeholder="Vd: 38 Trần Phú, Huế">
-                                <span class="error-msg" id="dropoffError"></span>
+                            <div class="info-row">
+                                <div class="info-group">
+                                    <label>Họ và tên khách hàng</label>
+                                    <input type="text" class="info-input" name="ho_ten" id="nameInput" placeholder="Vd: Nguyễn Văn A" required
+                                           value="{{ khach_hang.HovaTen|default:'' }}">
+                                    <span class="error-msg" id="nameError"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Số điện thoại</label>
+                                    <input type="tel" class="info-input" name="sdt" id="phoneInput" placeholder="Vd: 0373945787" required
+                                           value="{{ sdt_mac_dinh|default:'' }}">
+                                    <span class="error-msg" id="phoneError"></span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-group">
-                                <label>Họ và tên khách hàng</label>
-                                <input type="text" class="info-input" id="nameInput" placeholder="Vd: Nguyễn Văn A">
-                                <span class="error-msg" id="nameError"></span>
+                            <div class="info-action">
+                                <button type="submit" class="btn-info-continue" id="btnInfoContinue">Xác nhận đặt vé</button>
                             </div>
-                            <div class="info-group">
-                                <label>Số điện thoại</label>
-                                <input type="tel" class="info-input" id="phoneInput" placeholder="Vd: 0373945787">
-                                <span class="error-msg" id="phoneError"></span>
-                            </div>
-                        </div>
-                        <div class="info-action">
-                            <button class="btn-info-continue" id="btnInfoContinue">Tiếp tục</button>
-                        </div>
-                    </div>
+                        </form>
                 </div>
         </main>
 
@@ -805,6 +815,10 @@
                         document.getElementById('seatCount').textContent = '0';
                         document.getElementById('totalPrice').textContent = '0 vnđ';
 
+                        // Cập nhật thông tin tiêu đề động
+                        const timeStr = card.querySelector('.time').textContent;
+                        document.querySelectorAll('.dynamic-time').forEach(el => el.textContent = timeStr);
+
                         resultsView.style.display = 'none';
                         seatView.style.display = 'block';
                         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -817,7 +831,21 @@
                 if (btnSeatContinue && infoView && seatView) {
                     btnSeatContinue.addEventListener('click', (e) => {
                         e.preventDefault();
-                        if (parseInt(seatCountEl.textContent) > 0) {
+                        const selectedSeats = seatView.querySelectorAll('.seat-item.selected');
+                        if (selectedSeats.length > 0) {
+                            // Cập nhật thông tin vào form ẩn
+                            document.getElementById('postChuyenID').value = window.currentBookingTrip.id;
+                            const container = document.getElementById('selectedSeatsInputs');
+                            container.innerHTML = ''; // Clear cũ
+                            selectedSeats.forEach(s => {
+                                const seatId = s.getAttribute('data-seat');
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'ghe_ids';
+                                input.value = seatId;
+                                container.appendChild(input);
+                            });
+
                             seatView.style.display = 'none';
                             infoView.style.display = 'block';
                             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -860,24 +888,26 @@
                     // 1. Blur Validation: Pickup
                     if (pickupInput) pickupInput.addEventListener('blur', () => {
                         const val = pickupInput.value.trim().toLowerCase();
+                        const originTerm = "{{ origin }}".toLowerCase();
                         if (!val) {
                             pickupInput.classList.add('error');
                             if (pickupError) { pickupError.textContent = 'Vui lòng nhập điểm đón'; pickupError.style.display = 'block'; }
-                        } else if (!val.includes('đà nẵng')) {
+                        } else if (!val.includes(originTerm)) {
                             pickupInput.classList.add('error');
-                            if (pickupError) { pickupError.textContent = 'Điểm đón không hợp lệ, vui lòng chọn điểm đón khác'; pickupError.style.display = 'block'; }
+                            if (pickupError) { pickupError.textContent = `Điểm đón không hợp lệ, vui lòng chọn điểm đón thuộc ${originTerm}`; pickupError.style.display = 'block'; }
                         }
                     });
 
                     // 2. Blur Validation: Dropoff
                     if (dropoffInput) dropoffInput.addEventListener('blur', () => {
                         const val = dropoffInput.value.trim().toLowerCase();
+                        const destTerm = "{{ destination }}".toLowerCase();
                         if (!val) {
                             dropoffInput.classList.add('error');
                             if (dropoffError) { dropoffError.textContent = 'Vui lòng nhập điểm trả'; dropoffError.style.display = 'block'; }
-                        } else if (!val.includes('huế')) {
+                        } else if (!val.includes(destTerm)) {
                             dropoffInput.classList.add('error');
-                            if (dropoffError) { dropoffError.textContent = 'Điểm đến không hợp lệ, vui lòng chọn điểm đến khác'; dropoffError.style.display = 'block'; }
+                            if (dropoffError) { dropoffError.textContent = `Điểm đến không hợp lệ, vui lòng chọn điểm trả thuộc ${destTerm}`; dropoffError.style.display = 'block'; }
                         }
                     });
 
@@ -914,6 +944,7 @@
 
                         // 1. Check pick-up location
                         const pickupVal = (pickupInput && pickupInput.value) ? pickupInput.value.trim().toLowerCase() : '';
+                        const originTermSubmit = "{{ origin }}".toLowerCase();
                         if (!pickupVal) {
                             if (pickupInput) pickupInput.classList.add('error');
                             if (pickupError) {
@@ -921,10 +952,10 @@
                                 pickupError.style.display = 'block';
                             }
                             return;
-                        } else if (!pickupVal.includes('đà nẵng')) {
+                        } else if (!pickupVal.includes(originTermSubmit)) {
                             if (pickupInput) pickupInput.classList.add('error');
                             if (pickupError) {
-                                pickupError.textContent = 'Điểm đón không hợp lệ, vui lòng chọn điểm đón khác';
+                                pickupError.textContent = `Điểm đón không hợp lệ, vui lòng chọn điểm đón thuộc ${originTermSubmit}`;
                                 pickupError.style.display = 'block';
                             }
                             return;
@@ -932,6 +963,7 @@
 
                         // 2. Check drop-off location
                         const dropoffVal = (dropoffInput && dropoffInput.value) ? dropoffInput.value.trim().toLowerCase() : '';
+                        const destTermSubmit = "{{ destination }}".toLowerCase();
                         if (!dropoffVal) {
                             if (dropoffInput) dropoffInput.classList.add('error');
                             if (dropoffError) {
@@ -939,10 +971,10 @@
                                 dropoffError.style.display = 'block';
                             }
                             return;
-                        } else if (!dropoffVal.includes('huế')) {
+                        } else if (!dropoffVal.includes(destTermSubmit)) {
                             if (dropoffInput) dropoffInput.classList.add('error');
                             if (dropoffError) {
-                                dropoffError.textContent = 'Điểm đến không hợp lệ, vui lòng chọn điểm đến khác';
+                                dropoffError.textContent = `Điểm đến không hợp lệ, vui lòng chọn điểm trả thuộc ${destTermSubmit}`;
                                 dropoffError.style.display = 'block';
                             }
                             return;
@@ -984,13 +1016,8 @@
                             return;
                         }
 
-                        // Show OTP Modal
-                        const otpModal = document.getElementById('otp-modal');
-                        if (otpModal) {
-                            otpModal.style.display = 'flex';
-                            const firstDigit = otpModal.querySelector('.otp-digit');
-                            if (firstDigit) firstDigit.focus();
-                        }
+                        // Gửi form về Backend để lưu vào database thực tế
+                        document.getElementById('finalBookingForm').submit();
                     });
                 }
 

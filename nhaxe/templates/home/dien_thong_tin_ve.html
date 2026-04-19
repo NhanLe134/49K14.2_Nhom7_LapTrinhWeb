@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điền thông tin đặt vé - VeXeApp</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f3f4f6;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        /* Trip Summary Header */
+        .trip-summary { display: flex; align-items: center; justify-content: space-between; background: #fdfdfd; padding: 20px; border-radius: 10px; border: 1px solid #edf2f7; margin-bottom: 30px; }
+        .summary-item { flex: 1; text-align: center; }
+        .summary-item .label { font-size: 13px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px; }
+        .summary-item .value { font-size: 18px; font-weight: 700; color: #2d3748; }
+        .summary-divider { padding: 0 15px; color: #cbd5e0; display: flex; align-items: center; }
+
+        h2 { color: #1f2937; text-align: center; margin-bottom: 30px; font-size: 24px; font-weight: 800; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; }
+        .readonly-input { background-color: #f9fafb; color: #6b7280; cursor: not-allowed; border: 1px dashed #9ca3af !important; }
+        #map { height: 400px; width: 100%; border-radius: 8px; border: 2px solid #e5e7eb; margin: 20px 0; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        .btn-submit:hover { background: #1d4ed8; }
+        .guide { background: #eff6ff; border-left: 4px solid var(--primary-color); padding: 15px; margin-bottom: 20px; font-size: 14px; color: #1e40af; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header tóm tắt chuyến xe thực tế -->
+    <div class="trip-summary">
+        <div class="summary-item">
+            <span class="label">Nơi xuất phát</span>
+            <div class="value">{{ chuyen_xe.TuyenXe.diemDi }}</div>
+        </div>
+        <div class="summary-divider">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="summary-item">
+            <span class="label">Nơi đến</span>
+            <div class="value">{{ chuyen_xe.TuyenXe.diemDen }}</div>
+        </div>
+        <div class="summary-item">
+            <span class="label">Ngày đi</span>
+            <div class="value">{{ chuyen_xe.NgayKhoiHanh|date:"d/m/Y" }}</div>
+        </div>
+        <div class="summary-item">
+            <span class="label">Giờ đi</span>
+            <div class="value">{{ chuyen_xe.GioDi|time:"H:i" }}</div>
+        </div>
+    </div>
+
+    <h2>Hãy điền thông tin cụ thể</h2>
+
+    <form action="{% url 'xac_nhan_dat_ve' %}" method="POST" id="bookingForm">
+        {% csrf_token %}
+        <!-- Hidden fields truyền từ View -->
+        <input type="hidden" name="chuyen_id" value="{{ chuyen_id }}">
+        {% for gid in ghe_ids %}
+            <input type="hidden" name="ghe_ids" value="{{ gid }}">
+        {% endfor %}
+
+        <div class="form-group">
+            <label for="ho_ten">Họ và Tên khách hàng:</label>
+            <input type="text" id="ho_ten" name="ho_ten" placeholder="Nhập họ tên người đi" 
+                   value="{{ khach_hang.HovaTen|default:'' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="sdt">Số điện thoại liên lạc:</label>
+            <input type="text" id="sdt" name="sdt" placeholder="Nhập số điện thoại" 
+                   value="{{ sdt_mac_dinh|default:'' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="diem_don">Điểm đón của bạn (Chọn trên bản đồ):</label>
+            <input type="text" id="diem_don" name="diem_don" readonly class="readonly-input" 
+                   placeholder="Vui lòng click trên bản đồ..." required>
+        </div>
+
+        <div class="form-group">
+            <label for="diem_tra">Điểm trả của bạn (Chọn trên bản đồ):</label>
+            <input type="text" id="diem_tra" name="diem_tra" readonly class="readonly-input" 
+                   placeholder="Vui lòng click trên bản đồ..." required>
+        </div>
+
+        <div id="map"></div>
+
+        <button type="submit" class="btn-submit">XÁC NHẬN ĐẶT {{ so_luong }} VÉ</button>
+    </form>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Khởi tạo bản đồ (Mặc định ở Việt Nam - Đà Nẵng)
+    var map = L.map('map').setView([16.047079, 108.206230], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var markerDon = null;
+    var markerTra = null;
+    var clickStep = 1; // 1: Chọn điểm đón, 2: Chọn điểm trả
+
+    // Hàm gọi API Nominatim để lấy địa chỉ từ tọa độ (Reverse Geocoding)
+    async function getAddressFromCoords(lat, lng) {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=vi`);
+            const data = await response.json();
+            return data.display_name || "Địa chỉ không xác định";
+        } catch (error) {
+            console.error("Lỗi Geocoding:", error);
+            return "Lỗi khi lấy thông tin địa chỉ";
+        }
+    }
+
+    // Xử lý sự kiện click trên bản đồ
+    map.on('click', async function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        if (clickStep === 1) {
+            // Bước 1: Chọn điểm đón
+            if (markerDon) map.removeLayer(markerDon);
+            markerDon = L.marker([lat, lng]).addTo(map)
+                .bindPopup("<b>Điểm đón</b>").openPopup();
+            
+            document.getElementById('diem_don').value = "Đang lấy địa chỉ...";
+            const address = await getAddressFromCoords(lat, lng);
+            document.getElementById('diem_don').value = address;
+            
+            clickStep = 2; // Chuyển sang bước chọn điểm trả
+        } else {
+            // Bước 2: Chọn điểm trả
+            if (markerTra) map.removeLayer(markerTra);
+            markerTra = L.marker([lat, lng]).addTo(map)
+                .bindPopup("<b>Điểm trả</b>").openPopup();
+            
+            document.getElementById('diem_tra').value = "Đang lấy địa chỉ...";
+            const address = await getAddressFromCoords(lat, lng);
+            document.getElementById('diem_tra').value = address;
+            
+            clickStep = 1; // Reset để có thể chọn lại
+        }
+    });
+
+    // Validation đơn giản trước khi gửi
+    document.getElementById('bookingForm').onsubmit = function() {
+        if (!document.getElementById('diem_don').value || !document.getElementById('diem_tra').value) {
+            alert("Vui lòng chọn cả điểm đón và điểm trả trên bản đồ!");
+            return false;
+        }
+        return true;
+    };
+</script>
+
+</body>
+</html>
