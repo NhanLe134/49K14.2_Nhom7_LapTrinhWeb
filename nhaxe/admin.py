@@ -13,8 +13,8 @@ admin.site.site_title = 'Admin Control Panel'
 # Đăng ký từng model kèm hiển thị cột (tuỳ chọn)
 @admin.register(KhachHang)
 class KhachHangAdmin(admin.ModelAdmin):
-    list_display = ('KhachHangID', 'Email', 'NgayDangKy')
-    search_fields = ('KhachHangID', 'Email')
+    list_display = ('HovaTen', 'Email', 'NgaySinh')
+    search_fields = ('HovaTen', 'Email')
 
 @admin.register(Nhaxe)
 class NhaxeAdmin(admin.ModelAdmin):

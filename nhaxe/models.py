@@ -4,12 +4,13 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 # 1. Bảng KhachHang (Khách hàng)
 class KhachHang(models.Model):
     KhachHangID = models.CharField(max_length=10, primary_key=True)
+    HovaTen = models.CharField(max_length=200, null=True, blank=True) # Sửa từ HoVaTen
     Email = models.CharField(max_length=100, unique=True, null=True, blank=True)
-    NgayDangKy = models.DateTimeField(auto_now_add=True)
+    NgaySinh = models.DateField(null=True, blank=True)
     AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return self.KhachHangID
+        return self.HovaTen or self.KhachHangID
 
 # 3. Bảng Nhaxe (Nhà xe)
 class Nhaxe(models.Model):
@@ -20,7 +21,7 @@ class Nhaxe(models.Model):
     DiaChiTruSo = models.CharField(max_length=200, null=True, blank=True)
     TenNhaXe = models.CharField(max_length=200, null=True, blank=True) # Tên nhà xe
     SoDienThoai = models.CharField(
-        max_length=20,  # Nới rộng từ 10 thành 20
+        max_length=20,
         unique=True,
         validators=[RegexValidator(regex=r'^\d{10,12}$', message="SĐT nhà xe phải có từ 10-12 chữ số")]
     )
@@ -28,7 +29,7 @@ class Nhaxe(models.Model):
     TongDiemDanhGia = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.NhaxeID
+        return self.TenNhaXe or self.NhaxeID
 
 # 2. Bảng User_Authentication (Xác thực người dùng)
 class User_Authentication(models.Model):
@@ -41,7 +42,7 @@ class User_Authentication(models.Model):
     SoDienThoai = models.CharField(
         max_length=20, 
         unique=True,
-        null=True, blank=True, # Cho phép null
+        null=True, blank=True,
         validators=[RegexValidator(regex=r'^\d{10,12}$', message="SĐT phải từ 10-12 số")]
     )
 
@@ -113,7 +114,7 @@ class Xe(models.Model):
     XeID = models.CharField(max_length=10, primary_key=True)
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
     Loaixe = models.ForeignKey(Loaixe, on_delete=models.CASCADE)
-    TrangThai = models.CharField(max_length=50, null=True, blank=True) # Nới rộng thành 50
+    TrangThai = models.CharField(max_length=50, null=True, blank=True)
     SoGhe = models.IntegerField(null=True, blank=True)
     BienSoXe = models.CharField(max_length=20, unique=True)
 
@@ -142,7 +143,7 @@ class ChuyenXe(models.Model):
     NgayKhoiHanh = models.DateField(null=True, blank=True)
     GioDi = models.TimeField(null=True, blank=True)
     GioDen = models.TimeField(null=True, blank=True)
-    TrangThai = models.CharField(max_length=50, null=True, blank=True) # Nới rộng thành 50
+    TrangThai = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.ChuyenXeID
@@ -164,7 +165,7 @@ class Ve(models.Model):
     ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE)
     Ghe = models.ForeignKey(GheNgoi, on_delete=models.CASCADE)
     SoDienThoai = models.CharField(
-        max_length=20, # Nới rộng thành 20
+        max_length=20,
         validators=[RegexValidator(regex=r'^\d{10,12}$', message="SĐT phải có từ 10-12 số")]
     )
     HoTen = models.CharField(max_length=200, null=True, blank=True, db_column='Hoten')
@@ -172,7 +173,7 @@ class Ve(models.Model):
     DiemTra = models.CharField(max_length=500, null=True, blank=True, db_column='DiemTra')
     NgayDat = models.DateTimeField(auto_now_add=True)
     GiaVe = models.DecimalField(max_digits=12, decimal_places=0)
-    TrangThaiThanhToan = models.CharField(max_length=50, null=True, blank=True) # Nới rộng thành 50
+    TrangThaiThanhToan = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.VeID
@@ -194,11 +195,11 @@ class DanhGia(models.Model):
     DanhGiaID = models.CharField(max_length=10, primary_key=True)
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
     KhachHang = models.ForeignKey(KhachHang, on_delete=models.CASCADE)
-    Ve = models.ForeignKey('Ve', on_delete=models.CASCADE, null=True, blank=True) # Mã định danh vé
+    Ve = models.ForeignKey('Ve', on_delete=models.CASCADE, null=True, blank=True)
     Diemso = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     Nhanxet = models.CharField(max_length=500, null=True, blank=True)
     NgayDanhGia = models.DateTimeField(null=True, blank=True)
-    AnDanh = models.BooleanField(default=False) # Đánh giá ẩn danh
+    AnDanh = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.DanhGiaID} - {self.Diemso} sao"

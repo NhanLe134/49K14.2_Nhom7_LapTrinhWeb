@@ -22,6 +22,7 @@ urlpatterns = [
     # ==================== KHÁCH HÀNG ====================
     path('khachhang', views.khachhang, name='khachhang'),
     path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
+    path('capnhat_thongtin_khachhang', views.capnhat_thongtin_khachhang, name='capnhat_thongtin_khachhang'),
     path('lotrinh', views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', views.vecuatoi, name='vecuatoi'),
