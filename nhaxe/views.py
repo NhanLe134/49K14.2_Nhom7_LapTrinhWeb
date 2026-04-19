@@ -1,10 +1,11 @@
 from datetime import datetime
 import random
+import json
+from django.core.files.storage import default_storage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.conf import settings
-import json
 from .models import ChuyenXe, Taixe, TuyenXe, Nhaxe, Xe, Loaixe, CHITIETLOAIXE, KhachHang, Ve, User_Authentication
 
 # ==================== TRANG CHUNG ====================
@@ -26,8 +27,91 @@ def dangky_nhaxe(request):
 def khachhang(request):
     return render(request, 'home/khachhang.html')
 
+# VIEW HIỂN THỊ THÔNG TIN KHÁCH HÀNG
 def thongtin_khachhang(request):
-    return render(request, 'home/thongtin_khachhang.html')
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('dangnhap')
+
+    try:
+        # 1. Lấy thông tin cơ bản từ bảng xác thực
+        user_auth = User_Authentication.objects.get(UserID=user_id)
+
+        # 2. Chuẩn bị dữ liệu nền
+        khach_hang_data = {
+            'KhachHangID': user_id,
+            'HovaTen': user_auth.TenDangNhap,
+            'SoDienThoai': user_auth.SoDienThoai,
+            'Email': None,
+            'NgaySinh': None,
+            'AnhDaiDienURL': None,
+        }
+
+        # 3. Thử lấy thông tin chi tiết từ bảng KhachHang
+        try:
+            kh = KhachHang.objects.get(KhachHangID=user_id)
+            khach_hang_data.update({
+                'HovaTen': kh.HovaTen or user_auth.TenDangNhap,
+                'Email': kh.Email,
+                'NgaySinh': kh.NgaySinh,
+                'AnhDaiDienURL': kh.AnhDaiDienURL,
+            })
+        except KhachHang.DoesNotExist:
+            pass
+
+    except User_Authentication.DoesNotExist:
+        messages.error(request, "Lỗi nghiêm trọng: Không tìm thấy thông tin xác thực người dùng.")
+        return redirect('dangnhap')
+    except Exception as e:
+        messages.error(request, f"Đã xảy ra lỗi không mong muốn khi lấy dữ liệu: {e}")
+        khach_hang_data = {
+            'KhachHangID': user_id,
+            'HovaTen': 'Lỗi dữ liệu',
+            'SoDienThoai': 'N/A',
+            'Email': None,
+            'NgaySinh': None,
+            'AnhDaiDienURL': None,
+        }
+
+    return render(request, 'home/thongtin_khachhang.html', {'khach_hang': khach_hang_data})
+
+# VIEW XỬ LÝ CẬP NHẬT THÔNG TIN KHÁCH HÀNG
+def capnhat_thongtin_khachhang(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Phương thức không hợp lệ'}, status=405)
+
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({'status': 'error', 'message': 'Người dùng chưa đăng nhập'}, status=401)
+
+    try:
+        hoten = request.POST.get('hoten')
+        ngaysinh = request.POST.get('ngaysinh')
+        avatar_file = request.FILES.get('avatar')
+
+        kh, created = KhachHang.objects.get_or_create(KhachHangID=user_id)
+
+        kh.HovaTen = hoten
+        if ngaysinh:
+            kh.NgaySinh = ngaysinh
+
+        avatar_url = None
+        if avatar_file:
+            file_name = default_storage.save(f"avatars/{avatar_file.name}", avatar_file)
+            avatar_url = default_storage.url(file_name)
+            kh.AnhDaiDienURL = avatar_url
+
+        kh.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Cập nhật thông tin thành công!',
+            'avatar_url': avatar_url
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Lỗi phía server: {str(e)}'}, status=500)
+
 
 def lotrinh(request):
     trip_id = request.GET.get('id', '')
@@ -47,13 +131,13 @@ def lotrinh(request):
         've_list': ve_list
     })
 
+
 def chitietchuyenxe(request):
     chuyenxe_id = request.GET.get('id')
-    
+
     if not chuyenxe_id:
         return redirect('index')
-    
-    # Xử lý cập nhật trạng thái (POST) qua ORM
+
     if request.method == 'POST':
         post_id = request.POST.get('id')
         new_status = request.POST.get('status')
@@ -65,15 +149,12 @@ def chitietchuyenxe(request):
                 messages.error(request, f"Lỗi: {e}")
             return redirect(f"/chitietchuyenxe?id={post_id}")
 
-    # Lấy thông tin chi tiết chuyến xe (GET)
     try:
         cx = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe', 'Taixe'), pk=chuyenxe_id)
-        
-        # Format dữ liệu cho template
         route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
         if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
             route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
-            
+
         trip_data = {
             'id': cx.ChuyenXeID,
             'route': route_name,
@@ -85,8 +166,7 @@ def chitietchuyenxe(request):
     except Exception:
         messages.error(request, "Không tìm thấy thông tin chuyến xe.")
         return redirect('index')
-            
-    # Lấy danh sách hành khách từ bảng vé
+
     ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
 
     return render(request, 'home/chitietchuyenxe.html', {
@@ -95,6 +175,7 @@ def chitietchuyenxe(request):
         'trip_status': cx.TrangThai or '',
         've_list': ve_list
     })
+
 
 def vecuatoi(request):
     return render(request, 'home/vecuatoi.html')
@@ -111,29 +192,21 @@ def danhgiachuyenxe(request):
 # ==================== NHÀ XE (nx) ====================
 
 def nhaxe(request):
-    # Sử dụng Django ORM kết nối trực tiếp Supabase
     try:
-        # Lấy danh sách chuyến xe và các thông tin liên quan (Optimize JOINs)
         trips_queryset = ChuyenXe.objects.select_related('TuyenXe', 'Taixe').all()
-        
         formatted_trips = []
         for cx in trips_queryset:
-            # Lấy tên lộ trình
             route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
             if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
                 route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
-                
             formatted_trips.append({
                 'driver': cx.Taixe.HoTen if cx.Taixe else 'Chưa phân công',
                 'date': cx.NgayKhoiHanh.strftime('%Y-%m-%d') if cx.NgayKhoiHanh else '',
                 'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
                 'route': route_name
             })
-            
-        # Lấy danh sách tên tài xế duy nhất
         taixe_names = list(Taixe.objects.exclude(HoTen__isnull=True).values_list('HoTen', flat=True).distinct())
         unique_drivers = taixe_names if taixe_names else ['Chưa có tài xế']
-        
     except Exception as e:
         print(f"Error in ORM nhaxe view: {e}")
         formatted_trips = []
@@ -151,35 +224,25 @@ def thong_tin_nha_xe(request):
         return redirect('dangnhap')
 
     try:
-        # Lấy thông tin nhà xe từ Database
         nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=user_id)
-        
         if request.method == 'POST':
             action = request.POST.get('action')
-
             if action == 'send_otp':
                 otp = str(random.randint(100000, 999999))
                 request.session['update_otp'] = otp
                 messages.info(request, f"[SIMULATION] Mã xác thực của bạn là: {otp}")
                 return JsonResponse({'status': 'sent'})
-
             elif action == 'save':
                 phone = request.POST.get('phone')
                 address = request.POST.get('address')
-                
-                # Check OTP if phone changed
                 if phone and phone != nha_xe_obj.SoDienThoai:
                     user_otp = request.POST.get('otp')
                     if user_otp != request.session.get('update_otp'):
                         return JsonResponse({'status': 'error', 'message': 'Mã xác thực không chính xác.'})
-                
-                # Cập nhật trực tiếp vào DB
                 nha_xe_obj.SoDienThoai = phone if phone else nha_xe_obj.SoDienThoai
                 nha_xe_obj.DiaChiTruSo = address if address else nha_xe_obj.DiaChiTruSo
                 nha_xe_obj.save()
-                
                 return JsonResponse({'status': 'success', 'message': 'Cập nhật thông tin thành công!'})
-        
         return render(request, 'home/thong_tin_nha_xe.html', {'nha_xe': nha_xe_obj})
     except Exception as e:
         messages.error(request, f'Lỗi hệ thống: {str(e)}')
@@ -187,62 +250,40 @@ def thong_tin_nha_xe(request):
 
 
 def quanly_loaixe(request):
-    # Danh sách 3 loại xe mặc định theo yêu cầu thiết kế
     loaixe_list = [
         {'LoaiXeId': 'LX00001', 'TenLoaiXe': 'Loại xe A', 'SoGhe': '4', 'GiaVe': None, 'NgayCapNhat': None},
         {'LoaiXeId': 'LX00002', 'TenLoaiXe': 'Loại xe B', 'SoGhe': '7', 'GiaVe': None, 'NgayCapNhat': None},
         {'LoaiXeId': 'LX00003', 'TenLoaiXe': 'Loại xe C', 'SoGhe': '9', 'GiaVe': None, 'NgayCapNhat': None}
     ]
-
     try:
         api_data = Loaixe.objects.all()
         for xe_api in api_data:
-            api_id = xe_api.LoaixeID
-            api_so_cho = xe_api.SoCho
-            api_gia_ve = xe_api.GiaVe
-            api_ngay_cap_nhat = xe_api.NgayCapNhatGia
-
             for xe_macdinh in loaixe_list:
-                # Ghép dữ liệu dựa trên số chỗ ngồi (4, 7, 9)
-                if str(api_so_cho) == str(xe_macdinh['SoGhe']):
-                    xe_macdinh['LoaiXeId'] = api_id
-                    xe_macdinh['GiaVe'] = api_gia_ve
-                    xe_macdinh['NgayCapNhat'] = api_ngay_cap_nhat.strftime('%Y-%m-%d') if api_ngay_cap_nhat else None
+                if str(xe_api.SoCho) == str(xe_macdinh['SoGhe']):
+                    xe_macdinh['LoaiXeId'] = xe_api.LoaixeID
+                    xe_macdinh['GiaVe'] = xe_api.GiaVe
+                    xe_macdinh['NgayCapNhat'] = xe_api.NgayCapNhatGia.strftime('%Y-%m-%d') if xe_api.NgayCapNhatGia else None
     except Exception as e:
         print(f"Lỗi lấy dữ liệu từ database: {e}")
-
     return render(request, 'home/quanly_loaixe.html', {'loaixe_list': loaixe_list})
 
 
 def capnhat_gia_loaixe(request, loaixe_id):
     if request.method == 'POST':
         gia_moi = request.POST.get('gia_ve')
-
         try:
-            xe = Loaixe.objects.get(LoaixeID=loaixe_id)
-            ngay_hien_tai = datetime.now().date()
+            xe, created = Loaixe.objects.get_or_create(LoaixeID=loaixe_id)
             xe.GiaVe = gia_moi
-            xe.NgayCapNhatGia = ngay_hien_tai
-            xe.save()
-            messages.success(request, "Cập nhật giá vé thành công!")
-        except Loaixe.DoesNotExist:
-            try:
-                ngay_hien_tai = datetime.now().date()
+            xe.NgayCapNhatGia = datetime.now().date()
+            if created:
                 so_cho = 4
                 if loaixe_id == 'LX00002': so_cho = 7
                 if loaixe_id == 'LX00003': so_cho = 9
-                Loaixe.objects.create(
-                    LoaixeID=loaixe_id,
-                    GiaVe=gia_moi,
-                    NgayCapNhatGia=ngay_hien_tai,
-                    SoCho=so_cho
-                )
-                messages.success(request, "Đã tạo mới và cập nhật giá vé thành công!")
-            except Exception as e:
-                 messages.error(request, f"Lỗi tạo mới loại xe: {e}")
+                xe.SoCho = so_cho
+            xe.save()
+            messages.success(request, "Cập nhật giá vé thành công!")
         except Exception as e:
             messages.error(request, f"Lỗi cập nhật CSDL: {e}")
-
     return redirect('quanly_loaixe')
 
 def quan_ly_xe(request):
@@ -252,7 +293,6 @@ def quan_ly_xe(request):
     
     if request.method == 'POST':
         action = request.POST.get('action')
-        
         if action == 'delete':
             xe_id = request.POST.get('xe_id')
             try:
@@ -260,47 +300,26 @@ def quan_ly_xe(request):
                 messages.success(request, "Đã xóa xe thành công.")
             except Exception as e:
                 messages.error(request, f"Lỗi: {str(e)}")
-            return redirect('quan_ly_xe')
-
-        # Thêm/Sửa
-        bien_so = request.POST.get('bien_so')
-        trang_thai = request.POST.get('trang_thai', 'Đang hoạt động')
-        so_ghe = request.POST.get('so_ghe')
-        loaixe_id = request.POST.get('loaixe_id')
-        xe_id = request.POST.get('xe_id')
-
-        try:
-            if xe_id: # Sửa
-                Xe.objects.filter(XeID=xe_id).update(
-                    BienSoXe=bien_so,
-                    TrangThai=trang_thai,
-                    SoGhe=so_ghe,
-                    Loaixe_id=loaixe_id
-                )
-                messages.success(request, "Cập nhật xe thành công.")
-            else: # Thêm mới
-                Xe.objects.create(
-                    Nhaxe_id=nha_xe_id,
-                    BienSoXe=bien_so,
-                    TrangThai=trang_thai,
-                    SoGhe=so_ghe,
-                    Loaixe_id=loaixe_id
-                )
-                messages.success(request, "Thêm xe mới thành công.")
-        except Exception as e:
-            messages.error(request, f"Lỗi: {str(e)}")
-            
+        else:
+            bien_so = request.POST.get('bien_so')
+            trang_thai = request.POST.get('trang_thai', 'Đang hoạt động')
+            so_ghe = request.POST.get('so_ghe')
+            loaixe_id = request.POST.get('loaixe_id')
+            xe_id = request.POST.get('xe_id')
+            try:
+                if xe_id:
+                    Xe.objects.filter(XeID=xe_id).update(BienSoXe=bien_so, TrangThai=trang_thai, SoGhe=so_ghe, Loaixe_id=loaixe_id)
+                    messages.success(request, "Cập nhật xe thành công.")
+                else:
+                    Xe.objects.create(Nhaxe_id=nha_xe_id, BienSoXe=bien_so, TrangThai=trang_thai, SoGhe=so_ghe, Loaixe_id=loaixe_id)
+                    messages.success(request, "Thêm xe mới thành công.")
+            except Exception as e:
+                messages.error(request, f"Lỗi: {str(e)}")
         return redirect('quan_ly_xe')
 
-    # GET
     vehicles = Xe.objects.filter(Nhaxe_id=nha_xe_id).select_related('Loaixe')
-    # Lấy danh sách loại xe từ bảng Loaixe chính
     vehicle_types = Loaixe.objects.all()
-    
-    return render(request, 'home/quan_ly_xe.html', {
-        'vehicles': vehicles,
-        'vehicle_types': vehicle_types
-    })
+    return render(request, 'home/quan_ly_xe.html', {'vehicles': vehicles, 'vehicle_types': vehicle_types})
 
 def quanly_khachhang(request):
     user_id = request.session.get('user_id')
@@ -313,7 +332,6 @@ def quanly_khachhang(request):
 def quanlyve(request):
     user_id = request.session.get('user_id')
     try:
-        # Lấy vé của khách hàng
         ve_list = Ve.objects.filter(KhachHang_id=user_id).order_by('-NgayDat')
         return render(request, 'home/quanlyve.html', {'ve_list': ve_list})
     except Exception as e:
