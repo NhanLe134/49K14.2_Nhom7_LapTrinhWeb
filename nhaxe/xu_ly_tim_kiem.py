@@ -1,5 +1,8 @@
-from .models import ChuyenXe, GheNgoi, CHITIETLOAIXE
+from .models import ChuyenXe, GheNgoi, CHITIETLOAIXE, TuyenXe, User_Authentication, KhachHang
 from django.db.models import Q
+from django.shortcuts import render
+from django.contrib import messages
+from django.http import JsonResponse
 
 def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
     """
@@ -134,3 +137,86 @@ def lay_so_do_ghe(chuyen_xe_id):
     except Exception as e:
         print(f"Lỗi lấy sơ đồ ghế: {str(e)}")
         raise e
+
+# ==================== VIEWS CHO TÌM KIẾM CHUYẾN XE ====================
+
+def view_tim_kiem_ve(request):
+    """
+    View xử lý tìm kiếm chuyến xe dựa trên các tham số GET.
+    """
+    origin = request.GET.get('origin', '').strip()
+    destination = request.GET.get('destination', '').strip()
+    depart_date = request.GET.get('depart_date', '').strip()
+
+    # Lấy thông tin khách hàng đang đăng nhập để pre-fill form
+    user_id = request.session.get('user_id')
+    khach_hang = None
+    sdt_mac_dinh = ""
+    if user_id:
+        try:
+            auth_user = User_Authentication.objects.get(UserID=user_id)
+            khach_hang = auth_user.KhachHang
+            sdt_mac_dinh = auth_user.SoDienThoai
+        except User_Authentication.DoesNotExist:
+            pass
+
+    # Lấy tất cả các địa điểm duy nhất xuất hiện trong Database (cả điểm đi và điểm đến), lọc bỏ các giá trị rỗng
+    try:
+        diem_di_list = list(TuyenXe.objects.filter(diemDi__isnull=False).values_list('diemDi', flat=True).distinct())
+        diem_den_list = list(TuyenXe.objects.filter(diemDen__isnull=False).values_list('diemDen', flat=True).distinct())
+        # Gộp lại và sắp xếp
+        vung_mien = sorted(list(set(diem_di_list + diem_den_list)))
+        cac_diem_di = vung_mien
+        cac_diem_den = vung_mien
+    except:
+        cac_diem_di = ['Đà Nẵng', 'Huế', 'Hội An']
+        cac_diem_den = ['Đà Nẵng', 'Huế', 'Hội An']
+
+    try:
+        if origin and destination and depart_date:
+            danh_sach_chuyen = tim_kiem_chuyen_xe_kha_dung(origin, destination, depart_date)
+            if not danh_sach_chuyen:
+                messages.info(request, "Không tìm thấy chuyến xe nào phù hợp với yêu cầu.")
+        else:
+            danh_sach_chuyen = []
+            if request.GET.get('search_submitted'):
+                messages.warning(request, "Vui lòng nhập đầy đủ thông tin: Điểm đi, Điểm đến và Ngày đi.")
+
+        context = {
+            'chuyen_xe_list': danh_sach_chuyen,
+            'origin': origin,
+            'destination': destination,
+            'depart_date': depart_date,
+            'cac_diem_di': cac_diem_di,
+            'cac_diem_den': cac_diem_den,
+            'khach_hang': khach_hang,
+            'sdt_mac_dinh': sdt_mac_dinh,
+        }
+        return render(request, 'home/timkiem.html', context)
+
+    except Exception as e:
+        messages.error(request, f"Lỗi hệ thống khi tìm kiếm: {str(e)}")
+        return render(request, 'home/timkiem.html', {
+            'chuyen_xe_list': [],
+            'origin': origin,
+            'destination': destination,
+            'depart_date': depart_date,
+            'cac_diem_di': cac_diem_di,
+            'cac_diem_den': cac_diem_den,
+            'khach_hang': khach_hang,
+            'sdt_mac_dinh': sdt_mac_dinh,
+        })
+
+def lay_so_do_ghe_api(request):
+    """
+    API endpoint trả về sơ đồ ghế của một chuyến xe.
+    """
+    chuyen_id = request.GET.get('chuyen_id')
+    if not chuyen_id:
+        return JsonResponse({'status': 'error', 'message': 'Thiếu ID chuyến xe'}, status=400)
+    
+    try:
+        data = lay_so_do_ghe(chuyen_id)
+        return JsonResponse({'status': 'success', 'data': data})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
