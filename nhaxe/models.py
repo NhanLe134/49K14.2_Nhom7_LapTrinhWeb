@@ -117,6 +117,19 @@ class Xe(models.Model):
     TrangThai = models.CharField(max_length=50, null=True, blank=True)
     SoGhe = models.IntegerField(null=True, blank=True)
     BienSoXe = models.CharField(max_length=20, unique=True)
+    HinhAnhXe = models.ImageField(upload_to='xe_images/', null=True, blank=True)
+
+    @property
+    def ten_loai_xe(self):
+        chi_tiet = CHITIETLOAIXE.objects.filter(Nhaxe=self.Nhaxe, Loaixe=self.Loaixe).first()
+        if chi_tiet and chi_tiet.TenLoaiXe:
+            return chi_tiet.TenLoaiXe
+            
+        so_cho = self.Loaixe.SoCho if self.Loaixe else 0
+        if so_cho == 4: return "Loại xe A"
+        if so_cho == 7: return "Loại xe B"
+        if so_cho == 9: return "Loại xe C"
+        return f"Loại xe {so_cho} chỗ"
 
     def __str__(self):
         return self.BienSoXe
