@@ -56,6 +56,11 @@ def dangnhap(request):
             request.session.set_expiry(0)
             
             messages.success(request, f'Chào mừng {username} quay trở lại!')
+
+            # Nếu là nhà xe, luôn điều hướng đến trang nhà xe
+            if matched_user.Nhaxe:
+                return redirect('nhaxe')
+
             return _redirect_by_role(request.session['role'])
         else:
             messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')

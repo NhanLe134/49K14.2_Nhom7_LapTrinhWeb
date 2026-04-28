@@ -19,7 +19,11 @@ urlpatterns = [
     path('api/lay_so_do_ghe', xu_ly_tim_kiem.lay_so_do_ghe_api, name='api_lay_so_do_ghe'),
     path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
+    path('send_registration_otp', views.send_registration_otp, name='send_registration_otp'),
+    path('verify_and_register', views.verify_and_register, name='verify_and_register'),
     path('dangky_nhaxe', views.dangky_nhaxe, name='dangky_nhaxe'),
+    path('send_registration_otp_nhaxe', views.send_registration_otp_nhaxe, name='send_registration_otp_nhaxe'),
+    path('verify_and_register_nhaxe', views.verify_and_register_nhaxe, name='verify_and_register_nhaxe'),
 
     # ==================== KHÁCH HÀNG ====================
     path('khachhang', views.khachhang, name='khachhang'),
