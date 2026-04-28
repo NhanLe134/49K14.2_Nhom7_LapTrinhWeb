@@ -268,24 +268,69 @@ def quan_ly_xe(request):
         so_ghe = request.POST.get('so_ghe')
         loaixe_id = request.POST.get('loaixe_id')
         xe_id = request.POST.get('xe_id')
+        hinh_anh = request.FILES.get('hinh_anh')
 
         try:
-            if xe_id: # Sửa
-                Xe.objects.filter(XeID=xe_id).update(
-                    BienSoXe=bien_so,
-                    TrangThai=trang_thai,
-                    SoGhe=so_ghe,
-                    Loaixe_id=loaixe_id
+            if loaixe_id == 'new':
+                new_loai_socho = request.POST.get('new_loai_socho')
+                new_loai_gia = request.POST.get('new_loai_gia')
+                
+                last_loai = Loaixe.objects.order_by('-LoaixeID').first()
+                if last_loai and str(last_loai.LoaixeID).startswith('LX'):
+                    try:
+                        num = int(''.join(filter(str.isdigit, last_loai.LoaixeID))) + 1
+                        loaixe_id = f"LX{num:05d}"
+                    except:
+                        loaixe_id = "LX00001"
+                else:
+                    loaixe_id = "LX00001"
+                
+                Loaixe.objects.create(
+                    LoaixeID=loaixe_id,
+                    SoCho=int(new_loai_socho) if new_loai_socho else 4,
+                    GiaVe=new_loai_gia if new_loai_gia else 0,
+                    NgayCapNhatGia=datetime.now().date()
                 )
+                
+                CHITIETLOAIXE.objects.create(
+                    Nhaxe_id=nha_xe_id,
+                    Loaixe_id=loaixe_id,
+                    TenLoaiXe=f"Loại xe {new_loai_socho} chỗ"
+                )
+
+            if xe_id: # Sửa
+                xe = Xe.objects.filter(XeID=xe_id).first()
+                if xe:
+                    xe.BienSoXe = bien_so
+                    xe.TrangThai = trang_thai
+                    xe.SoGhe = so_ghe
+                    xe.Loaixe_id = loaixe_id
+                    if hinh_anh:
+                        xe.HinhAnhXe = hinh_anh
+                    xe.save()
                 messages.success(request, "Cập nhật xe thành công.")
             else: # Thêm mới
-                Xe.objects.create(
+                last_xe = Xe.objects.order_by('-XeID').first()
+                if last_xe:
+                    try:
+                        num = int(''.join(filter(str.isdigit, str(last_xe.XeID)))) + 1
+                        new_xe_id = f"X{num:05d}"
+                    except:
+                        new_xe_id = "X00001"
+                else:
+                    new_xe_id = "X00001"
+
+                xe = Xe(
+                    XeID=new_xe_id,
                     Nhaxe_id=nha_xe_id,
                     BienSoXe=bien_so,
                     TrangThai=trang_thai,
                     SoGhe=so_ghe,
                     Loaixe_id=loaixe_id
                 )
+                if hinh_anh:
+                    xe.HinhAnhXe = hinh_anh
+                xe.save()
                 messages.success(request, "Thêm xe mới thành công.")
         except Exception as e:
             messages.error(request, f"Lỗi: {str(e)}")
@@ -294,7 +339,6 @@ def quan_ly_xe(request):
 
     # GET
     vehicles = Xe.objects.filter(Nhaxe_id=nha_xe_id).select_related('Loaixe')
-    # Lấy danh sách loại xe từ bảng Loaixe chính
     vehicle_types = Loaixe.objects.all()
     
     return render(request, 'home/quan_ly_xe.html', {
