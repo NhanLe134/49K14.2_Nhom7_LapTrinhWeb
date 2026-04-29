@@ -69,26 +69,31 @@
 
                     <div class="ticket-grid">
                         {% if ve_da_dat %}
-                            {% for v in ve_da_dat %}
-                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.ChuyenXe.NgayKhoiHanh|date:'d/m/Y' }}', '{{ v.ChuyenXe.GioDi|time:'H:i' }}', '{{ v.Ghe.soGhe }}', '{{ v.ChuyenXe.TuyenXe.tenTuyen }}', '{{ v.GiaVe }}')">
-                                <div class="ticket-card-content">
-                                    <div class="ticket-time-col">
-                                        <div class="ticket-time">{{ v.ChuyenXe.GioDi|time:"H:i" }}</div>
-                                        <div class="ticket-date">{{ v.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</div>
-                                    </div>
-                                    <div class="ticket-divider"></div>
-                                    <div class="ticket-info-col">
-                                        <div class="ticket-route">{{ v.ChuyenXe.TuyenXe.tenTuyen|default:"Đang cập nhật" }}</div>
-                                        <div class="ticket-bus">{{ v.ChuyenXe.Xe.Nhaxe.TenNhaXe|default:"Vexeapp" }}</div>
-                                        <div class="ticket-qty">Số lượng ghế: 1</div>
-                                        <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
-                                    </div>
+                        {% for v in ve_da_dat %}
+                        <div class="ticket-card"
+                            onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.ChuyenXe.NgayKhoiHanh|date:'d/m/Y' }}', '{{ v.ChuyenXe.GioDi|time:'H:i' }}', '{{ v.Ghe.soGhe }}', '{{ v.ChuyenXe.TuyenXe.tenTuyen }}', '{{ v.GiaVe }}')">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">{{ v.ChuyenXe.GioDi|time:"H:i" }}</div>
+                                    <div class="ticket-date">{{ v.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</div>
                                 </div>
-                                <button class="btn-cancel" onclick="prepareCancel('{{ v.VeID }}', this, event)">Hủy</button>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">{{ v.ChuyenXe.TuyenXe.tenTuyen|default:"Đang cập nhật" }}
+                                    </div>
+                                    <div class="ticket-bus">{{ v.ChuyenXe.Xe.Nhaxe.TenNhaXe|default:"Vexeapp" }}</div>
+                                    <div class="ticket-qty">Số lượng ghế: 1</div>
+                                    <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
+                                </div>
                             </div>
-                            {% endfor %}
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-cancel"
+                                    onclick="prepareCancel('{{ v.VeID }}', this, event)">Hủy</button>
+                            </div>
+                        </div>
+                        {% endfor %}
                         {% else %}
-                            <p style="padding: 20px; text-align: center; color: #666;">Bạn chưa có vé nào được đặt.</p>
+                        <p style="padding: 20px; text-align: center; color: #666;">Bạn chưa có vé nào được đặt.</p>
                         {% endif %}
                     </div>
                 </div> <!-- End view-booked -->
@@ -98,30 +103,35 @@
                     <h2 class="ticket-section-title">Danh sách vé đã đi</h2>
                     <div class="ticket-grid">
                         {% if ve_da_di %}
-                            {% for v in ve_da_di %}
-                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.ChuyenXe.NgayKhoiHanh|date:'d/m/Y' }}', '{{ v.ChuyenXe.GioDi|time:'H:i' }}', '{{ v.Ghe.soGhe }}', '{{ v.ChuyenXe.TuyenXe.tenTuyen }}', '{{ v.GiaVe }}')">
-                                <div class="ticket-card-content">
-                                    <div class="ticket-time-col">
-                                        <div class="ticket-time">{{ v.ChuyenXe.GioDi|time:"H:i" }}</div>
-                                        <div class="ticket-date">{{ v.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</div>
-                                    </div>
-                                    <div class="ticket-divider"></div>
-                                    <div class="ticket-info-col">
-                                        <div class="ticket-route">{{ v.ChuyenXe.TuyenXe.tenTuyen|default:"Đang cập nhật" }}</div>
-                                        <div class="ticket-bus">{{ v.ChuyenXe.Xe.Nhaxe.TenNhaXe|default:"Vexeapp" }}</div>
-                                        <div class="ticket-qty">Số lượng ghế: 1</div>
-                                        <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
-                                    </div>
+                        {% for v in ve_da_di %}
+                        <div class="ticket-card"
+                            onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.ChuyenXe.NgayKhoiHanh|date:'d/m/Y' }}', '{{ v.ChuyenXe.GioDi|time:'H:i' }}', '{{ v.Ghe.soGhe }}', '{{ v.ChuyenXe.TuyenXe.tenTuyen }}', '{{ v.GiaVe }}')">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">{{ v.ChuyenXe.GioDi|time:"H:i" }}</div>
+                                    <div class="ticket-date">{{ v.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</div>
                                 </div>
-                                {% if v.da_danh_gia %}
-                                    <button class="btn-completed">Đã hoàn thành</button>
-                                {% else %}
-                                    <button class="btn-completed" onclick="event.stopPropagation(); window.location.href='{% url 'themdanhgia' v.VeID %}'" style="cursor: pointer;">Đã đi</button>
-                                {% endif %}
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">{{ v.ChuyenXe.TuyenXe.tenTuyen|default:"Đang cập nhật" }}
+                                    </div>
+                                    <div class="ticket-bus">{{ v.ChuyenXe.Xe.Nhaxe.TenNhaXe|default:"Vexeapp" }}</div>
+                                    <div class="ticket-qty">Số lượng ghế: 1</div>
+                                    <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
+                                </div>
                             </div>
-                            {% endfor %}
+                            {% if v.da_danh_gia %}
+                            <button class="btn-completed">Đã hoàn thành</button>
+                            {% else %}
+                            <button class="btn-completed"
+                                onclick="event.stopPropagation(); window.location.href='{% url 'themdanhgia' v.VeID %}'"
+                                style="cursor: pointer;">Đã đi</button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
                         {% else %}
-                            <p style="padding: 20px; text-align: center; color: #666;">Bạn chưa có chuyến đi nào hoàn thành.</p>
+                        <p style="padding: 20px; text-align: center; color: #666;">Bạn chưa có chuyến đi nào hoàn thành.
+                        </p>
                         {% endif %}
                     </div>
                 </div>
@@ -131,120 +141,36 @@
                     <h2 class="ticket-section-title">Danh sách vé đã hủy</h2>
                     <div class="ticket-grid">
                         {% if ve_da_huy %}
-                            {% for v in ve_da_huy %}
-                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.ChuyenXe.NgayKhoiHanh|date:'d/m/Y' }}', '{{ v.ChuyenXe.GioDi|time:'H:i' }}', '{{ v.Ghe.soGhe }}', '{{ v.ChuyenXe.TuyenXe.tenTuyen }}', '{{ v.GiaVe }}')">
-                                <div class="ticket-card-content">
-                                    <div class="ticket-time-col">
-                                        <div class="ticket-time">{{ v.ChuyenXe.GioDi|time:"H:i" }}</div>
-                                        <div class="ticket-date">{{ v.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</div>
-                                    </div>
-                                    <div class="ticket-divider"></div>
-                                    <div class="ticket-info-col">
-                                        <div class="ticket-route">{{ v.ChuyenXe.TuyenXe.tenTuyen|default:"Đang cập nhật" }}</div>
-                                        <div class="ticket-bus">{{ v.ChuyenXe.Xe.Nhaxe.TenNhaXe|default:"Vexeapp" }}</div>
-                                        <div class="ticket-qty">Số lượng ghế: 1</div>
-                                        <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
-                                    </div>
+                        {% for v in ve_da_huy %}
+                        <div class="ticket-card"
+                            onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.ChuyenXe.NgayKhoiHanh|date:'d/m/Y' }}', '{{ v.ChuyenXe.GioDi|time:'H:i' }}', '{{ v.Ghe.soGhe }}', '{{ v.ChuyenXe.TuyenXe.tenTuyen }}', '{{ v.GiaVe }}')">
+                            <div class="ticket-card-content">
+                                <div class="ticket-time-col">
+                                    <div class="ticket-time">{{ v.ChuyenXe.GioDi|time:"H:i" }}</div>
+                                    <div class="ticket-date">{{ v.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</div>
                                 </div>
-                                <button class="btn-cancelled">Đã hủy</button>
+                                <div class="ticket-divider"></div>
+                                <div class="ticket-info-col">
+                                    <div class="ticket-route">{{ v.ChuyenXe.TuyenXe.tenTuyen|default:"Đang cập nhật" }}
+                                    </div>
+                                    <div class="ticket-bus">{{ v.ChuyenXe.Xe.Nhaxe.TenNhaXe|default:"Vexeapp" }}</div>
+                                    <div class="ticket-qty">Số lượng ghế: 1</div>
+                                    <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
+                                </div>
                             </div>
-                            {% endfor %}
+                            <button class="btn-cancelled">Đã hủy</button>
+                        </div>
+                        {% endfor %}
                         {% else %}
 
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Payment Details View -->
-                <div id="view-payment" style="display: none; padding-top: 40px;">
-                    <div class="payment-container" style="margin: 0 auto;">
-                        <div class="payment-page-title-wrap" style="margin-bottom: 25px;">
-                            <h2 class="payment-page-title" style="margin-bottom: 5px;">
-                                <i class="fa-solid fa-arrow-left" id="btnBackToTickets"
-                                    style="cursor:pointer; color: #666; font-size: 1.25rem; margin-right: 15px;"></i>
-                                Thanh toán vé xe
-                            </h2>
-                            <div class="payment-status-wait" id="paymentStatusWait"
-                                style="display: none; font-size: 0.95rem; color: #d97706; font-weight: 600; margin-left: 35px;">
-                                <i class="fa-solid fa-hourglass-half" style="margin-right: 5px;"></i> Chờ thanh toán
-                            </div>
-                        </div>
-
-                        <div class="payment-summary-box">
-                            <div class="ps-row"><span class="ps-label">Mã vé</span><span class="ps-val"
-                                    id="payId">VX2026001</span></div>
-                            <div class="ps-row"><span class="ps-label">Tuyến</span><span class="ps-val" id="payRoute">Đà
-                                    Nẵng <i class="fa-solid fa-arrow-right"
-                                        style="margin: 0 5px; font-size: 0.8rem"></i> Huế</span></div>
-                            <div class="ps-row"><span class="ps-label">Ngày khởi hành</span><span class="ps-val"
-                                    id="payDate">Chủ Nhật, 1 tháng 3, 2026</span></div>
-                            <div class="ps-row"><span class="ps-label">Giờ khởi hành</span><span class="ps-val"
-                                    id="payTime">08:00</span></div>
-                            <div class="ps-row"><span class="ps-label">Số ghế</span><span class="ps-val"
-                                    id="paySeats">A1, A2</span></div>
-                            <div class="ps-row ps-total"><span class="ps-label">Tổng tiền</span><span
-                                    class="ps-val ps-total-val" id="payTotal">300.000 đ</span></div>
-                        </div>
-
-                        <div id="paymentStep1">
-                            <h3 class="payment-method-title">Chọn phương thức thanh toán</h3>
-
-                            <div class="payment-methods">
-                                <label class="pm-option active">
-                                    <input type="radio" name="paymentMethod" value="transfer" checked>
-                                    <div class="pm-icon"><i class="fa-solid fa-building-columns"></i></div>
-                                    <div class="pm-text">
-                                        <div class="pm-name">Chuyển khoản</div>
-                                        <div class="pm-desc">Thanh toán QR Code ngân hàng</div>
-                                    </div>
-                                </label>
-
-                                <label class="pm-option">
-                                    <input type="radio" name="paymentMethod" value="cash">
-                                    <div class="pm-icon"><i class="fa-solid fa-wallet"></i></div>
-                                    <div class="pm-text">
-                                        <div class="pm-name">Tiền mặt</div>
-                                        <div class="pm-desc">Thanh toán trực tiếp với tài xế</div>
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div class="cash-warning" id="cashWarning" style="display: none;">
-                                <strong>Lưu ý:</strong> Vui lòng chuẩn bị đủ tiền mặt để thanh toán cho tài xế khi lên
-                                xe. Vé sẽ được xác nhận đã thanh toán sau khi tài xế xác nhận đã nhận tiền.
-                            </div>
-
-                            <div class="payment-actions">
-                                <button class="btn-pm-cancel" id="btnCancelPayment">Hủy</button>
-                                <button class="btn-pm-confirm" id="btnConfirmPayment">Xác nhận</button>
-                            </div>
-                        </div>
-
-                        <!-- Step 2: QR Code view for Transfer -->
-                        <div id="paymentStep2QR" style="display: none; text-align: center;">
-                            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; color: #111;">Quét mã
-                                để thanh toán</h3>
-                            <div style="color: #ef4444; font-size: 0.95rem; margin-bottom: 25px; font-weight: 500;">Hết
-                                hạn sau: <span id="qrCountdown">60s</span></div>
-
-                            <div class="qr-box"
-                                style="width: 220px; height: 220px; margin: 0 auto 30px; padding: 15px; border: 2px dashed #818cf8; border-radius: 12px; background-color: white;">
-                                <img src="{% static 'img/QRCODE.png' %}"
-                                    style="width: 100%; height: 100%; object-fit: contain;">
-                            </div>
-
-                            <div class="payment-actions">
-                                <button class="btn-pm-cancel" id="btnCancelQR">Hủy</button>
-                                <button class="btn-pm-confirm" id="btnConfirmQR">Xác nhận thanh toán</button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
+            </div> <!-- end ticket-container -->
         </main>
-    </div>
+    </div> <!-- end main-wrapper -->
+
 
     <!-- Ticket Detail Modal -->
     <div class="modal-overlay" id="ticketDetailModal">
@@ -285,10 +211,10 @@
                 <span class="detail-label-light">Tổng tiền:</span>
                 <span class="detail-price-value">360.000 vnđ</span>
             </div>
-
-            <div class="detail-action">
-                <button class="btn-checkout">Thanh toán</button>
-            </div>
+            {% if v.TrangThaiThanhToan == 'Chưa thanh toán' %}
+            <a href="{% url 'process_payment' v.VeID %}" class="btn-payment" onclick="event.stopPropagation()">Thanh
+                toán</a>
+            {% endif %}
         </div>
     </div>
 
@@ -432,7 +358,7 @@
             let currentViewingRoute = '';
 
             // Hàm mở chi tiết vé (để global để onclick gọi được)
-            window.openTicketDetail = function(id, name, date, time, seat, route, price) {
+            window.openTicketDetail = function (id, name, date, time, seat, route, price) {
                 const ticketModal = document.getElementById('ticketDetailModal');
                 if (!ticketModal) return;
 
@@ -462,17 +388,17 @@
             const closeTicketModal = document.getElementById('closeTicketModal');
             const ticketModal = document.getElementById('ticketDetailModal');
 
-                // Close modal on X click
-                closeTicketModal.addEventListener('click', () => {
-                    ticketModal.style.display = 'none';
-                });
+            // Close modal on X click
+            closeTicketModal.addEventListener('click', () => {
+                ticketModal.style.display = 'none';
+            });
 
-                // Close modal on outside click
-                window.addEventListener('click', (e) => {
-                    if (e.target === ticketModal) {
-                        ticketModal.style.display = 'none';
-                    }
-                });
+            // Close modal on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target === ticketModal) {
+                    ticketModal.style.display = 'none';
+                }
+            });
 
             // Cancel Confirmation Modal Logic
             function moveToCancelled(card) {
@@ -498,34 +424,34 @@
             let cardToCancel = null;
             let cardToCancelIndex = -1;
 
-             let selectedVeIdToCancel = null;
-             let cardElementToCancel = null;
+            let selectedVeIdToCancel = null;
+            let cardElementToCancel = null;
 
-             window.prepareCancel = function(veId, btn, event) {
+            window.prepareCancel = function (veId, btn, event) {
                 event.stopPropagation();
                 selectedVeIdToCancel = veId;
                 cardElementToCancel = btn.closest('.ticket-card');
                 if (cancelConfirmModal) cancelConfirmModal.style.display = 'flex';
-             };
+            };
 
-             if (btnConfirmNo && btnConfirmYes) {
-                 btnConfirmNo.addEventListener('click', () => {
-                     cancelConfirmModal.style.display = 'none';
-                     selectedVeIdToCancel = null;
-                     cardElementToCancel = null;
-                 });
+            if (btnConfirmNo && btnConfirmYes) {
+                btnConfirmNo.addEventListener('click', () => {
+                    cancelConfirmModal.style.display = 'none';
+                    selectedVeIdToCancel = null;
+                    cardElementToCancel = null;
+                });
 
-                 btnConfirmYes.addEventListener('click', () => {
-                     if (!selectedVeIdToCancel) return;
+                btnConfirmYes.addEventListener('click', () => {
+                    if (!selectedVeIdToCancel) return;
 
-                     // Gọi API xóa vé trong Database
-                     fetch(`/huy-ve/${selectedVeIdToCancel}/`)
+                    // Gọi API xóa vé trong Database
+                    fetch(`/huy-ve/${selectedVeIdToCancel}/`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.status === 'success') {
                                 cancelConfirmModal.style.display = 'none';
                                 moveToCancelled(cardElementToCancel);
-                                
+
                                 if (cancelSuccessModal) {
                                     cancelSuccessModal.querySelector('.success-text').textContent = "Hủy vé và giải phóng chỗ thành công";
                                     cancelSuccessModal.style.display = 'flex';
@@ -541,8 +467,8 @@
                             console.error(err);
                             alert("Không thể kết nối với máy chủ để hủy vé.");
                         });
-                 });
-             }
+                });
+            }
 
             // Refund Info Modal Handlers
             const btnRefundCancel = document.getElementById('btnRefundCancel');

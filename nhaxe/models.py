@@ -30,6 +30,11 @@ class Nhaxe(models.Model):
     )
     SoLuotDanhGia = models.IntegerField(default=0)
     TongDiemDanhGia = models.IntegerField(default=0)
+    
+    # Thông tin thanh toán (VietQR)
+    MaNganHang = models.CharField(max_length=50, null=True, blank=True, help_text="Ví dụ: MB, VCB, ICB")
+    SoTaiKhoan = models.CharField(max_length=50, null=True, blank=True)
+    TenChuTaiKhoan = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return self.NhaxeID

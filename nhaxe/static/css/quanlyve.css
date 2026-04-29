@@ -386,7 +386,7 @@ body {
 }
 
 .btn-cancel {
-    width: 100%;
+    flex: 1;
     background-color: #ed1c24;
     color: white;
     border: none;
@@ -395,10 +395,33 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
+    text-align: center;
 }
 
 .btn-cancel:hover {
     background-color: #d11219;
+}
+
+.btn-payment {
+    flex: 1;
+    background-color: #00B2F0;
+    color: white;
+    border: none;
+    padding: 14px 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-payment:hover {
+    background-color: #0098cc;
+    color: white;
 }
 
 .btn-completed {

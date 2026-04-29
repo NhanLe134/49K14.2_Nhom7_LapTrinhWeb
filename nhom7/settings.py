@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-jn-t*k5pknt^a3u67u8#s@yos@(k-ke1rc66wyyb+$hw(grm(n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', 'nanometer-unreal-vacancy.ngrok-free.dev', '.ngrok-free.dev', '.loca.lt']
+CSRF_TRUSTED_ORIGINS = ['https://nanometer-unreal-vacancy.ngrok-free.dev']
 
 
 # Application definition
@@ -81,7 +82,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres.hvlpysoytevbadlvupbq',
         'PASSWORD': 'P1N2N3T4H5@',
-        'HOST': 'aws-1-ap-southeast-1.pooler.supabase.com', # Lấy từ URI ở Bước 2
+        'HOST': 'aws-1-ap-southeast-1.pooler.supabase.com',
         'PORT': '6543',
     }
 }
@@ -131,8 +132,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Media files (Uploaded images, etc.)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

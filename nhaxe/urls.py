@@ -38,17 +38,19 @@ urlpatterns = [
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
     path('khachhang', views.khachhang, name='khachhang'),
     path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
+    path('quanlyve/', quanlyve_views.quanlyve, name='quanlyve'),
+    # Đánh giá
     path('danhgiachuyenxe/', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
     path('danhgiachuyenxe/dadanhgia/', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
-    path('quanlyve/', quanlyve_views.quanlyve, name='quanlyve'),
     path('danhgiachuyenxe/themdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='themdanhgia'),
     path('danhgiachuyenxe/suadanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='suadanhgia'),
     path('submit_danhgia/', feedback_views.submit_danhgia, name='submit_danhgia'),
 
     # Thanh toán
-    path('dat-ve/', payment_views.dat_ve, name='dat_ve'),
-    path('payment/<str:ve_id>/', payment_views.process_payment, name='process_payment'),
+    path('quanlyve/thanhtoan/<str:ve_id>/', payment_views.process_payment, name='process_payment'),
     path('confirm-payment/<str:ve_id>/', payment_views.confirm_payment, name='confirm_payment'),
+    path('api/check-payment-status/<str:ve_id>/', payment_views.check_payment_status, name='check_payment_status'),
+    path('payment/webhook/sepay/', payment_views.sepay_webhook, name='sepay_webhook'),
 
     # ==================== NHÀ XE ====================
     path('dangky_nhaxe', views.dangky_nhaxe, name='dangky_nhaxe'),
