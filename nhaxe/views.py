@@ -379,8 +379,8 @@ def chitietchuyenxe(request):
 
         trip_data = {
             'id': cx.ChuyenXeID,
-            'driver': cx.Taixe.HoTen if (cx.Taixe and cx.Taixe.TaixeID != 'TX000') else None,
-            'taixe_id': cx.Taixe.TaixeID if (cx.Taixe and cx.Taixe.TaixeID != 'TX000') else None,
+            'driver': cx.Taixe.HoTen if cx.Taixe else None,
+            'taixe_id': cx.Taixe.TaixeID if cx.Taixe else None,
             'route': route_name,
             'time': cx.GioDi.strftime('%H:%M') if cx.GioDi else 'N/A',
             'carType': str(total_seats),

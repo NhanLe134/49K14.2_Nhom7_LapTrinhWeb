@@ -164,19 +164,29 @@
                 },
                 body: `taixe_id=${selectedDriverId}`
             })
-            .then(response => response.json())
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+
+                if (!response.ok) {
+                    const errorMsg = data?.message || `Lỗi hệ thống (${response.status})`;
+                    throw new Error(errorMsg);
+                }
+                return data;
+            })
             .then(data => {
-                if (data.status === 'success') {
+                if (data && data.status === 'success') {
                     closeConfirm();
                     successPopupElem.classList.add('active');
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    alert('Lỗi: ' + (data?.message || 'Không xác định'));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Đã có lỗi xảy ra khi kết nối máy chủ.');
+                alert('Lỗi: ' + error.message);
             });
+
         }
 
         function finishAssign() {

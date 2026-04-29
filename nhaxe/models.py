@@ -8,7 +8,7 @@ class KhachHang(models.Model):
     HovaTen = models.CharField(max_length=200, null=True, blank=True) # Sửa từ HoVaTen
     Email = models.CharField(max_length=100, unique=True, null=True, blank=True)
     NgaySinh = models.DateField(null=True, blank=True)
-    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    AnhDaiDienURL = models.TextField(null=True, blank=True)
     NgayDangKy = models.DateTimeField(auto_now_add=True)
 
 
@@ -20,7 +20,7 @@ class Nhaxe(models.Model):
     NhaxeID = models.CharField(max_length=10, primary_key=True)
     Email = models.CharField(max_length=100, unique=True)
     NgayDangKy = models.DateTimeField(auto_now_add=True)
-    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    AnhDaiDienURL = models.TextField(null=True,blank=True)
     DiaChiTruSo = models.CharField(max_length=200, null=True, blank=True)
     TenNhaXe = models.CharField(max_length=200, null=True, blank=True) # Tên nhà xe
     SoDienThoai = models.CharField(
@@ -56,7 +56,7 @@ class User_Authentication(models.Model):
 class Taixe(models.Model):
     TaixeID = models.CharField(max_length=10, primary_key=True)
     HoTen = models.CharField(max_length=200, null=True, blank=True)
-    HinhAnhURL = models.CharField(max_length=255, null=True, blank=True)
+    HinhAnhURL = models.TextField(null=True,blank=True)
     SoBangLai = models.CharField(max_length=20, unique=True)
     soCCCD = models.CharField(
         max_length=12, 

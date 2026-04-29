@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import Taixe, User_Authentication, CHITIETTAIXE, Nhaxe, ChuyenXe, Ve
 from datetime import datetime, timedelta
 import re
@@ -286,15 +287,22 @@ def phancongtaixe(request):
 
     # Xử lý khi phân công tài xế qua POST
     if request.method == 'POST':
+        import traceback
         taixe_id = request.POST.get('taixe_id')
         try:
+            if not trip_id:
+                return JsonResponse({'status': 'error', 'message': 'Thiếu mã chuyến xe (trip_id).'})
+            
             chuyen = ChuyenXe.objects.get(ChuyenXeID=trip_id)
             chuyen.Taixe_id = taixe_id
             chuyen.save()
-            messages.success(request, 'Phân công tài xế thành công.')
             return JsonResponse({'status': 'success'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            error_trace = traceback.format_exc()
+            print(f"Lỗi phân công tài xế:\n{error_trace}") 
+            return JsonResponse({'status': 'error', 'message': f"{str(e)}\n\n{error_trace}"})
+
+
 
     # Lấy danh sách tài xế của nhà xe này
     taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
