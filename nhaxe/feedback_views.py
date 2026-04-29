@@ -23,6 +23,7 @@ def danhgiachuyenxe(request, tab=None):
     ve_da_danh_gia_ids = DanhGia.objects.filter(KhachHang_id=khach_hang_id).values_list('Ve_id', flat=True)
     ve_cho_danh_gia = Ve.objects.filter(
         KhachHang_id=khach_hang_id,
+        TrangThai='Đã đi',
         ChuyenXe__NgayKhoiHanh__gte=han_7_ngay.date() # Chỉ lấy vé trong vòng 7 ngày qua
     ).exclude(VeID__in=ve_da_danh_gia_ids)
     

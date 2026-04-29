@@ -116,7 +116,7 @@
                                 {% if v.da_danh_gia %}
                                     <button class="btn-completed">Đã hoàn thành</button>
                                 {% else %}
-                                    <button class="btn-review" onclick="event.stopPropagation(); window.location.href='{% url 'vietdanhgia' v.VeID %}'" style="background: #12b7f5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Chờ đánh giá</button>
+                                    <button class="btn-completed" onclick="event.stopPropagation(); window.location.href='{% url 'vietdanhgia' v.VeID %}'" style="cursor: pointer;">Đã đi</button>
                                 {% endif %}
                             </div>
                             {% endfor %}
@@ -150,7 +150,7 @@
                             </div>
                             {% endfor %}
                         {% else %}
-                            <p style="padding: 20px; text-align: center; color: #666;">Bạn chưa có vé nào bị hủy.</p>
+
                         {% endif %}
                     </div>
                 </div>

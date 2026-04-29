@@ -7,7 +7,7 @@ from . import tuyenxe_views
 from . import xuly_timkiem_view
 from . import feedback_views
 from . import payment_views
-from . import xu_ly_tim_kiem
+
 from . import booking_views
 from . import quanlyve_views
 
@@ -38,10 +38,11 @@ urlpatterns = [
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
     path('khachhang', views.khachhang, name='khachhang'),
     path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
-    path('dadanhgia', views.dadanhgia, name='dadanhgia'),
-    path('danhgiachuyenxe', views.danhgiachuyenxe, name='danhgiachuyenxe'),
+    path('dadanhgia', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
+    path('danhgiachuyenxe', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
     path('quanlyve', quanlyve_views.quanlyve, name='quanlyve'),
-    path('vietdanhgia', views.vietdanhgia, name='vietdanhgia'),
+    path('vietdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='vietdanhgia'),
+    path('submit_danhgia', feedback_views.submit_danhgia, name='submit_danhgia'),
 
     # Thanh toán
     path('dat-ve/', payment_views.dat_ve, name='dat_ve'),
