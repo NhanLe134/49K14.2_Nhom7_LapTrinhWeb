@@ -305,12 +305,12 @@
         <!-- Payment Methods -->
         <div class="pmt-section-title">Chọn phương thức thanh toán</div>
 
-        <form action="{% url 'confirm_payment' ve.VeID %}" method="POST" id="paymentForm">
+        <form action="{% url 'xac_nhan_thanh_toan' ve.VeID %}" method="POST" id="formThanhToan">
             {% csrf_token %}
-            <input type="hidden" name="phuong_thuc" id="selectedMethod" value="Chuyển khoản">
+            <input type="hidden" name="phuong_thuc" id="phuongThucDaChon" value="Chuyển khoản">
 
             <!-- Lựa chọn Chuyển khoản -->
-            <div class="pmt-method active" onclick="selectMethod('Chuyển khoản', this)">
+            <div class="pmt-method active" onclick="chonPhuongThuc('Chuyển khoản', this)">
                 <div class="pmt-method-icon"><i class="fa-solid fa-building-columns"></i></div>
                 <div class="pmt-method-info">
                     <div class="pmt-method-name">Chuyển khoản</div>
@@ -319,7 +319,7 @@
             </div>
 
             <!-- Lựa chọn Tiền mặt -->
-            <div class="pmt-method" onclick="selectMethod('Tiền mặt', this)">
+            <div class="pmt-method" onclick="chonPhuongThuc('Tiền mặt', this)">
                 <div class="pmt-method-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
                 <div class="pmt-method-info">
                     <div class="pmt-method-name">Tiền mặt</div>
@@ -328,19 +328,19 @@
             </div>
 
             <!-- Khu vực hiển thị khi chọn Chuyển khoản -->
-            <div id="transferArea" style="display: block;">
-                {% if online_payment_available %}
+            <div id="khuVucChuyenKhoan" style="display: block;">
+                {% if thanh_toan_online_kha_dung %}
                     <!-- Hiện mã QR nếu nhà xe có cấu hình -->
-                    <div id="qrSection" class="pmt-qr-section">
+                    <div id="khuVucQR" class="pmt-qr-section">
                         <div class="pmt-qr-title">Quét mã để thanh toán</div>
-                        <div class="pmt-qr-countdown">Hết hạn sau: <span id="qrTimer">5:00</span></div>
+                        <div class="pmt-qr-countdown">Hết hạn sau: <span id="dongHoDemNguoc">5:00</span></div>
                         <img src="{{ qr_url }}" class="pmt-qr-img" alt="VietQR">
                         <div class="pmt-qr-note">
                             <strong>Ghi chú:</strong> Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống tự động xác nhận.
                             <br>
-                            <strong>Tài khoản:</strong> {{ bank_info.account_no }} - {{ bank_info.account_name }} ({{ bank_info.bank_id }})
+                            <strong>Tài khoản:</strong> {{ thong_tin_ngan_hang.so_tai_khoan }} - {{ thong_tin_ngan_hang.ten_chu_tai_khoan }} ({{ thong_tin_ngan_hang.ma_ngan_hang }})
                         </div>
-                        <div id="paymentStatus" style="margin-top: 15px; font-size: 0.85rem; color: #06A0E2; display: none;">
+                        <div id="trangThaiThanhToan" style="margin-top: 15px; font-size: 0.85rem; color: #06A0E2; display: none;">
                             <i class="fa-solid fa-spinner fa-spin"></i> Đang chờ xác nhận chuyển khoản...
                         </div>
                     </div>
@@ -353,7 +353,7 @@
             </div>
 
             <!-- Khu vực hiển thị khi chọn Tiền mặt -->
-            <div id="cashWarning" class="pmt-cash-warning">
+            <div id="canhBaoTienMat" class="pmt-cash-warning">
                 <strong>Lưu ý:</strong> Vui lòng chuẩn bị đủ tiền mặt để thanh toán cho tài xế khi lên xe.
                 Vé sẽ được xác nhận đã thanh toán sau khi tài xế xác nhận đã nhận tiền.
             </div>
@@ -361,7 +361,7 @@
             <!-- Buttons -->
             <div class="pmt-actions">
                 <a href="javascript:history.back()" class="pmt-btn-cancel">Hủy</a>
-                <button type="submit" class="pmt-btn-confirm" id="confirmBtn">Xác nhận thanh toán</button>
+                <button type="submit" class="pmt-btn-confirm" id="nutXacNhan">Xác nhận thanh toán</button>
             </div>
         </form>
 
@@ -369,64 +369,62 @@
 </div>
 
 <script>
-    const onlineAvailable = {{ online_payment_available|yesno:"true,false" }};
+    const onlineKhaDung = {{ thanh_toan_online_kha_dung|yesno:"true,false" }};
 
-    function selectMethod(method, el) {
-        document.getElementById('selectedMethod').value = method;
+    function chonPhuongThuc(phuongThuc, element) {
+        document.getElementById('phuongThucDaChon').value = phuongThuc;
         document.querySelectorAll('.pmt-method').forEach(m => m.classList.remove('active'));
-        el.classList.add('active');
+        element.classList.add('active');
 
-        const isTransfer = (method === 'Chuyển khoản');
+        const laChuyenKhoan = (phuongThuc === 'Chuyển khoản');
         
-        // Hiện/Ẩn khu vực chuyển khoản
-        document.getElementById('transferArea').style.display = isTransfer ? 'block' : 'none';
+        // Hiện/Ẩn các khu vực tương ứng
+        document.getElementById('khuVucChuyenKhoan').style.display = laChuyenKhoan ? 'block' : 'none';
+        document.getElementById('canhBaoTienMat').style.display = laChuyenKhoan ? 'none' : 'block';
         
-        // Hiện/Ẩn cảnh báo tiền mặt
-        document.getElementById('cashWarning').style.display = isTransfer ? 'none' : 'block';
-        
-        // Vô hiệu hóa nút Xác nhận nếu chọn chuyển khoản mà nhà xe chưa có online payment
-        const confirmBtn = document.getElementById('confirmBtn');
-        if (isTransfer && !onlineAvailable) {
-            confirmBtn.disabled = true;
-            confirmBtn.style.opacity = '0.5';
-            confirmBtn.style.cursor = 'not-allowed';
+        // Kiểm soát nút xác nhận
+        const nutXacNhan = document.getElementById('nutXacNhan');
+        if (laChuyenKhoan && !onlineKhaDung) {
+            nutXacNhan.disabled = true;
+            nutXacNhan.style.opacity = '0.5';
+            nutXacNhan.style.cursor = 'not-allowed';
         } else {
-            confirmBtn.disabled = false;
-            confirmBtn.style.opacity = '1';
-            confirmBtn.style.cursor = 'pointer';
+            nutXacNhan.disabled = false;
+            nutXacNhan.style.opacity = '1';
+            nutXacNhan.style.cursor = 'pointer';
         }
     }
 
-    {% if online_payment_available %}
-    // QR countdown
-    let timeLeft = 300; 
-    const timerEl = document.getElementById('qrTimer');
-    const countdown = setInterval(() => {
-        timeLeft--;
-        if (timerEl) {
-            let minutes = Math.floor(timeLeft / 60);
-            let seconds = timeLeft % 60;
-            timerEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    {% if thanh_toan_online_kha_dung %}
+    // Đếm ngược thời gian QR
+    let thoiGianConLai = 300; 
+    const dongHoEl = document.getElementById('dongHoDemNguoc');
+    const boDem = setInterval(() => {
+        thoiGianConLai--;
+        if (dongHoEl) {
+            let phut = Math.floor(thoiGianConLai / 60);
+            let giay = thoiGianConLai % 60;
+            dongHoEl.textContent = `${phut}:${giay < 10 ? '0' : ''}${giay}`;
         }
-        if (timeLeft <= 0) {
-            clearInterval(countdown);
-            if (timerEl) timerEl.textContent = "Hết hạn";
+        if (thoiGianConLai <= 0) {
+            clearInterval(boDem);
+            if (dongHoEl) dongHoEl.textContent = "Hết hạn";
         }
     }, 1000);
 
-    // Polling payment status
+    // Kiểm tra trạng thái thanh toán (Polling)
     const veId = "{{ ve.VeID }}";
-    const statusEl = document.getElementById('paymentStatus');
+    const statusEl = document.getElementById('trangThaiThanhToan');
     
-    function checkStatus() {
-        if (document.getElementById('selectedMethod').value !== 'Chuyển khoản') return;
+    function kiemTraThanhToan() {
+        if (document.getElementById('phuongThucDaChon').value !== 'Chuyển khoản') return;
         
         if (statusEl) statusEl.style.display = 'block';
         
         fetch(`/api/check-payment-status/${veId}/`)
             .then(response => response.json())
-            .then(data => {
-                if (data.paid) {
+            .then(duLieu => {
+                if (duLieu.da_thanh_toan) {
                     if (statusEl) {
                         statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Thanh toán thành công! Đang chuyển hướng...';
                         statusEl.style.color = '#10b981';
@@ -435,17 +433,17 @@
                         window.location.href = "{% url 'quanlyve' %}";
                     }, 2000);
                 } else {
-                    setTimeout(checkStatus, 3000);
+                    setTimeout(kiemTraThanhToan, 3000);
                 }
             })
             .catch(err => {
-                console.error("Lỗi kiểm tra trạng thái:", err);
-                setTimeout(checkStatus, 5000);
+                console.error("Lỗi:", err);
+                setTimeout(kiemTraThanhToan, 5000);
             });
     }
 
-    if (document.getElementById('selectedMethod').value === 'Chuyển khoản') {
-        checkStatus();
+    if (document.getElementById('phuongThucDaChon').value === 'Chuyển khoản') {
+        kiemTraThanhToan();
     }
     {% endif %}
 </script>

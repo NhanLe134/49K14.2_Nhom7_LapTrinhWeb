@@ -35,6 +35,9 @@ class Nhaxe(models.Model):
     MaNganHang = models.CharField(max_length=50, null=True, blank=True, help_text="Ví dụ: MB, VCB, ICB")
     SoTaiKhoan = models.CharField(max_length=50, null=True, blank=True)
     TenChuTaiKhoan = models.CharField(max_length=200, null=True, blank=True)
+    
+    # TRƯỜNG THÊM MỚI: % Hoa hồng
+    PhanTramHoaHong = models.DecimalField(max_digits=5, decimal_places=2, default=10.0)
 
     def __str__(self):
         return self.NhaxeID
@@ -244,11 +247,10 @@ class Ve(models.Model):
 # 13. Bảng Thanh Toán
 class ThanhToan(models.Model):
     ThanhToanID = models.CharField(max_length=10, primary_key=True)
-    Ve = models.OneToOneField(Ve, on_delete=models.CASCADE)
+    Ve = models.OneToOneField(Ve, on_delete=models.CASCADE, related_name='thanhtoan')
     SoTien = models.DecimalField(max_digits=12, decimal_places=0)
-    PhuongThucTT = models.CharField(max_length=20, null=True, blank=True)
     NgayThanhToan = models.DateTimeField(null=True, blank=True)
-    MaGiaoDich = models.CharField(max_length=50, null=True, blank=True)
+    DaQuyetToan = models.BooleanField(default=False)
 
     def __str__(self):
         return self.ThanhToanID

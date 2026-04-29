@@ -65,7 +65,8 @@ class VeAdmin(admin.ModelAdmin):
 
 @admin.register(ThanhToan)
 class ThanhToanAdmin(admin.ModelAdmin):
-    list_display = ('ThanhToanID', 'Ve', 'SoTien', 'PhuongThucTT', 'NgayThanhToan')
+    list_display = ('ThanhToanID', 'Ve', 'SoTien', 'NgayThanhToan', 'DaQuyetToan')
+    list_filter = ('DaQuyetToan',)
 
 @admin.register(DanhGia)
 class DanhGiaAdmin(admin.ModelAdmin):

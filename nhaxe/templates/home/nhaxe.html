@@ -58,6 +58,14 @@
             <a href="{% url 'quan_ly_xe' %}" class="sidebar-item {% block active_xe %}{% endblock %}">
                 <i class="fa-solid fa-car" style="color: {% block color_xe %}#444{% endblock %};"></i> Quản lý phương tiện
             </a>
+            
+            <!-- THÊM CHỨC NĂNG MỚI VÀO CUỐI SIDEBAR -->
+            <a href="{% url 'nhaxe_cau_hinh_ngan_hang' %}" class="sidebar-item {% block active_bank %}{% endblock %}">
+                <i class="fa-solid fa-building-columns" style="color: #f59e0b;"></i> Cấu hình ngân hàng
+            </a>
+            <a href="{% url 'nhaxe_bao_cao_doanh_thu' %}" class="sidebar-item {% block active_report %}{% endblock %}">
+                <i class="fa-solid fa-chart-line" style="color: #10b981;"></i> Báo cáo doanh thu
+            </a>
         </aside>
 
         <!-- Main Content -->
