@@ -68,20 +68,20 @@
                     <h2 class="ticket-section-title">Danh sách vé đã đặt</h2>
 
                     <div class="ticket-grid">
-                        {% if ve_booked %}
-                            {% for v in ve_booked %}
-                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.NgayDat|date:'d/m/Y' }}', '{{ v.GiaVe }}')">
+                        {% if ve_list %}
+                            {% for v in ve_list %}
+                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTenKhach }}', '{{ v.NgayDat }}', '{{ v.GiaVe }}')">
                                 <div class="ticket-card-content">
                                     <div class="ticket-time-col">
-                                        <div class="ticket-time">{{ v.gio_di }}</div>
-                                        <div class="ticket-date">{{ v.ngay_khoi_hanh }}</div>
+                                        <div class="ticket-time">{{ v.ChuyenXe.GioDi|time:"H:i" }}</div>
+                                        <div class="ticket-date">{{ v.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</div>
                                     </div>
                                     <div class="ticket-divider"></div>
                                     <div class="ticket-info-col">
-                                        <div class="ticket-route">{{ v.ten_tuyen }}</div>
-                                        <div class="ticket-bus">Hùng Cường</div>
+                                        <div class="ticket-route">{{ v.ChuyenXe.TuyenXe.tenTuyen|default:"Đang cập nhật" }}</div>
+                                        <div class="ticket-bus">{{ v.ChuyenXe.Xe.Nhaxe.TenNhaXe|default:"Vexeapp" }}</div>
                                         <div class="ticket-qty">Số lượng ghế: 1</div>
-                                        <div class="ticket-seats">Mã số ghế: {{ v.so_ghe }}</div>
+                                        <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
                                     </div>
                                 </div>
                                 <button class="btn-cancel" onclick="event.stopPropagation(); showCancelConfirm('{{ v.VeID }}')">Hủy</button>
@@ -424,74 +424,43 @@
                 });
             });
 
-            // Ticket Detail Modal Logic
-            const bookedCards = document.querySelectorAll('#view-booked .ticket-card');
-            const ticketModal = document.getElementById('ticketDetailModal');
-            const closeTicketModal = document.getElementById('closeTicketModal');
-
-            // Mock detail logic to simulate Paid/Unpaid invoice states across the 6 tickets
-            const mockDetails = [
-                { id: 'VN001328', name: 'Lê Thị Thanh Nhàn', price: '180.000 vnđ', total: '360.000 vnđ', status: 'unpaid' },
-                { id: 'VN001220', name: 'Cao Xuân Hùng', price: '120.000 vnđ', total: '120.000 vnđ', status: 'unpaid' },
-                { id: 'VN001123', name: 'Nguyễn Thị Quỳnh Trang', price: '85.000 vnđ', total: '255.000 vnđ', status: 'paid' },
-                { id: 'VN001099', name: 'Vũ Quốc Anh', price: '150.000 vnđ', total: '300.000 vnđ', status: 'paid' },
-                { id: 'VN001050', name: 'Nguyễn Huy Tưởng', price: '120.000 vnđ', total: '120.000 vnđ', status: 'unpaid' },
-                { id: 'VN001011', name: 'Đỗ Hà Mi', price: '180.000 vnđ', total: '180.000 vnđ', status: 'paid' }
-            ];
-
+            // Các biến lưu trạng thái vé đang xem
             let currentViewingDetails = null;
             let currentViewingDate = '';
             let currentViewingTime = '';
             let currentViewingSeats = '';
             let currentViewingRoute = '';
 
-            if (bookedCards && ticketModal && closeTicketModal) {
-                bookedCards.forEach((card, index) => {
-                    card.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('btn-cancel')) return;
+            // Hàm mở chi tiết vé (để global để onclick gọi được)
+            window.openTicketDetail = function(id, name, date, time, seat, route, price) {
+                const ticketModal = document.getElementById('ticketDetailModal');
+                if (!ticketModal) return;
 
-                        const time = card.querySelector('.ticket-time').textContent;
-                        const date = card.querySelector('.ticket-date').textContent;
-                        const qtyText = card.querySelector('.ticket-qty').textContent;
-                        const qty = qtyText.split(':')[1].trim();
-                        const seatsText = card.querySelector('.ticket-seats').textContent;
-                        const seats = seatsText.split(':')[1].trim();
-                        const route = card.querySelector('.ticket-route').textContent;
+                // Điền dữ liệu vào Modal
+                document.querySelector('.detail-id').textContent = id;
+                const modalValues = document.querySelectorAll('.detail-value');
+                modalValues[0].textContent = name;
+                modalValues[1].textContent = date;
+                modalValues[2].textContent = time.replace(':', 'h');
+                modalValues[3].textContent = '01';
+                modalValues[4].textContent = seat;
 
-                        const details = mockDetails[index] || mockDetails[0];
+                const priceValues = document.querySelectorAll('.detail-price-value');
+                priceValues[0].textContent = Number(price).toLocaleString('vi-VN') + ' vnđ';
+                priceValues[1].textContent = Number(price).toLocaleString('vi-VN') + ' vnđ';
 
-                        // Cache active state for checkout piping
-                        currentViewingDetails = details;
-                        currentViewingDate = date;
-                        currentViewingTime = time.replace(':', 'h');
-                        currentViewingSeats = seats;
-                        currentViewingRoute = route;
+                // Lưu lại trạng thái để dùng cho trang thanh toán
+                currentViewingDetails = { id: id, total: Number(price).toLocaleString('vi-VN') + ' vnđ' };
+                currentViewingDate = date;
+                currentViewingTime = time;
+                currentViewingSeats = seat;
+                currentViewingRoute = route;
 
-                        // Populate modal DOM
-                        document.querySelector('.detail-id').textContent = details.id;
-                        const modalValues = document.querySelectorAll('.detail-value');
-                        modalValues[0].textContent = details.name;
-                        modalValues[1].textContent = date;
-                        modalValues[2].textContent = time.replace(':', 'h');
-                        modalValues[3].textContent = qty.padStart(2, '0');
-                        modalValues[4].textContent = seats;
+                ticketModal.style.display = 'flex';
+            };
 
-                        const priceValues = document.querySelectorAll('.detail-price-value');
-                        priceValues[0].textContent = details.price;
-                        priceValues[1].textContent = details.total;
-
-                        const actionBtn = document.querySelector('.detail-action button');
-                        if (details.status === 'paid') {
-                            actionBtn.textContent = 'Đã thanh toán';
-                            actionBtn.className = 'btn-paid';
-                        } else {
-                            actionBtn.textContent = 'Thanh toán';
-                            actionBtn.className = 'btn-checkout';
-                        }
-
-                        ticketModal.style.display = 'flex';
-                    });
-                });
+            const closeTicketModal = document.getElementById('closeTicketModal');
+            const ticketModal = document.getElementById('ticketDetailModal');
 
                 // Close modal on X click
                 closeTicketModal.addEventListener('click', () => {
@@ -530,45 +499,51 @@
             let cardToCancel = null;
             let cardToCancelIndex = -1;
 
-            const cancelButtons = document.querySelectorAll('#view-booked .btn-cancel');
-            cancelButtons.forEach((btn, idx) => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    cardToCancel = btn.closest('.ticket-card');
-                    cardToCancelIndex = idx;
-                    cancelConfirmModal.style.display = 'flex';
-                });
-            });
+             let selectedVeIdToCancel = null;
+             let cardElementToCancel = null;
 
-            if (btnConfirmNo && btnConfirmYes) {
-                btnConfirmNo.addEventListener('click', () => {
-                    cancelConfirmModal.style.display = 'none';
-                    cardToCancel = null;
-                });
+             window.prepareCancel = function(veId, btn, event) {
+                event.stopPropagation();
+                selectedVeIdToCancel = veId;
+                cardElementToCancel = btn.closest('.ticket-card');
+                if (cancelConfirmModal) cancelConfirmModal.style.display = 'flex';
+             };
 
-                btnConfirmYes.addEventListener('click', () => {
-                    cancelConfirmModal.style.display = 'none';
+             if (btnConfirmNo && btnConfirmYes) {
+                 btnConfirmNo.addEventListener('click', () => {
+                     cancelConfirmModal.style.display = 'none';
+                     selectedVeIdToCancel = null;
+                     cardElementToCancel = null;
+                 });
 
-                    const details = mockDetails[cardToCancelIndex] || mockDetails[0];
-                    if (details.status === 'paid') {
-                        // Display refund form for paid tickets
-                        if (refundInfoModal) {
-                            refundInfoModal.style.display = 'flex';
-                        }
-                    } else {
-                        // Unpaid, bypass directly to cancellation
-                        moveToCancelled(cardToCancel);
-                        cardToCancel = null;
+                 btnConfirmYes.addEventListener('click', () => {
+                     if (!selectedVeIdToCancel) return;
 
-                        if (cancelSuccessModal) {
-                            cancelSuccessModal.style.display = 'flex';
-                            setTimeout(() => {
-                                cancelSuccessModal.style.display = 'none';
-                            }, 2000);
-                        }
-                    }
-                });
-            }
+                     // Gọi API xóa vé trong Database
+                     fetch(`/huy-ve/${selectedVeIdToCancel}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                cancelConfirmModal.style.display = 'none';
+                                moveToCancelled(cardElementToCancel);
+
+                                if (cancelSuccessModal) {
+                                    cancelSuccessModal.querySelector('.success-text').textContent = "Hủy vé và giải phóng chỗ thành công";
+                                    cancelSuccessModal.style.display = 'flex';
+                                    setTimeout(() => {
+                                        cancelSuccessModal.style.display = 'none';
+                                    }, 2000);
+                                }
+                            } else {
+                                alert("Lỗi khi hủy vé: " + data.message);
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert("Không thể kết nối với máy chủ để hủy vé.");
+                        });
+                 });
+             }
 
             // Refund Info Modal Handlers
             const btnRefundCancel = document.getElementById('btnRefundCancel');

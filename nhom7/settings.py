@@ -144,3 +144,7 @@ API_TIMEOUT = 60
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+
+# Supabase configuration
+SUPABASE_URL = "https://hvlpysoytevbadlvupbq.supabase.co"
+SUPABASE_KEY = "sb_publishable_JXqBJpuidFsc8cYDAMMLRA_pC9Lx0EG"

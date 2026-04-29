@@ -5,6 +5,8 @@ from . import chuyenxe_views
 from . import taixe_views
 from . import tuyenxe_views
 from . import feedback_views
+from . import xu_ly_tim_kiem
+from . import booking_views
 
 urlpatterns = [
 
@@ -12,14 +14,21 @@ urlpatterns = [
     path('', auth_views.index, name='index'),
     path('dangnhap', auth_views.dangnhap, name='dangnhap'),
     path('dangxuat', auth_views.dangxuat, name='dangxuat'),
-    path('timkiem', views.timkiem, name='timkiem'),
+    path('timkiem', xu_ly_tim_kiem.view_tim_kiem_ve, name='timkiem'),
+    path('timkiem_ve', xu_ly_tim_kiem.view_tim_kiem_ve, name='view_tim_kiem_ve'),
+    path('api/lay_so_do_ghe', xu_ly_tim_kiem.lay_so_do_ghe_api, name='api_lay_so_do_ghe'),
     path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
+    path('send_registration_otp', views.send_registration_otp, name='send_registration_otp'),
+    path('verify_and_register', views.verify_and_register, name='verify_and_register'),
     path('dangky_nhaxe', views.dangky_nhaxe, name='dangky_nhaxe'),
+    path('send_registration_otp_nhaxe', views.send_registration_otp_nhaxe, name='send_registration_otp_nhaxe'),
+    path('verify_and_register_nhaxe', views.verify_and_register_nhaxe, name='verify_and_register_nhaxe'),
 
     # ==================== KHÁCH HÀNG ====================
     path('khachhang', views.khachhang, name='khachhang'),
     path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
+    path('capnhat_thongtin_khachhang', views.capnhat_thongtin_khachhang, name='capnhat_thongtin_khachhang'),
     path('lotrinh', views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', views.vecuatoi, name='vecuatoi'),
@@ -58,4 +67,9 @@ urlpatterns = [
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
     path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
+
+    # ==================== ĐẶT VÉ ====================
+    path('dat-ve/thong-tin', booking_views.dat_ve_thong_tin, name='dat_ve_thong_tin'),
+    path('dat-ve/xac-nhan', booking_views.xac_nhan_dat_ve, name='xac_nhan_dat_ve'),
+    path('huy-ve/<str:ve_id>/', booking_views.huy_ve, name='huy_ve'),
 ]

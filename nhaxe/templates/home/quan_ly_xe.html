@@ -162,10 +162,16 @@
                             
                             <div class="form-group">
                                 <label for="loaixe_id">Loại xe</label>
-                                <select id="loaixe_id" name="loaixe_id" class="loaixe-select" onchange="toggleNewLoai(this.value)" required>
+                                <select id="loaixe_id" name="loaixe_id" class="loaixe-select" onchange="handleLoaiChange(this)" required>
                                     <option value="" disabled selected>-- Chọn loại xe --</option>
                                     {% for item in vehicle_types %}
-                                        <option value="{{ item.Loaixe.LoaixeID }}">{{ item.TenLoaiXe }}</option>
+                                        <option value="{{ item.LoaixeID }}" data-seats="{{ item.SoCho }}">
+                                            {% if item.SoCho == 4 %}Loại xe A
+                                            {% elif item.SoCho == 7 %}Loại xe B
+                                            {% elif item.SoCho == 9 %}Loại xe C
+                                            {% else %}Loại xe {{ item.SoCho }} chỗ{% endif %} 
+                                            ({{ item.SoCho }} chỗ)
+                                        </option>
                                     {% endfor %}
                                     <option value="new" style="font-weight: bold; color: #06A0E2;">+ Thêm loại xe mới...</option>
                                 </select>
@@ -254,6 +260,18 @@
             document.getElementById('statusSelect').value = status;
 
             toggleNewLoai(loaixeId);
+        }
+
+        function handleLoaiChange(select) {
+            const val = select.value;
+            toggleNewLoai(val);
+            
+            // Tự động điền số ghế từ data-seats của loại xe được chọn
+            const selectedOption = select.options[select.selectedIndex];
+            const seats = selectedOption.getAttribute('data-seats');
+            if (seats) {
+                document.getElementById('seats').value = seats;
+            }
         }
 
         function toggleNewLoai(val) {

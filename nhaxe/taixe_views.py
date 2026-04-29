@@ -13,9 +13,9 @@ def quanlytaixe(request):
 
     taixe_list = []
     
-    # 1. Lấy tất cả tài xế và tài khoản từ Database (Supabase)
+    # 1. Lấy tài xế thuộc nhà xe này (qua CHITIETTAIXE)
+    drivers = Taixe.objects.filter(chitiettaixe__Nhaxe_id=user_id)
     users = {u.UserID: u for u in User_Authentication.objects.all()}
-    drivers = Taixe.objects.all()
 
     # Tính toán mã ID mới
     max_num = 0
@@ -58,7 +58,7 @@ def them_tai_xe(request):
         full_name = request.POST.get('full_name')
         phone = request.POST.get('phone')
         cccd = request.POST.get('cccd')
-        license_no = request.POST.get('license_no') # Sửa: Lấy license_no
+        license_no = request.POST.get('license_no')
         license_type = request.POST.get('license_type', 'B1')
         
         # 2. Validation
@@ -137,22 +137,25 @@ def sua_tai_xe(request, pk):
         
         from django.db import transaction
         try:
-            with transaction.atomic():
-                # 1. Cập nhật User
-                User_Authentication.objects.filter(UserID=pk).update(
-                    SoDienThoai=phone
-                )
-                
-                # 2. Cập nhật Taixe
-                Taixe.objects.filter(TaixeID=pk).update(
-                    HoTen=full_name,
-                    SoBangLai=license_no,
-                    soCCCD=cccd,
-                    LoaiBangLai=license_type,
-                )
-                
-                # 3. Cập nhật CHITIETTAIXE
-                CHITIETTAIXE.objects.filter(Taixe_id=pk).update(HoTen=full_name)
+            full_name = request.POST.get('full_name')
+            license_no = request.POST.get('license_no')
+            cccd = request.POST.get('cccd')
+
+            # 1. Cập nhật User
+            User_Authentication.objects.filter(UserID=pk).update(
+                SoDienThoai=phone
+            )
+
+            # 2. Cập nhật Taixe
+            Taixe.objects.filter(TaixeID=pk).update(
+                HoTen=full_name,
+                SoBangLai=license_no,
+                soCCCD=cccd,
+                LoaiBangLai=license_type,
+            )
+            
+            # 3. Cập nhật CHITIETTAIXE
+            CHITIETTAIXE.objects.filter(Taixe_id=pk).update(HoTen=full_name)
 
             messages.success(request, f'Cập nhật thông tin tài xế thành công.')
         except Exception as e:
@@ -190,7 +193,7 @@ def taixe(request):
         user_auth = User_Authentication.objects.filter(UserID=user_id).first()
         if user_auth and user_auth.Vaitro == 'Nhaxe':
             return redirect('nhaxe')
-            
+
         messages.error(request, "Không tìm thấy thông tin tài xế. Vui lòng đăng nhập lại.")
         return redirect('index')
     
