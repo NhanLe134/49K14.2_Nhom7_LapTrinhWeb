@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.conf import settings
 from django.db import transaction
-from .models import ChuyenXe, Taixe, TuyenXe, Nhaxe, Xe, Loaixe, CHITIETLOAIXE, KhachHang, User_Authentication
+from .models import ChuyenXe, Taixe, TuyenXe, Nhaxe, Xe, Loaixe, CHITIETLOAIXE, KhachHang, User_Authentication, Ve
 
 # ==================== TRANG CHUNG ====================
 
@@ -66,11 +66,13 @@ def verify_and_register(request):
 
     try:
         data = json.loads(request.body)
-        otp_entered = data.get('otp')
+        otp_entered = str(data.get('otp', '')).strip() # Convert to string and strip whitespace
         
         registration_data = request.session.get('registration_data')
-        registration_otp = request.session.get('registration_otp')
+        registration_otp = str(request.session.get('registration_otp', '')).strip() # Convert to string and strip whitespace
         otp_timestamp = request.session.get('otp_timestamp')
+
+        print(f"DEBUG: verify_and_register - otp_entered: {otp_entered}, session_otp: {registration_otp}")
 
         if not all([registration_data, registration_otp, otp_timestamp]):
             return JsonResponse({'status': 'error', 'message': 'Phiên đăng ký đã hết hạn. Vui lòng thử lại.'}, status=400)
@@ -178,6 +180,8 @@ def verify_and_register_nhaxe(request):
         registration_otp = request.session.get('registration_otp_nhaxe')
         otp_timestamp = request.session.get('otp_timestamp_nhaxe')
 
+        print(f"DEBUG: verify_and_register_nhaxe - otp_entered: {otp_entered}, session_otp: {registration_otp}")
+
         if not all([registration_data, registration_otp, otp_timestamp]):
             return JsonResponse({'status': 'error', 'message': 'Phiên đăng ký đã hết hạn. Vui lòng thử lại.'}, status=400)
 
@@ -213,7 +217,7 @@ def verify_and_register_nhaxe(request):
                 UserID=new_nx_id,
                 TenDangNhap=registration_data.get('username'),
                 MatKhau=registration_data.get('password'), 
-                Vaitro='Nhà xe',
+                Vaitro='Nhaxe',
                 SoDienThoai=registration_data.get('phone'),
                 Nhaxe_id=new_nx_id
             )
@@ -289,14 +293,54 @@ def capnhat_thongtin_khachhang(request):
     try:
         hoten = request.POST.get('hoten')
         ngaysinh = request.POST.get('ngaysinh')
-        avatar_file = request.FILES.get('avatar')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        otp_entered = request.POST.get('otp')
 
         kh, created = KhachHang.objects.get_or_create(KhachHangID=user_id)
+        user_auth = User_Authentication.objects.get(UserID=user_id)
+
+        # Check if phone or email is being updated and requires OTP
+        phone_changed = (phone and phone != user_auth.SoDienThoai)
+        email_changed = (email and email != kh.Email)
+
+        if phone_changed or email_changed:
+            update_otp = request.session.get('update_otp_khachhang')
+            otp_timestamp = request.session.get('otp_timestamp_khachhang')
+
+            print(f"DEBUG: capnhat_thongtin_khachhang - otp_entered: {otp_entered}, session_otp: {update_otp}")
+
+            if not all([update_otp, otp_timestamp]):
+                return JsonResponse({'status': 'error', 'message': 'Phiên xác thực đã hết hạn. Vui lòng gửi lại OTP.'}, status=400)
+            
+            if time.time() - otp_timestamp > 180: # OTP expires in 3 minutes
+                del request.session['update_otp_khachhang']
+                del request.session['otp_timestamp_khachhang']
+                return JsonResponse({'status': 'error', 'message': 'Mã OTP đã hết hạn. Vui lòng gửi lại mã.'}, status=400)
+
+            if not otp_entered or otp_entered != update_otp:
+                return JsonResponse({'status': 'error', 'message': 'Mã OTP không chính xác.'}, status=400)
+            
+            # If OTP is correct, apply changes
+            if phone_changed:
+                if User_Authentication.objects.filter(SoDienThoai=phone).exclude(UserID=user_id).exists():
+                    return JsonResponse({'status': 'error', 'message': 'Số điện thoại đã được sử dụng bởi tài khoản khác.'}, status=400)
+                user_auth.SoDienThoai = phone
+            if email_changed:
+                if KhachHang.objects.filter(Email=email).exclude(KhachHangID=user_id).exists():
+                    return JsonResponse({'status': 'error', 'message': 'Email đã được sử dụng bởi tài khoản khác.'}, status=400)
+                kh.Email = email
+            
+            user_auth.save()
+            # Clear OTP session data after successful verification
+            del request.session['update_otp_khachhang']
+            del request.session['otp_timestamp_khachhang']
 
         kh.HovaTen = hoten
         if ngaysinh:
             kh.NgaySinh = ngaysinh
 
+        avatar_file = request.FILES.get('avatar')
         avatar_url = None
         if avatar_file:
             file_name = default_storage.save(f"avatars/{avatar_file.name}", avatar_file)
@@ -311,8 +355,54 @@ def capnhat_thongtin_khachhang(request):
             'avatar_url': avatar_url
         })
 
+    except User_Authentication.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Không tìm thấy thông tin người dùng.'}, status=404)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Lỗi phía server: {str(e)}'}, status=500)
+
+def send_update_otp_khachhang(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+    
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({'status': 'error', 'message': 'Người dùng chưa đăng nhập.'}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        phone = data.get('phone')
+        email = data.get('email')
+
+        if not phone and not email:
+            return JsonResponse({'status': 'error', 'message': 'Vui lòng cung cấp số điện thoại hoặc email để gửi OTP.'}, status=400)
+
+        user_auth = User_Authentication.objects.get(UserID=user_id)
+        khach_hang = KhachHang.objects.get(KhachHangID=user_id)
+
+        # Check if the new phone/email is already in use by another user
+        if phone and phone != user_auth.SoDienThoai:
+            if User_Authentication.objects.filter(SoDienThoai=phone).exclude(UserID=user_id).exists():
+                return JsonResponse({'status': 'error', 'message': 'Số điện thoại đã được sử dụng bởi tài khoản khác.'}, status=400)
+        
+        if email and email != khach_hang.Email:
+            if KhachHang.objects.filter(Email=email).exclude(KhachHangID=user_id).exists():
+                return JsonResponse({'status': 'error', 'message': 'Email đã được sử dụng bởi tài khoản khác.'}, status=400)
+
+        otp = str(random.randint(100000, 999999))
+        request.session['update_otp_khachhang'] = otp
+        request.session['otp_timestamp_khachhang'] = time.time() # Store OTP generation time
+
+        # In a real application, you would send this OTP via SMS or email
+        print(f"SIMULATION: OTP for update (phone: {phone}, email: {email}) is {otp}")
+
+        return JsonResponse({'status': 'success', 'message': 'Mã OTP đã được gửi (mô phỏng).'})
+    except User_Authentication.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Không tìm thấy thông tin người dùng.'}, status=404)
+    except KhachHang.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Không tìm thấy thông tin khách hàng.'}, status=404)
+    except Exception as e:
+        print(f"Error sending update OTP: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Lỗi hệ thống. Vui lòng thử lại sau!'}, status=500)
 
 
 def lotrinh(request):

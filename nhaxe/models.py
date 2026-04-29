@@ -7,6 +7,7 @@ class KhachHang(models.Model):
     HovaTen = models.CharField(max_length=200, null=True, blank=True) # Sửa từ HoVaTen
     Email = models.CharField(max_length=100, unique=True, null=True, blank=True)
     NgaySinh = models.DateField(null=True, blank=True)
+    NgayDangKy = models.DateTimeField(auto_now_add=True) # Thêm trường này
     AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):

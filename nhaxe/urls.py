@@ -29,6 +29,7 @@ urlpatterns = [
     path('khachhang', views.khachhang, name='khachhang'),
     path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
     path('capnhat_thongtin_khachhang', views.capnhat_thongtin_khachhang, name='capnhat_thongtin_khachhang'),
+    path('send_update_otp_khachhang', views.send_update_otp_khachhang, name='send_update_otp_khachhang'),
     path('lotrinh', views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', views.vecuatoi, name='vecuatoi'),

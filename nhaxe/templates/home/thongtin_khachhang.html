@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
     <link rel="stylesheet" href="{% static 'css/khachhang_thongtin_style.css' %}">
 </head>
-
 <body>
 
     <!-- Header -->
@@ -76,7 +75,7 @@
                                 <button type="button" class="btn-upload-trigger" id="fake-upload-btn">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 0 0 1-2-2v-4"></path>
                                         <polyline points="17 8 12 3 7 8"></polyline>
                                         <line x1="12" y1="3" x2="12" y2="15"></line>
                                     </svg>
@@ -89,7 +88,7 @@
                     </div>
 
                     <div class="form-col">
-                        <form id="formThongTin" onsubmit="saveChanges(event)">
+                        <form id="formThongTin" onsubmit="handleFormSubmit(event)">
                             <div class="info-row">
                                 <label class="info-label">Họ và tên:</label>
                                 <div class="info-value-wrapper">
@@ -104,8 +103,10 @@
                             <div class="info-row">
                                 <label class="info-label">Số điện thoại:</label>
                                 <div class="info-value-wrapper">
-                                    <span
-                                        class="info-text">{{ khach_hang.SoDienThoai|default:"Chưa cập nhật" }}</span>
+                                    <span class="info-text" id="view-phone">{{ khach_hang.SoDienThoai|default:"Chưa cập nhật" }}</span>
+                                    <input type="tel" class="info-input hidden" id="edit-phone"
+                                        value="{{ khach_hang.SoDienThoai|default:'' }}" maxlength="10">
+                                    <span class="error-text" id="err-phone"></span>
                                 </div>
                             </div>
 
@@ -123,7 +124,10 @@
                             <div class="info-row">
                                 <label class="info-label">Email:</label>
                                 <div class="info-value-wrapper">
-                                    <span class="info-text">{{ khach_hang.Email|default:"Chưa cập nhật" }}</span>
+                                    <span class="info-text" id="view-email">{{ khach_hang.Email|default:"Chưa cập nhật" }}</span>
+                                    <input type="email" class="info-input hidden" id="edit-email"
+                                        value="{{ khach_hang.Email|default:'' }}">
+                                    <span class="error-text" id="err-email"></span>
                                 </div>
                             </div>
 
@@ -180,6 +184,105 @@
         </div>
     </div>
 
+    <!-- OTP Modal -->
+    <style>
+        .otp-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative; /* Thêm dòng này */
+        }
+        .otp-title {
+            margin-top: 0;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .otp-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .otp-box {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .otp-box:focus {
+            border-color: #13B5F6;
+            outline: none;
+        }
+        .otp-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .otp-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-resend {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .btn-complete {
+            background-color: #13B5F6;
+            color: white;
+        }
+        .btn-close-otp {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #666;
+            z-index: 1; /* Đảm bảo nút này nằm trên cùng */
+        }
+        /* .otp-header không còn cần thiết */
+    </style>
+    <div id="otpModal" class="kh-modal-overlay" style="display: none; align-items: center; justify-content: center;">
+        <div class="otp-container">
+            <button type="button" class="btn-close-otp" onclick="closeOtpModal()">
+                <span class="close-icon-x">&times;</span>
+            </button>
+            <div class="otp-content">
+                <h3 class="otp-title">Xác thực thao tác</h3>
+                <p style="margin-bottom: 15px; font-size: 14px; color: #555;">Mã OTP đã được gửi đến số điện thoại <strong id="otp-phone-display"></strong></p>
+
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                </div>
+
+                <!-- Di chuyển thẻ lỗi OTP xuống đây -->
+                <span class="error-text" id="err-otp"></span>
+
+                <div class="otp-actions">
+                    <button type="button" class="btn-resend" id="btnResendOtp">Gửi lại mã</button>
+                    <button type="button" class="btn-complete" onclick="submitUpdate()">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -196,6 +299,8 @@
             return cookieValue;
         }
         const csrftoken = getCookie('csrftoken');
+        let resendTimer;
+        const RESEND_COOLDOWN = 60;
 
         document.addEventListener('DOMContentLoaded', () => {
             const userBtn = document.getElementById('userDropdownBtn');
@@ -237,16 +342,48 @@
                 }
             });
 
-            const dobInput = document.getElementById('edit-ngaysinh');
-            document.getElementById('view-ngaysinh').dataset.originalValue = dobInput.value;
+            // Lưu giá trị gốc để khôi phục khi hủy
+            document.getElementById('view-ngaysinh').dataset.originalValue = document.getElementById('edit-ngaysinh').value;
+            document.getElementById('view-hoten').dataset.originalValue = document.getElementById('edit-hoten').value;
+            document.getElementById('view-phone').dataset.originalValue = document.getElementById('edit-phone').value;
+            document.getElementById('view-email').dataset.originalValue = document.getElementById('edit-email').value;
+
+            // OTP box logic
+            const otpBoxes = document.querySelectorAll('.otp-box');
+            otpBoxes.forEach((box, index) => {
+                box.addEventListener('input', function () {
+                    if (this.value.length === 1 && index < otpBoxes.length - 1) {
+                        otpBoxes[index + 1].focus();
+                    }
+                });
+                box.addEventListener('keydown', function (e) {
+                    if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                        otpBoxes[index - 1].focus();
+                    }
+                });
+            });
+
+            document.getElementById('btnResendOtp').addEventListener('click', function() {
+                if (this.disabled) return;
+                sendUpdateOtp();
+            });
         });
 
         function switchToEditMode() {
             document.getElementById('page-title').textContent = "Chỉnh sửa thông tin tài khoản";
+
             document.getElementById('view-hoten').classList.add('hidden');
             document.getElementById('edit-hoten').classList.remove('hidden');
+
             document.getElementById('view-ngaysinh').classList.add('hidden');
             document.getElementById('edit-ngaysinh').classList.remove('hidden');
+
+            document.getElementById('view-phone').classList.add('hidden');
+            document.getElementById('edit-phone').classList.remove('hidden');
+
+            document.getElementById('view-email').classList.add('hidden');
+            document.getElementById('edit-email').classList.remove('hidden');
+
             document.getElementById('action-view').classList.add('hidden');
             document.getElementById('action-edit').classList.remove('hidden');
             document.getElementById('upload-controls-section').classList.remove('hidden');
@@ -254,14 +391,27 @@
 
         function switchToViewMode() {
             document.getElementById('page-title').textContent = "Thông tin tài khoản";
+
             document.getElementById('view-hoten').classList.remove('hidden');
             document.getElementById('edit-hoten').classList.add('hidden');
             document.getElementById('err-hoten').classList.remove('show-error');
             document.getElementById('edit-hoten').classList.remove('input-error');
+
             document.getElementById('view-ngaysinh').classList.remove('hidden');
             document.getElementById('edit-ngaysinh').classList.add('hidden');
             document.getElementById('err-ngaysinh').classList.remove('show-error');
             document.getElementById('edit-ngaysinh').classList.remove('input-error');
+
+            document.getElementById('view-phone').classList.remove('hidden');
+            document.getElementById('edit-phone').classList.add('hidden');
+            document.getElementById('err-phone').classList.remove('show-error');
+            document.getElementById('edit-phone').classList.remove('input-error');
+
+            document.getElementById('view-email').classList.remove('hidden');
+            document.getElementById('edit-email').classList.add('hidden');
+            document.getElementById('err-email').classList.remove('show-error');
+            document.getElementById('edit-email').classList.remove('input-error');
+
             document.getElementById('action-view').classList.remove('hidden');
             document.getElementById('action-edit').classList.add('hidden');
             document.getElementById('upload-controls-section').classList.add('hidden');
@@ -277,13 +427,21 @@
 
         function cancelEdit() {
             closeConfirmModal();
-            document.getElementById('edit-hoten').value = document.getElementById('view-hoten').textContent;
-            const viewNgaySinh = document.getElementById('view-ngaysinh').dataset.originalValue;
-            document.getElementById('edit-ngaysinh').value = viewNgaySinh;
+            // Khôi phục giá trị gốc
+            document.getElementById('edit-hoten').value = document.getElementById('view-hoten').dataset.originalValue;
+            document.getElementById('edit-ngaysinh').value = document.getElementById('view-ngaysinh').dataset.originalValue;
+            document.getElementById('edit-phone').value = document.getElementById('view-phone').dataset.originalValue;
+            document.getElementById('edit-email').value = document.getElementById('view-email').dataset.originalValue;
+
+            // Xóa ảnh đã chọn (nếu có)
+            const fileInput = document.getElementById('real-file-input');
+            fileInput.value = '';
+
             switchToViewMode();
         }
 
-        function saveChanges(event) {
+        // Validate form và gọi API gửi OTP
+        function handleFormSubmit(event) {
             event.preventDefault();
             let isValid = true;
 
@@ -321,47 +479,215 @@
                 dobError.classList.remove('show-error');
             }
 
-            if (isValid) {
-                const formData = new FormData();
-                formData.append('hoten', nameValue);
-                formData.append('ngaysinh', dobInput.value);
-                const avatarInput = document.getElementById('real-file-input');
-                if (avatarInput.files[0]) {
-                    formData.append('avatar', avatarInput.files[0]);
-                }
-
-                fetch("{% url 'capnhat_thongtin_khachhang' %}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken,
-                    },
-                    body: formData,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        document.getElementById('view-hoten').textContent = nameValue;
-                        const dateParts = dobInput.value.split('-');
-                        document.getElementById('view-ngaysinh').textContent = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-                        document.getElementById('view-ngaysinh').dataset.originalValue = dobInput.value;
-
-                        if (data.avatar_url) {
-                            document.getElementById('avatar-image-display').src = data.avatar_url;
-                            document.getElementById('avatar-image-display').classList.remove('avatar-image-hidden');
-                            document.getElementById('avatar-icon-placeholder').classList.add('avatar-image-hidden');
-                        }
-
-                        switchToViewMode();
-                        showSuccess();
-                    } else {
-                        alert('Lỗi: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
-                });
+            const phoneInput = document.getElementById('edit-phone');
+            const phoneError = document = document.getElementById('err-phone');
+            const phoneValue = phoneInput.value.trim();
+            const phoneRegex = /^\d{10}$/;
+            if (phoneValue === "") {
+                phoneInput.classList.add('input-error');
+                phoneError.textContent = "*Vui lòng nhập Số điện thoại";
+                phoneError.classList.add('show-error');
+                isValid = false;
+            } else if (!phoneRegex.test(phoneValue)) {
+                phoneInput.classList.add('input-error');
+                phoneError.textContent = "*Số điện thoại không hợp lệ (10 chữ số)";
+                phoneError.classList.add('show-error');
+                isValid = false;
+            } else {
+                phoneInput.classList.remove('input-error');
+                phoneError.classList.remove('show-error');
             }
+
+            const emailInput = document.getElementById('edit-email');
+            const emailError = document.getElementById('err-email');
+            const emailValue = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailValue === "") {
+                emailInput.classList.add('input-error');
+                emailError.textContent = "*Vui lòng nhập Email";
+                emailError.classList.add('show-error');
+                isValid = false;
+            } else if (!emailRegex.test(emailValue)) {
+                emailInput.classList.add('input-error');
+                emailError.textContent = "*Email không hợp lệ";
+                emailError.classList.add('show-error');
+                isValid = false;
+            } else {
+                emailInput.classList.remove('input-error');
+                emailError.classList.remove('show-error');
+            }
+
+            if (isValid) {
+                // Form hợp lệ, tiến hành gọi API gửi OTP
+                sendUpdateOtp();
+            }
+        }
+
+        function sendUpdateOtp() {
+            const phoneValue = document.getElementById('edit-phone').value.trim();
+
+            fetch("{% url 'send_update_otp_khachhang' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ phone: phoneValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    openOtpModal(phoneValue);
+                } else {
+                    // Hiển thị lỗi nếu số điện thoại đã tồn tại
+                    if (data.field === 'phone') {
+                        const phoneInput = document.getElementById('edit-phone');
+                        const phoneError = document.getElementById('err-phone');
+                        phoneInput.classList.add('input-error');
+                        phoneError.textContent = `* ${data.message}`;
+                        phoneError.classList.add('show-error');
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(err => {
+                alert("Lỗi kết nối khi gửi OTP.");
+            });
+        }
+
+        function openOtpModal(phone) {
+            document.getElementById('otp-phone-display').textContent = phone;
+            document.getElementById('otpModal').style.display = 'flex';
+
+            // Xóa input cũ
+            document.querySelectorAll('.otp-box').forEach(box => box.value = '');
+            document.getElementById('err-otp').textContent = '';
+
+            // Focus ô đầu tiên
+            setTimeout(() => {
+                document.querySelector('.otp-box').focus();
+            }, 100);
+
+            startResendTimer();
+        }
+
+        function closeOtpModal() {
+            document.getElementById('otpModal').style.display = 'none';
+            clearInterval(resendTimer);
+        }
+
+        function startResendTimer() {
+            const btnResend = document.getElementById('btnResendOtp');
+            let timeLeft = RESEND_COOLDOWN;
+            btnResend.disabled = true;
+            btnResend.style.opacity = '0.5';
+            btnResend.style.cursor = 'not-allowed';
+
+            clearInterval(resendTimer);
+            resendTimer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(resendTimer);
+                    btnResend.disabled = false;
+                    btnResend.style.opacity = '1';
+                    btnResend.style.cursor = 'pointer';
+                    btnResend.textContent = 'Gửi lại mã';
+                } else {
+                    btnResend.textContent = `Gửi lại mã (${timeLeft}s)`;
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        // Gửi OTP đã nhập kèm data form lên server
+        function submitUpdate() {
+            let otpValue = "";
+            document.querySelectorAll('.otp-box').forEach(box => { otpValue += box.value; });
+            const otpErrorSpan = document.getElementById('err-otp');
+
+            if (otpValue.length < 6) {
+                otpErrorSpan.textContent = '* Vui lòng nhập đủ 6 số OTP.';
+                return;
+            }
+            otpErrorSpan.textContent = '';
+
+            const formData = new FormData();
+            formData.append('hoten', document.getElementById('edit-hoten').value.trim());
+            formData.append('ngaysinh', document.getElementById('edit-ngaysinh').value);
+            formData.append('phone', document.getElementById('edit-phone').value.trim());
+            formData.append('email', document.getElementById('edit-email').value.trim());
+            formData.append('otp', otpValue);
+
+            const avatarInput = document.getElementById('real-file-input');
+            if (avatarInput.files[0]) {
+                formData.append('avatar', avatarInput.files[0]);
+            }
+
+            fetch("{% url 'capnhat_thongtin_khachhang' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    closeOtpModal();
+
+                    // Cập nhật giao diện
+                    const nameValue = document.getElementById('edit-hoten').value.trim();
+                    const dobValue = document.getElementById('edit-ngaysinh').value;
+                    const phoneValue = document.getElementById('edit-phone').value.trim();
+                    const emailValue = document.getElementById('edit-email').value.trim();
+
+                    document.getElementById('view-hoten').textContent = nameValue;
+                    document.getElementById('view-hoten').dataset.originalValue = nameValue;
+
+                    const dateParts = dobValue.split('-');
+                    document.getElementById('view-ngaysinh').textContent = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                    document.getElementById('view-ngaysinh').dataset.originalValue = dobValue;
+
+                    document.getElementById('view-phone').textContent = phoneValue;
+                    document.getElementById('view-phone').dataset.originalValue = phoneValue;
+
+                    document.getElementById('view-email').textContent = emailValue;
+                    document.getElementById('view-email').dataset.originalValue = emailValue;
+
+                    if (data.avatar_url) {
+                        document.getElementById('avatar-image-display').src = data.avatar_url;
+                        document.getElementById('avatar-image-display').classList.remove('avatar-image-hidden');
+                        document.getElementById('avatar-icon-placeholder').classList.add('avatar-image-hidden');
+                    }
+
+                    switchToViewMode();
+                    showSuccess();
+                } else {
+                    if (data.message.includes('OTP')) {
+                        otpErrorSpan.textContent = `* ${data.message}`;
+                        otpErrorSpan.classList.add('show-error'); // Đảm bảo lỗi hiển thị
+                    } else if (data.field_errors) {
+                        closeOtpModal();
+                        for (const field in data.field_errors) {
+                            const errorSpan = document.getElementById(`err-${field}`);
+                            const inputElement = document.getElementById(`edit-${field}`);
+                            if (errorSpan && inputElement) {
+                                errorSpan.textContent = `* ${data.field_errors[field]}`;
+                                errorSpan.classList.add('show-error');
+                                inputElement.classList.add('input-error');
+                            }
+                        }
+                    } else {
+                        otpErrorSpan.textContent = `* ${data.message}`;
+                        otpErrorSpan.classList.add('show-error'); // Đảm bảo lỗi hiển thị
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                otpErrorSpan.textContent = '* Lỗi kết nối. Vui lòng thử lại.';
+                otpErrorSpan.classList.add('show-error'); // Đảm bảo lỗi hiển thị
+            });
         }
 
         function showSuccess() {
