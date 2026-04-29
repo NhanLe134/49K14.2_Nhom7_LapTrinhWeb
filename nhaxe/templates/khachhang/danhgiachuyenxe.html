@@ -10,84 +10,95 @@
     <div class="review-container">
         <div class="review-header-box">
             <h2 class="review-title">Đánh giá chuyến xe</h2>
-            
+
             <!-- Tabs -->
             <div class="review-tabs">
-                <a href="{% url 'danhgiachuyenxe' %}" class="review-tab {% if active_tab != 'evaluated' %}active{% endif %}" style="text-decoration: none;">CHỜ ĐÁNH GIÁ</a>
-                <a href="{% url 'dadanhgia' %}" class="review-tab {% if active_tab == 'evaluated' %}active{% endif %}" style="text-decoration: none;">ĐÃ ĐÁNH GIÁ</a>
+                <a href="{% url 'danhgiachuyenxe' %}"
+                    class="review-tab {% if active_tab != 'evaluated' %}active{% endif %}"
+                    style="text-decoration: none;">CHỜ ĐÁNH GIÁ</a>
+                <a href="{% url 'dadanhgia' %}" class="review-tab {% if active_tab == 'evaluated' %}active{% endif %}"
+                    style="text-decoration: none;">ĐÃ ĐÁNH GIÁ</a>
             </div>
         </div>
 
         <!-- Section: Chờ đánh giá -->
-        <div id="pending-section" {% if active_tab == 'evaluated' %}style="display: none;"{% endif %}>
+        <div id="pending-section" {% if active_tab == 'evaluated' %}style="display: none;" {% endif %}>
             <div class="trip-cards-grid">
                 {% if chuyen_xe_cho_danh_gia %}
-                    {% for item in chuyen_xe_cho_danh_gia %}
-                    <div class="trip-card">
-                        <div class="trip-card-content">
-                            <div class="trip-date-box">
-                                <div class="trip-day">{{ item.chuyen.NgayKhoiHanh|date:"d" }}</div>
-                                <div class="trip-month-year">{{ item.chuyen.NgayKhoiHanh|date:"m/Y" }}</div>
-                            </div>
-                            <div class="trip-details-box">
-                                <div class="trip-time">{{ item.chuyen.GioDi|time:"H:i" }}{% if item.chuyen.GioDen %} - {{ item.chuyen.GioDen|time:"H:i" }}{% endif %}</div>
-                                <div class="trip-bus-name">{{ item.chuyen.TuyenXe.nhaXe.TenNhaXe|default:item.chuyen.TuyenXe.nhaXe.NhaxeID }}</div>
-                                <div class="trip-route-name">{{ item.chuyen.TuyenXe.tenTuyen }}</div>
-                                <div class="trip-status">Đã hoàn thành</div>
-                            </div>
+                {% for item in chuyen_xe_cho_danh_gia %}
+                <div class="trip-card">
+                    <div class="trip-card-content">
+                        <div class="trip-date-box">
+                            <div class="trip-day">{{ item.chuyen.NgayKhoiHanh|date:"d" }}</div>
+                            <div class="trip-month-year">{{ item.chuyen.NgayKhoiHanh|date:"m/Y" }}</div>
                         </div>
-                        <div class="trip-card-footer">
-                            <a href="{% url 'themdanhgia' item.ve.VeID %}" class="btn-write-review">
-                                <i class="fa-solid fa-pen"></i> Viết nhận xét
-                            </a>
+                        <div class="trip-details-box">
+                            <div class="trip-time">{{ item.chuyen.GioDi|time:"H:i" }}{% if item.chuyen.GioDen %} -
+                                {{item.chuyen.GioDen|time:"H:i" }}{% endif %}</div>
+                            <div class="trip-bus-name">
+                                {{item.chuyen.TuyenXe.nhaXe.TenNhaXe|default:item.chuyen.TuyenXe.nhaXe.NhaxeID }}</div>
+                            <div class="trip-route-name">{{ item.chuyen.TuyenXe.tenTuyen }}</div>
+                            <div class="trip-status">{{ item.ve.TrangThai }}</div>
                         </div>
                     </div>
-                    {% endfor %}
+                    <div class="trip-card-footer">
+                        <a href="{% url 'themdanhgia' item.ve.VeID %}" class="btn-write-review">
+                            <i class="fa-solid fa-pen"></i> Viết nhận xét
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
                 {% else %}
-                    <div class="empty-state-message" style="grid-column: 1/-1; text-align: center; color: #777; padding: 30px;">
-                        Bạn chưa có chuyến xe nào đang chờ đánh giá.
-                    </div>
+                <div class="empty-state-message"
+                    style="grid-column: 1/-1; text-align: center; color: #777; padding: 30px;">
+                    Bạn chưa có chuyến xe nào đang chờ đánh giá.
+                </div>
                 {% endif %}
             </div>
         </div>
 
         <!-- Section: Đã đánh giá -->
-        <div id="evaluated-section" {% if active_tab != 'evaluated' %}style="display: none;"{% endif %}>
+        <div id="evaluated-section" {% if active_tab != 'evaluated' %}style="display: none;" {% endif %}>
             <div class="evaluated-list">
                 {% if danh_sach_da_danh_gia %}
-                    {% for dg in danh_sach_da_danh_gia %}
-                    <div class="evaluated-card" id="eval-{{ dg.DanhGiaID }}">
-                        <div class="eval-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="display: flex; align-items: center; gap: 15px;"> <!-- Tăng khoảng cách giữa ảnh và tên nhà xe -->
-                                <img src="{% static 'img/Vexeapp_logo.png' %}" class="eval-logo" alt="logo">
-                                <div class="eval-bus-name">{{ dg.TenNhaxe_Display }}</div>
-                            </div>
-                            {% if dg.is_editable %}
-                            <a href="{% url 'suadanhgia' dg.Ve.VeID %}" class="edit-review-icon" title="Chỉnh sửa đánh giá">
-                                <i class="fa-solid fa-pen-to-square"></i> Sửa
-                            </a>
-                            {% endif %}
+                {% for dg in danh_sach_da_danh_gia %}
+                <div class="evaluated-card" id="eval-{{ dg.DanhGiaID }}">
+                    <div class="eval-card-header"
+                        style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <!-- Tăng khoảng cách giữa ảnh và tên nhà xe -->
+                            <img src="{% static 'img/Vexeapp_logo.png' %}" class="eval-logo" alt="logo">
+                            <div class="eval-bus-name">{{ dg.TenNhaxe_Display }}</div>
                         </div>
-                        <div class="eval-stars">
-                            {% for i in "12345"|make_list %}
-                                <i class="fa-solid fa-star" {% if forloop.counter > dg.Diemso %}style="color:#ccc;"{% endif %}></i>
-                            {% endfor %}
-                        </div>
-                        <div class="eval-content" style="margin-bottom: 15px;"> <!-- Tạo khoảng cách với chữ đánh giá lúc ở dưới -->
-                            {{ dg.Nhanxet|default:"(Không có nhận xét)" }}
-                        </div>
-                        <div class="eval-date">Đánh giá vào lúc: {{ dg.NgayDanhGia|date:"H:i d/m/Y" }}</div>
-                        {% if dg.AnDanh %}
-                        <div style="font-size: 13px; color: #555; font-weight: 500; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
-                            <i class="fa-solid fa-circle-check" style="color: #28a745;"></i> Ẩn danh <!-- Thay đổi icon thành dấu tích xanh -->
-                        </div>
+                        {% if dg.is_editable %}
+                        <a href="{% url 'suadanhgia' dg.Ve.VeID %}" class="edit-review-icon" title="Chỉnh sửa đánh giá">
+                            <i class="fa-solid fa-pen-to-square"></i> Sửa
+                        </a>
                         {% endif %}
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state-message" style="text-align: center; color: #777; padding: 30px;">
-                        Bạn chưa đánh giá chuyến xe nào.
+                    <div class="eval-stars">
+                        {% for i in "12345"|make_list %}
+                        <i class="fa-solid fa-star" {% if forloop.counter > dg.Diemso %}style="color:#ccc;"{% endif %}></i>
+                        {% endfor %}
                     </div>
+                    <div class="eval-content" style="margin-bottom: 15px;">
+                        <!-- Tạo khoảng cách với chữ đánh giá lúc ở dưới -->
+                        {{ dg.Nhanxet|default:"(Không có nhận xét)" }}
+                    </div>
+                    <div class="eval-date">Đánh giá vào lúc: {{ dg.NgayDanhGia|date:"H:i d/m/Y" }}</div>
+                    {% if dg.AnDanh %}
+                    <div
+                        style="font-size: 13px; color: #555; font-weight: 500; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-circle-check" style="color: #28a745;"></i> Ẩn danh
+                        <!-- Thay đổi icon thành dấu tích xanh -->
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state-message" style="text-align: center; color: #777; padding: 30px;">
+                    Bạn chưa đánh giá chuyến xe nào.
+                </div>
                 {% endif %}
             </div>
         </div>

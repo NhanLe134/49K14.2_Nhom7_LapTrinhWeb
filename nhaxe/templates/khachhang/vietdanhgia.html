@@ -3,21 +3,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/danhgiachuyenxe.css' %}">
-<style>
-    /* Styling for the stars */
-    .rating-section .stars i {
-        font-size: 24px;
-        color: #ccc; /* Default empty star color */
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-
-    /* Selected or hovered star color */
-    .rating-section .stars i.active-star,
-    .rating-section .stars i.hover-star {
-        color: #F4CA5B;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -25,47 +10,59 @@
     <div class="review-container">
         <div class="review-form-box">
             <h2 class="review-title">Đánh giá chuyến xe</h2>
-            
+
             <div class="form-section-title">Thông tin chuyến đi</div>
-            <hr class="divider">
-            
+
             <div class="trip-info-summary">
                 <div class="bus-name-blue">{{ nhaxe.TenNhaXe|default:nhaxe.NhaxeID }}</div>
-                <div class="info-row"><strong>Lộ trình:</strong> {{ chuyen.TuyenXe.tenTuyen }}</div>
-                <div class="info-row"><strong>Ngày:</strong> {{ chuyen.NgayKhoiHanh|date:"d/m/Y" }}</div>
-                <div class="info-row"><strong>Giờ:</strong> {{ chuyen.GioDi|time:"H:i" }} - {{ chuyen.GioDen|time:"H:i" }}</div>
+                <div class="info-row"><strong>Lộ trình:</strong> <span>{{ chuyen.TuyenXe.tenTuyen }}</span></div>
+                <div class="info-row"><strong>Ngày đi:</strong> <span>{{ chuyen.NgayKhoiHanh|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-row"><strong>Thời gian:</strong> <span>{{ chuyen.GioDi|time:"H:i" }} -
+                        {{chuyen.GioDen|time:"H:i" }}</span></div>
             </div>
 
-            <form action="{% url 'submit_danhgia' %}" method="POST" class="evaluation-form" onsubmit="return validateRating()">
+            <form action="{% url 'submit_danhgia' %}" method="POST" class="evaluation-form"
+                onsubmit="return validateRating()">
                 {% csrf_token %}
                 <input type="hidden" name="nhaxe_id" value="{{ nhaxe.NhaxeID }}">
                 <input type="hidden" name="ve_id" value="{{ ve.VeID }}">
-                
+
                 <div class="rating-section">
-                    <span class="rating-label">Đánh giá chất lượng dịch vụ <span style="color:red;">*</span></span>
+                    <span class="rating-label">Đánh giá chất lượng dịch vụ</span>
                     <div class="stars" id="ratingStars">
-                        <!-- Default 5 stars -->
-                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 1 %}active-star{% endif %}" data-value="1"></i>
-                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 2 %}active-star{% endif %}" data-value="2"></i>
-                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 3 %}active-star{% endif %}" data-value="3"></i>
-                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 4 %}active-star{% endif %}" data-value="4"></i>
-                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 5 %}active-star{% endif %}" data-value="5"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 1 %}active-star{% endif %}"
+                            data-value="1"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 2 %}active-star{% endif %}"
+                            data-value="2"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 3 %}active-star{% endif %}"
+                            data-value="3"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 4 %}active-star{% endif %}"
+                            data-value="4"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 5 %}active-star{% endif %}"
+                            data-value="5"></i>
                     </div>
-                    <input type="hidden" name="diem_so" id="diem_so_input" value="{{ danh_gia_cu.Diemso|default:'' }}" required>
-                    <div id="rating-error" style="color: red; font-size: 13px; display: none; margin-top: 5px;">Vui lòng chọn số sao đánh giá.</div>
+                    <input type="hidden" name="diem_so" id="diem_so_input" value="{{ danh_gia_cu.Diemso|default:'' }}"
+                        required>
+                    <div id="rating-error" style="color: red; font-size: 13px; display: none; margin-top: 5px;">Vui lòng
+                        chọn số sao đánh giá.</div>
                 </div>
 
                 <div class="review-content-section">
                     <label class="review-label">Nội dung đánh giá:</label>
-                    <textarea name="nhan_xet" class="review-textarea" rows="4" placeholder="Vui lòng nhập nội dung đánh giá">{{ danh_gia_cu.Nhanxet|default:'' }}</textarea>
+                    <textarea name="nhan_xet" class="review-textarea" rows="4"
+                        placeholder="Vui lòng nội dung đánh giá">{{ danh_gia_cu.Nhanxet|default:'' }}</textarea>
                 </div>
 
                 <div class="form-actions">
-                    <div class="anonymous-checkbox">
-                        <input type="checkbox" name="an_danh" id="an_danh" class="mr-2" {% if danh_gia_cu and danh_gia_cu.AnDanh %}checked{% endif %}>
-                        <label for="an_danh" style="cursor:pointer; margin-bottom:0;">Đánh giá ẩn danh</label>
+                    <div class="anonymous-checkbox-wrapper">
+                        <input type="checkbox" name="an_danh" id="an_danh" style="display:none;" {% if danh_gia_cu and danh_gia_cu.AnDanh %}checked{% endif %}>
+                        <label for="an_danh" class="anonymous-checkbox">
+                            <i class="fa-regular fa-circle" id="an_danh_icon"></i>
+                            Đánh giá ẩn danh
+                        </label>
                     </div>
-                    <button type="submit" class="submit-review-btn">{% if danh_gia_cu %}Cập nhật{% else %}Gửi{% endif %}</button>
+                    <button type="submit" class="submit-review-btn">Gửi</button>
                 </div>
             </form>
         </div>
@@ -76,7 +73,7 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const stars = document.querySelectorAll('#ratingStars i');
         const input = document.getElementById('diem_so_input');
         const ratingError = document.getElementById('rating-error');
@@ -116,6 +113,21 @@
         document.getElementById('ratingStars').addEventListener('mouseout', () => {
             stars.forEach(s => s.classList.remove('hover-star'));
         });
+
+        // Xử lý icon checkbox ẩn danh
+        const checkbox = document.getElementById('an_danh');
+        const checkboxIcon = document.getElementById('an_danh_icon');
+
+        function updateCheckboxIcon() {
+            if (checkbox.checked) {
+                checkboxIcon.className = 'fa-solid fa-circle-check';
+            } else {
+                checkboxIcon.className = 'fa-regular fa-circle';
+            }
+        }
+
+        checkbox.addEventListener('change', updateCheckboxIcon);
+        updateCheckboxIcon(); // Chạy lần đầu khi load trang (trong trường hợp sửa đánh giá)
     });
 
     function validateRating() {

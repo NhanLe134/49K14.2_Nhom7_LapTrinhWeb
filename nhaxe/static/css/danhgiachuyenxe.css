@@ -164,147 +164,188 @@
     color: #058ac4;
 }
 
+.review-main {
+    background-color: #f6fafe;
+    padding: 30px 45px 0 45px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.review-container {
+    flex: 1;
+}
+
+.review-header-box {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 25px 30px 0 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    margin-bottom: 30px;
+}
+
+.review-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #06A0E2 !important;
+    margin-bottom: 30px;
+    text-align: center !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
 /* Review Form Specific Styles */
 .review-form-box {
     background-color: #fff;
     border-radius: 8px;
-    padding: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-    margin-bottom: 30px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin: 30px auto;
     max-width: 800px;
+}
+
+.review-form-box .review-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 25px;
+    text-align: left !important;
+    text-transform: none;
 }
 
 .form-section-title {
     font-size: 1.1rem;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.divider {
-    border: none;
-    border-top: 1px solid #e1e9f0;
-    margin-bottom: 20px;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    display: block;
 }
 
 .trip-info-summary {
+    padding: 10px 0;
     margin-bottom: 25px;
-    line-height: 1.6;
 }
 
 .bus-name-blue {
-    color: #06A0E2;
-    font-size: 1.35rem;
-    font-weight: 600;
-    margin-bottom: 8px;
+    color: #00B2F0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 15px;
 }
 
 .info-row {
     font-size: 1.05rem;
-    color: #222;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
 }
 
 .info-row strong {
-    font-weight: 700;
     color: #000;
+    font-weight: 700;
+    min-width: 80px;
+}
+
+.info-row span {
+    color: #666;
 }
 
 .rating-section {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-top: 30px;
-    margin-bottom: 25px;
+    gap: 30px;
+    margin: 30px 0;
 }
 
 .rating-label {
     font-size: 1.1rem;
+    font-weight: 700;
     color: #000;
 }
 
 .stars {
     display: flex;
-    gap: 8px;
-    cursor: pointer;
+    gap: 10px;
 }
 
 .stars i {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     color: #ccc;
-    transition: color 0.2s;
+    cursor: pointer;
 }
 
-.stars i.active-star {
+.stars i.active-star, 
+.stars i.hover-star {
     color: #ffc107;
 }
 
 .review-content-section {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .review-label {
-    display: block;
     font-size: 1.1rem;
+    font-weight: 700;
     color: #000;
     margin-bottom: 15px;
+    display: block;
 }
 
 .review-textarea {
     width: 100%;
     padding: 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
-    color: #555;
-    resize: vertical;
+    color: #333;
+    min-height: 150px;
     outline: none;
-    transition: border-color 0.2s;
-}
-
-.review-textarea:focus {
-    border-color: #06A0E2;
-}
-
-.review-textarea::placeholder {
-    color: #bbb;
 }
 
 .form-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .anonymous-checkbox {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #000;
     cursor: pointer;
 }
 
 .anonymous-checkbox i {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    color: #ccc; /* Màu mặc định khi chưa chọn */
+    transition: color 0.2s;
+}
+
+.anonymous-checkbox i.fa-solid {
+    color: #00B2F0; /* Màu xanh khi đã chọn */
 }
 
 .submit-review-btn {
-    background-color: #06A0E2;
+    background-color: #00B2F0;
     color: #fff;
     border: none;
-    padding: 12px 45px;
+    padding: 10px 60px;
     border-radius: 6px;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
+    box-shadow: none;
 }
 
 .submit-review-btn:hover {
-    background-color: #058ac4;
+    background-color: #0098cc;
 }
 
 /* Evaluated Card Styles */

@@ -116,7 +116,7 @@
                                 {% if v.da_danh_gia %}
                                     <button class="btn-completed">Đã hoàn thành</button>
                                 {% else %}
-                                    <button class="btn-completed" onclick="event.stopPropagation(); window.location.href='{% url 'vietdanhgia' v.VeID %}'" style="cursor: pointer;">Đã đi</button>
+                                    <button class="btn-completed" onclick="event.stopPropagation(); window.location.href='{% url 'themdanhgia' v.VeID %}'" style="cursor: pointer;">Đã đi</button>
                                 {% endif %}
                             </div>
                             {% endfor %}
