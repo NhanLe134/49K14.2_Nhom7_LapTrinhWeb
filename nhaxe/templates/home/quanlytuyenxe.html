@@ -15,60 +15,57 @@
 
 {% block content %}
     <!-- VIEW 1: ROUTE LIST -->
-    <div id="routeListView" style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
-        <div class="content-header-flex" style="flex-shrink: 0; padding-bottom: 10px;">
+    <div id="routeListView">
+        <div class="content-header-flex">
             <h2 class="page-title">Quản lý tuyến xe</h2>
             <a href="{% url 'them_tuyen_xe' %}" class="btn-add-route" style="text-decoration: none;"><i class="fa-solid fa-circle-plus"></i>
                 Thêm tuyến</a>
         </div>
-        
-        <!-- Scrollable Area -->
-        <div class="route-list-scroll" style="flex: 1; overflow-y: auto; padding-right: 10px; padding-bottom: 30px;">
-            <!-- Route Grid -->
-            <div class="route-grid" style="margin-bottom: 0;">
-                {% for route in danh_sach_tuyen %}
-                <!-- Route -->
-                <div class="route-card">
-                    <div class="route-card-header">
-                        {{ route.tenTuyen }}
+
+        <!-- Route Grid -->
+        <div class="route-grid">
+            {% for route in danh_sach_tuyen %}
+            <!-- Route -->
+            <div class="route-card">
+                <div class="route-card-header">
+                    {{ route.tenTuyen }}
+                </div>
+                <div class="route-locations">
+                    <div class="loc-item">
+                        <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDi|default:"-" }}
                     </div>
-                    <div class="route-locations">
-                        <div class="loc-item">
-                            <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDi|default:"-" }}
-                        </div>
-                        <i class="fa-solid fa-arrow-right route-arrow"></i>
-                        <div class="loc-item">
-                            <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDen|default:"-" }}
-                        </div>
-                    </div>
-                    <div class="route-details">
-                        <div class="detail-box">
-                            <div class="detail-label">Khoảng cách</div>
-                            <div class="detail-value">{{ route.QuangDuong|default:"-" }} km</div>
-                        </div>
-                        <div class="detail-box">
-                            <div class="detail-label">Điểm trung gian</div>
-                            <div class="detail-value">{{ route.DiemTrungGian|default:"-" }}</div>
-                        </div>
-                    </div>
-                    <div class="route-info-footer">
-                        <span class="status-badge active">Đang hoạt động</span>
-                    </div>
-                    <div class="route-actions">
-                        <a href="{% url 'sua_tuyen_xe' route.tuyenXeID %}" class="btn-action-edit" style="text-decoration: none;">
-                            <i class="fa-solid fa-pen"></i> Sửa
-                        </a>
-                        <button class="btn-action-delete" onclick="showDeleteConfirm('{{ route.tuyenXeID }}')"><i
-                                class="fa-solid fa-trash"></i> Xóa</button>
+                    <i class="fa-solid fa-arrow-right route-arrow"></i>
+                    <div class="loc-item">
+                        <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDen|default:"-" }}
                     </div>
                 </div>
-                {% empty %}
-                <div class="route-card"
-                    style="grid-column: 1 / -1; text-align: center; color: #555; padding: 20px;">
-                    Bạn chưa có tuyến xe nào hoặc máy chủ không phản hồi dữ liệu.
+                <div class="route-details">
+                    <div class="detail-box">
+                        <div class="detail-label">Khoảng cách</div>
+                        <div class="detail-value">{{ route.QuangDuong|default:"-" }} km</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Thời gian dự kiến</div>
+                        <div class="detail-value">~ {{ route.ThoiGian|default:"-" }} giờ</div>
+                    </div>
                 </div>
-                {% endfor %}
+                <div class="route-info-footer">
+                    <span class="status-badge active">Đang hoạt động</span>
+                </div>
+                <div class="route-actions">
+                    <a href="{% url 'sua_tuyen_xe' route.tuyenXeID %}" class="btn-action-edit" style="text-decoration: none;">
+                        <i class="fa-solid fa-pen"></i> Sửa
+                    </a>
+                    <button class="btn-action-delete" onclick="showDeleteConfirm('{{ route.tuyenXeID }}')"><i
+                            class="fa-solid fa-trash"></i> Xóa</button>
+                </div>
             </div>
+            {% empty %}
+            <div class="route-card"
+                style="grid-column: 1 / -1; text-align: center; color: #555; padding: 20px;">
+                Bạn chưa có tuyến xe nào hoặc máy chủ không phản hồi dữ liệu.
+            </div>
+            {% endfor %}
         </div>
     </div>
 

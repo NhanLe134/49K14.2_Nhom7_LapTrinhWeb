@@ -52,6 +52,12 @@
                        value="{{ tuyen.DiemTrungGian|default:'' }}" placeholder="Ví dụ: Lăng Cô">
             </div>
 
+            <div class="add-route-field">
+                <label class="field-label">Thời gian dự kiến (giờ)</label>
+                <input type="number" step="0.1" name="thoiGian" id="thoiGian" class="field-input"
+                       value="{{ tuyen.ThoiGian|default:'' }}" placeholder="Ví dụ: 2.5">
+            </div>
+
             <div class="add-route-buttons">
                 <a href="{% url 'quanlytuyenxe' %}" class="btn-cancel-add-route" style="text-decoration: none; text-align: center; line-height: 40px;">Quay lại</a>
                 <button type="submit" class="btn-save-add-route" id="btnSubmit">Lưu tuyến</button>
