@@ -12,6 +12,17 @@ def quanlytaixe(request):
     if not user_id:
         return redirect('index')
 
+    nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=user_id)
+    
+    # Thông báo chuyến trễ
+    today = datetime.now().date()
+    overdue_trips = ChuyenXe.objects.filter(
+        TuyenXe__nhaXe_id=user_id,
+        NgayKhoiHanh__lt=today,
+        TrangThai='Chưa hoàn thành'
+    ).select_related('TuyenXe')
+    overdue_trips_count = overdue_trips.count()
+
     taixe_list = []
     
     # 1. Lấy tài xế thuộc nhà xe này (qua CHITIETTAIXE)
@@ -20,7 +31,6 @@ def quanlytaixe(request):
 
     # Tính toán mã ID mới
     max_num = 0
-    # Quét qua UserID của mọi tài khoản để tìm số lớn nhất
     for uid in users.keys():
         if uid.startswith('TAI') and uid[3:].isdigit():
             num = int(uid[3:])
@@ -28,7 +38,6 @@ def quanlytaixe(request):
 
     for driver in drivers:
         user_info = users.get(driver.TaixeID)
-        
         taixe_list.append({
             'id':             driver.TaixeID,
             'ten':            driver.HoTen or (user_info.TenDangNhap if user_info else 'Chưa đặt tên'),
@@ -44,7 +53,11 @@ def quanlytaixe(request):
 
     return render(request, 'home/quanlytaixe.html', {
         'taixe_list': taixe_list,
-        'ma_tai_xe_moi': ma_tai_xe_moi
+        'ma_tai_xe_moi': ma_tai_xe_moi,
+        'nha_xe': nha_xe_obj,
+        'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
+        'overdue_trips': overdue_trips,
+        'overdue_trips_count': overdue_trips_count
     })
 
 # ==================== THAO TÁC CRUD TÀI XẾ ====================
@@ -187,11 +200,10 @@ def taixe(request):
         return redirect('index')
 
     # 1. Lấy thông tin tài xế
-    driver = Taixe.objects.filter(pk=user_id).first()
+    user_auth = User_Authentication.objects.filter(UserID=user_id).first()
+    driver = user_auth.Taixe if user_auth else None
+    
     if not driver:
-        # Nếu không phải tài xế, hoặc tài xế chưa có trong bảng Taixe
-        # Thử kiểm tra xem user này có vai trò gì
-        user_auth = User_Authentication.objects.filter(UserID=user_id).first()
         if user_auth and user_auth.Vaitro == 'Nhaxe':
             return redirect('nhaxe')
 
@@ -222,33 +234,45 @@ def taixe(request):
             'dow': dow_names[i],
             'date_str': day.strftime('%d-%m'),
             'is_today': day == today,
-            'trips': day_trips
+            'trips': day_trips,
+            'has_morning_trip': any(t.GioDi.hour < 12 for t in day_trips),
+            'has_afternoon_trip': any(t.GioDi.hour >= 12 for t in day_trips)
         })
 
-    # 5. Tính toán thống kê
-    # Tổng chuyến tuần
+    # 5. Thống kê & Nhà xe
     tong_tuan = trips_in_week.count()
-    
-    # Tổng chuyến hôm nay
     tong_hom_nay = trips_in_week.filter(NgayKhoiHanh=today).count()
-    
-    # Tổng chuyến đã chạy (Hoàn thành) - tính tất cả thời gian
+    da_hoan_thanh_hom_nay = trips_in_week.filter(NgayKhoiHanh=today, TrangThai='Hoàn thành').count()
     da_hoan_thanh = ChuyenXe.objects.filter(Taixe_id=user_id, TrangThai='Hoàn thành').count()
+
+    # Lấy thông tin tài xế & nhà xe để hiện Header
+    nha_xe_obj = None
+    taixe_obj = driver
+    avatar_url = taixe_obj.HinhAnhURL if taixe_obj else None
+    detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()
+    if detail:
+        nha_xe_obj = detail.Nhaxe
 
     return render(request, 'home/taixe.html', {
         'schedule_data': schedule_data,
-        'tong_tuan': tong_tuan,
-        'tong_hom_nay': tong_hom_nay,
-        'da_hoan_thanh': da_hoan_thanh
+        'stats': {
+            'tong_tuan': tong_tuan,
+            'tong_hom_nay': tong_hom_nay,
+            'da_hoan_thanh_hom_nay': da_hoan_thanh_hom_nay,
+            'da_hoan_thanh': da_hoan_thanh
+        },
+        'nha_xe': nha_xe_obj,
+        'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
+        'avatar_url': avatar_url
     })
 def thongtin_taixe(request):
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('index')
 
-    driver = Taixe.objects.filter(pk=user_id).first()
     user_auth = User_Authentication.objects.filter(UserID=user_id).first()
-    detail = CHITIETTAIXE.objects.filter(Taixe_id=user_id).first()
+    driver = user_auth.Taixe if user_auth else None
+    detail = CHITIETTAIXE.objects.filter(Taixe_id=driver.TaixeID if driver else None).first()
 
     if not driver or not user_auth:
         messages.error(request, "Không tìm thấy thông tin tài khoản.")
@@ -257,7 +281,10 @@ def thongtin_taixe(request):
     return render(request, 'home/thongtin_taixe.html', {
         'driver': driver,
         'user_auth': user_auth,
-        'detail': detail
+        'detail': detail,
+        'nha_xe': detail.Nhaxe if detail else None,
+        'ten_taixe': driver.HoTen if driver else None,
+        'avatar_url': driver.HinhAnhURL if driver else None
     })
 def taixe_lotrinh(request):
     trip_id = request.GET.get('id', '')
@@ -271,15 +298,37 @@ def taixe_lotrinh(request):
         messages.error(request, f"Lỗi: {e}")
         return redirect('taixe')
 
+    user_auth = User_Authentication.objects.filter(UserID=request.session.get('user_id')).first()
+    taixe_obj = user_auth.Taixe if user_auth else None
+    
+    nha_xe_obj = None
+    detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()
+    if detail:
+        nha_xe_obj = detail.Nhaxe
+
     return render(request, 'home/taixe_lotrinh.html', {
         'trip_id': trip_id,
         'chuyen': chuyen,
-        've_list': ve_list
+        've_list': ve_list,
+        'nha_xe': nha_xe_obj,
+        'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
+        'avatar_url': taixe_obj.HinhAnhURL if taixe_obj else None
     })
 def phancongtaixe(request):
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
         return redirect('dangnhap')
+
+    nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
+    
+    # Thông báo chuyến trễ
+    today = datetime.now().date()
+    overdue_trips = ChuyenXe.objects.filter(
+        TuyenXe__nhaXe_id=nha_xe_id,
+        NgayKhoiHanh__lt=today,
+        TrangThai='Chưa hoàn thành'
+    ).select_related('TuyenXe')
+    overdue_trips_count = overdue_trips.count()
 
     trip_id = request.GET.get('id')
     if not trip_id:
@@ -302,12 +351,13 @@ def phancongtaixe(request):
             print(f"Lỗi phân công tài xế:\n{error_trace}") 
             return JsonResponse({'status': 'error', 'message': f"{str(e)}\n\n{error_trace}"})
 
-
-
     # Lấy danh sách tài xế của nhà xe này
     taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
     
     return render(request, 'home/phancongtaixe.html', {
         'trip_id': trip_id,
-        'taixe_list': taixe_list
-    })
+        'taixe_list': taixe_list,
+        'nha_xe': nha_xe_obj,
+        'overdue_trips': overdue_trips,
+        'overdue_trips_count': overdue_trips_count
+    })

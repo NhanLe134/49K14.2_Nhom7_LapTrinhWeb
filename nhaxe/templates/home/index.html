@@ -6,29 +6,307 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - Vexeapp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <style>
-        /* Thông báo lỗi từ Django messages */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: url("{% static 'img/Dangnhap.png' %}") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+
+        /* Lớp phủ mờ toàn trang */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.85);
+            /* Tăng độ trắng để ảnh nền mờ đi */
+            z-index: 0;
+            pointer-events: none;
+            /* QUAN TRỌNG: Giúp click xuyên qua lớp phủ */
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 10;
+            /* Tăng z-index để chắc chắn nằm trên */
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 140px;
+            /* Tăng padding để đẩy form lên cao hơn một chút */
+        }
+
+
+
+
+
+        .logo-container {
+            width: 280px;
+            /* Tăng size logo cho giống mẫu */
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .login-form-container {
+            width: 100%;
+            max-width: 450px;
+            background: none;
+            /* Bỏ nền trắng */
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border: none;
+            box-shadow: none;
+        }
+
+
+
+        .form-group {
+            margin-bottom: 18px;
+            /* Giảm khoảng cách giữa các nhóm */
+        }
+
+        .form-group label {
+            display: block;
+            color: #00AEEF;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #bbb;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.3s;
+            background: white !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            box-sizing: border-box;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #00AEEF;
+            box-shadow: 0 0 12px rgba(0, 174, 239, 0.2);
+        }
+
+
+        .form-actions-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding: 0 5px;
+        }
+
+        .action-link {
+            color: #00AEEF;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            /* Thu nhỏ chữ một chút để vừa 2 link */
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            background-color: #00AEEF;
+            color: white;
+            border: none;
+            padding: 14px 0;
+            border-radius: 8px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+            box-shadow: none;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: #008fcc;
+        }
+
+        .forgot-pass-container {
+            margin-top: 12px;
+            /* Kéo gần lại nút đăng nhập */
+            text-align: center;
+        }
+
+
+        .forgot-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .forgot-link:hover {
+            color: #00AEEF;
+            text-decoration: underline;
+        }
+
+
+
+
+        .login-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #00AEEF;
+            color: white;
+            display: flex;
+            justify-content: center;
+            /* Căn giữa toàn bộ footer */
+            align-items: center;
+            gap: 100px;
+            /* Tạo khoảng cách vừa phải giữa 2 vế */
+            font-weight: 500;
+            font-size: 0.95rem;
+            z-index: 100;
+        }
+
+
+        .footer-left,
+        .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Django messages */
         .django-messages {
             list-style: none;
             padding: 0;
-            margin: 0 0 16px 0;
+            margin-bottom: 20px;
+            width: 100%;
         }
+
         .django-messages li {
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 6px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
         }
-        .django-messages .msg-error {
-            background: #ffe4e4;
-            color: #c0392b;
-            border: 1px solid #f5c6c6;
+
+        .msg-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
         }
-        .django-messages .msg-success {
-            background: #e4ffe8;
-            color: #1e8449;
-            border: 1px solid #c6f5cc;
+
+        /* Error Styles */
+        .input-error {
+            border: 2px solid #ef4444 !important;
+            background-color: #fff1f2 !important;
+        }
+
+        .error-text {
+            color: #ef4444;
+            font-size: 0.8rem;
+            font-weight: 600;
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            display: block;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 25px; /* Tăng khoảng cách để chứa error text tuyệt đối */
+            position: relative;
+        }
+
+        /* Modal Lock Styles */
+        .lock-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .lock-modal {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .lock-icon {
+            font-size: 3rem;
+            color: #ef4444;
+            margin-bottom: 20px;
+        }
+
+        .lock-title {
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .lock-msg {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .btn-close-modal {
+            background: #00AEEF;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -36,64 +314,143 @@
 <body>
     <div class="main-content">
         <div class="logo-container">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo Vexeapp" id="logo-img">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo Vexeapp">
         </div>
 
-        <div class="login-form">
+        <div class="login-form-container">
+            <div class="login-form">
+                {% if messages %}
+                <ul class="django-messages">
+                    {% for msg in messages %}
+                    <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
 
-            {% if messages %}
-            <ul class="django-messages">
-                {% for msg in messages %}
-                <li class="msg-{{ msg.tags }}">{{ msg }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+                <form id="loginForm" method="POST" action="{% url 'dangnhap' %}" novalidate>
+                    {% csrf_token %}
 
-            <form id="loginForm" method="POST" action="{% url 'dangnhap' %}" novalidate>
-                {% csrf_token %}
-
-                <div class="form-group">
-                    <label for="username">Tên đăng nhập</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="username" name="username" required
-                               value="{{ username_value|default:'' }}">
-                        <span class="custom-placeholder" id="user-placeholder">Tên đăng nhập <span
-                                class="required-star">*</span></span>
+                    <div class="form-group">
+                        <label for="username">Tên đăng nhập</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="username" name="username" placeholder="Tên đăng nhập *"
+                                value="{{ username_value|default:'' }}"
+                                class="{% if field_errors.username %}input-error{% endif %}">
+                            {% if field_errors.username %}
+                            <span class="error-text">{{ field_errors.username }}</span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="input-error" id="username-error"></div>
-                </div>
 
-                <div class="form-group">
-                    <label for="password">Mật khẩu</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="password" name="password" required>
-                        <span class="custom-placeholder" id="pass-placeholder">Mật khẩu <span
-                                class="required-star">*</span></span>
+                    <div class="form-group">
+                        <label for="password">Mật khẩu</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="password" name="password" placeholder="Mật khẩu *"
+                                class="{% if field_errors.password %}input-error{% endif %}">
+                            {% if field_errors.password %}
+                            <span class="error-text">{{ field_errors.password }}</span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="input-error" id="password-error"></div>
-                </div>
 
-                <div class="form-actions">
-                    <a href="{% url 'dangky_khachhang' %}">Đăng ký Khách hàng</a>
-                    <a href="{% url 'dangky_nhaxe' %}">Đăng ký Nhà xe</a>
-                </div>
+                    {% if error_auth %}
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <span class="error-text" style="font-size: 0.9rem;">{{ error_auth }}</span>
+                    </div>
+                    {% endif %}
 
-                <div class="btn-container">
+                    <div class="form-actions-row">
+                        <a href="{% url 'dangky_khachhang' %}" class="action-link">Đăng ký Khách hàng</a>
+                        <a href="{% url 'dangky_nhaxe' %}" class="action-link">Đăng ký Nhà xe</a>
+                    </div>
+
                     <button type="submit" class="btn-login">Đăng nhập</button>
-                </div>
 
-                <div class="forgot-pass">
-                    <a href="{% url 'quen_mat_khau' %}">Quên mật khẩu?</a>
-                </div>
-            </form>
+                    <div class="forgot-pass-container">
+                        <a href="{% url 'quen_mat_khau' %}" class="forgot-link">Quên mật khẩu?</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <div class="footer">
-        KẾT NỐI HÀNH TRÌNH DI SẢN
-    </div>
+    <footer class="login-footer">
+        <div class="footer-left">
+            <i class="fa-solid fa-car-side"></i>
+            <span>Kết Nối Hành Trình Di Sản</span>
+        </div>
+        <div class="footer-right">
+            <i class="fa-solid fa-phone"></i>
+            <span>Hotline: 1900 63 39 63</span>
+        </div>
+    </footer>
 
-    <script src="{% static 'js/script.js' %}?v=4"></script>
+    {% if is_locked %}
+    <div class="lock-modal-overlay" id="lockModal">
+        <div class="lock-modal">
+            <div class="lock-icon">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h3 class="lock-title">Tài khoản bị khóa</h3>
+            <p class="lock-msg">{{ error_general }}</p>
+            <button class="btn-close-modal"
+                onclick="document.getElementById('lockModal').style.display='none'">Đóng</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            let hasError = false;
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+
+            // Reset errors
+            [username, password].forEach(el => {
+                el.classList.remove('input-error');
+                const next = el.nextElementSibling;
+                if (next && next.classList.contains('error-text')) {
+                    next.remove();
+                }
+            });
+
+            // Check Username
+            if (!username.value.trim()) {
+                hasError = true;
+                username.classList.add('input-error');
+                const err = document.createElement('span');
+                err.className = 'error-text';
+                err.innerText = 'Vui lòng nhập tên đăng nhập';
+                username.parentNode.appendChild(err);
+            }
+
+            // Check Password
+            if (!password.value) {
+                hasError = true;
+                password.classList.add('input-error');
+                const err = document.createElement('span');
+                err.className = 'error-text';
+                err.innerText = 'Vui lòng nhập mật khẩu';
+                password.parentNode.appendChild(err);
+            }
+
+            if (hasError) {
+                e.preventDefault();
+            }
+        });
+
+        // Clear error on input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('input-error');
+                const next = this.nextElementSibling;
+                if (next && next.classList.contains('error-text')) {
+                    next.remove();
+                }
+            });
+        });
+    </script>
+    <script src="{% static 'js/script.js' %}?v={% now 'U' %}"></script>
 </body>
 
 </html>

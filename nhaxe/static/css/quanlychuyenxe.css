@@ -49,17 +49,26 @@
     padding-right: 10px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 /* Card */
 .trip-card {
     background: white;
     border-radius: 12px;
-    padding: 20px 25px;
+    padding: 12px 20px 12px 12px;
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap; /* KHÓA CHẶT TRÊN MỘT HÀNG NGANG */
     align-items: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s;
+    cursor: pointer;
+    min-height: 140px;
+}
+
+.trip-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .trip-image {
@@ -67,34 +76,64 @@
     height: 120px;
     object-fit: cover;
     border-radius: 8px;
-    margin-right: 30px;
+    margin-right: 40px; /* Cách chữ ID */
+    flex-shrink: 0;
 }
 
-.trip-info-main {
-    flex: 1;
+.trip-title {
     display: flex;
-    gap: 60px;
-    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    margin-right: 50px; /* Cách Giờ xuất phát */
+    flex-shrink: 0;
+}
+
+.trip-id {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #111;
+}
+
+.trip-route {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111;
+}
+
+.trip-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-right: auto; /* ĐẨY CỤM NÚT BẤM VỀ PHÍA RÌA PHẢI */
+    flex-shrink: 0;
+}
+
+.trip-time, .trip-type {
+    color: #777;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
 .trip-actions {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-left: 20px;
-    width: 150px;
+    gap: 10px;
+    width: 145px;
+    flex-shrink: 0;
 }
 
 .btn-edit {
     background-color: #15baf6;
     color: white;
     border: none;
-    padding: 8px 18px;
+    padding: 7px 10px;
     border-radius: 6px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     transition: all 0.2s;
+    text-align: center;
+    width: 100%;
 }
 
 .btn-edit:hover {

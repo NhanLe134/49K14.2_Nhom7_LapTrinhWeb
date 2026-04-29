@@ -1,537 +1,363 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
 
-<!DOCTYPE html>
+{% block title %}Quản lý tài xế - Vexeapp{% endblock %}
 
-<html lang="vi">
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#5d6d7e{% endblock %}
+{% block active_taixe %}active{% endblock %}
+{% block color_taixe %}#06A0E2{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý tài xế - Vexeapp</title>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Base styling -->
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <!-- Page specific styling -->
-    <link rel="stylesheet" href="{% static 'css/quanlytaixe.css' %}?v={% now 'U' %}">
-</head>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/quanlytaixe.css' %}?v={% now 'U' %}">
+{% endblock %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+{% block content %}
+<!-- LIST VIEW -->
+<div id="driverListView">
+    <!-- Content Header -->
+    <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="content-title">
+            <i class="fa-regular fa-calendar-days"></i> Theo dõi lịch làm việc <i
+                class="fa-solid fa-arrow-right-long arrow"></i>
         </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
-
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">Quản lý tài khoản</a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">Đăng xuất</a>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-users"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-
-            <!-- LIST VIEW -->
-            <div id="driverListView">
-                <!-- Content Header -->
-                <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <div class="content-title">
-                        <i class="fa-regular fa-calendar-days"></i> Theo dõi lịch làm việc <i
-                            class="fa-solid fa-arrow-right-long arrow"></i>
-                    </div>
-                    <button class="btn-create" onclick="openCreateModal()">+ Tạo tài xế</button>
-                </div>
-
-
-
-                <!-- Driver Grid -->
-                <div class="driver-grid" id="driverGrid">
-                    <!-- Drivers will be rendered here by JS -->
-                </div>
-
-
-            </div>
-
-            <!-- DETAILS VIEW -->
-            <div id="driverDetailsView" class="driver-details" style="display: none;">
-                <div style="width: 100%;">
-                    <div class="details-title">Thông tin tài xế</div>
-
-                    <div class="details-container">
-                        <div class="details-left">
-                            <img src="{% static 'img/3.jpg' %}" id="detailAvatar" alt="Avatar" class="details-avatar"
-                                onerror="this.src='https://ui-avatars.com/api/?name=Nguyễn+Tuấn+Anh&background=random'">
-                            <div class="details-buttons">
-                                <button class="btn-close" onclick="hideDriverDetails()">Đóng</button>
-                                <button class="btn-edit" id="btnEdit" onclick="openEditModal()"><i
-                                        class="fa-solid fa-pen"></i> Chỉnh sửa</button>
-                            </div>
-                        </div>
-
-                        <div class="details-right">
-                            <div class="form-group">
-                                <label class="form-label">Mã số Tài xế (ID)</label>
-                                <input type="text" class="form-input" id="detailId" value="" disabled>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Họ tên tài xế</label>
-                                <input type="text" class="form-input" id="detailName" value="" disabled>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Số CCCD</label>
-                                <input type="text" class="form-input" id="detailCCCD" value="" disabled>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Số bằng lái <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="detailLicense" value="" disabled>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Loại bằng lái <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="detailLicenseType" value="" disabled>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Ngày hết hạn bằng lái</label>
-                                <input type="text" class="form-input" id="detailLicenseExpiry" value="" disabled>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+        <button class="btn-create" onclick="openCreateModal()">+ Tạo tài xế</button>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+    <!-- Driver Grid -->
+    <div class="driver-grid" id="driverGrid">
+        <!-- Drivers will be rendered here by JS -->
+    </div>
+</div>
 
-    <!-- Cấu hình Popup Global Dùng Chung Toàn Dự Án -->
-    <div id="globalPopup" class="global-popup-overlay">
-        <div class="global-popup-box">
-            <i id="globalPopupIcon" class="global-popup-icon"></i>
-            <div id="globalPopupMessage" class="global-popup-message"></div>
+<!-- DETAILS VIEW -->
+<div id="driverDetailsView" class="driver-details" style="display: none;">
+    <div style="width: 100%;">
+        <div class="details-title">Thông tin tài xế</div>
+
+        <div class="details-container">
+            <div class="details-left">
+                <img src="{% static 'img/3.jpg' %}" id="detailAvatar" alt="Avatar" class="details-avatar"
+                    onerror="this.src='https://ui-avatars.com/api/?name=Nguyễn+Tuấn+Anh&background=random'">
+                <div class="details-buttons">
+                    <button class="btn-close" onclick="hideDriverDetails()">Đóng</button>
+                    <button class="btn-edit" id="btnEdit" onclick="openEditModal()"><i
+                            class="fa-solid fa-pen"></i> Chỉnh sửa</button>
+                </div>
+            </div>
+
+            <div class="details-right">
+                <div class="form-group">
+                    <label class="form-label">Mã số Tài xế (ID)</label>
+                    <input type="text" class="form-input" id="detailId" value="" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Họ tên tài xế</label>
+                    <input type="text" class="form-input" id="detailName" value="" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số CCCD</label>
+                    <input type="text" class="form-input" id="detailCCCD" value="" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số bằng lái <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="detailLicense" value="" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Loại bằng lái <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="detailLicenseType" value="" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày hết hạn bằng lái</label>
+                    <input type="text" class="form-input" id="detailLicenseExpiry" value="" disabled>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
+<!-- Consolidated Create Modal -->
+<div id="createModal" class="create-modal-overlay">
+    <form method="POST" action="{% url 'them_tai_xe' %}" enctype="multipart/form-data" id="createDriverForm"
+        class="create-modal-box">
+        {% csrf_token %}
+        <div class="create-modal-header">
+            <span class="create-modal-title">Tạo tài khoản tài xế</span>
+            <button type="button" class="modal-close-icon" onclick="closeCreateModal()">&times;</button>
+        </div>
 
+        <div class="create-modal-body">
+            <div class="account-row">
+                <div class="form-group">
+                    <label class="form-label">Tên đăng nhập <span class="required">*</span></label>
+                    <input type="text" name="username" class="form-input editable highlight" value="{{ ma_tai_xe_moi }}"
+                        readonly required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu <span class="required">*</span></label>
+                    <input type="password" name="password" class="form-input editable highlight" placeholder="..."
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Xác nhận mật khẩu <span class="required">*</span></label>
+                    <input type="password" name="confirm_password" class="form-input editable" required>
+                </div>
+            </div>
 
+            <div class="profile-grid">
+                <div class="form-group">
+                    <label class="form-label">Họ tên tài xế <span class="required">*</span></label>
+                    <input type="text" name="full_name" class="form-input editable" placeholder="Nhập họ tên"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số bằng lái</label>
+                    <input type="text" name="license_no" id="createLicense" class="form-input editable"
+                        placeholder="Nhập số bằng lái">
+                </div>
 
+                <div class="form-group">
+                    <label class="form-label">Số điện thoại <span class="required">*</span></label>
+                    <input type="text" name="phone" id="createPhone" class="form-input editable"
+                        placeholder="Nhập số điện thoại" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Loại bằng lái</label>
+                    <select name="license_type" class="form-input editable">
+                        <option value="B1" selected>B1</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="C1">C1</option>
+                    </select>
+                </div>
 
-    <script src="{% static 'js/common.js' %}"></script>
-    <script id="djangoMessages" type="application/json">
-        [
-            {% for msg in messages %}
-                {"text": "{{ msg.message|escapejs }}", "tags": "{{ msg.tags|escapejs }}"}{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ]
-    </script>
+                <div class="form-group">
+                    <label class="form-label">Số CCCD</label>
+                    <input type="text" name="cccd" id="createCCCD" class="form-input editable"
+                        placeholder="Nhập số CCCD">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày hết hạn bằng lái</label>
+                    <input type="date" name="license_expiry" id="createLicenseExpiry" class="form-input editable">
+                </div>
 
-    <!-- SCRIPT -->
-    <script>
-        function showGlobalPopup(type, msg) {
-            const popup = document.getElementById('globalPopup');
-            const icon = document.getElementById('globalPopupIcon');
-            const message = document.getElementById('globalPopupMessage');
+                <div class="placeholder"></div>
+                <div class="form-group">
+                    <label class="form-label">Ảnh đại diện</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" name="hinh_anh" id="createImage" accept=".jpg, .jpeg, .png">
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            icon.className = 'global-popup-icon';
-            message.className = 'global-popup-message';
+        <div class="create-modal-footer">
+            <button type="submit" class="btn-create-submit">Tạo tài khoản</button>
+        </div>
+    </form>
+</div>
 
-            if (type === 'success') {
-                icon.classList.add('fa-regular', 'fa-circle-check', 'success');
-                message.classList.add('success');
-            } else {
-                icon.classList.add('fa-solid', 'fa-xmark', 'error');
-                message.classList.add('error');
-            }
+<!-- Edit Modal -->
+<div id="editModal" class="edit-modal-overlay">
+    <form method="POST" action="" enctype="multipart/form-data" class="edit-modal-box">
+        {% csrf_token %}
+        <div class="edit-modal-title">Chỉnh sửa thông tin tài xế</div>
+        <div class="edit-modal-body">
+            <div class="edit-modal-left">
+                <img id="editAvatarPreview" class="edit-avatar" src="" alt="Avatar">
+                <div class="form-group" style="margin-top: 10px;">
+                    <input type="file" name="hinh_anh" style="font-size: 12px; width: 100%;">
+                </div>
+            </div>
+            <div class="edit-modal-right">
+                <div class="form-group">
+                    <label class="form-label">Họ tên tài xế</label>
+                    <input type="text" id="editName" name="full_name" class="form-input editable">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số điện thoại</label>
+                    <input type="text" id="editPhone" name="phone" class="form-input editable">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số CCCD</label>
+                    <input type="text" id="editCCCD" name="cccd" class="form-input editable">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số bằng lái</label>
+                    <input type="text" id="editLicense" name="license_no" class="form-input editable">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Loại bằng lái</label>
+                    <select id="editLicenseType" name="license_type" class="form-input editable">
+                        <option value="B1">B1</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="C1">C1</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày hết hạn bằng lái</label>
+                    <input type="date" id="editLicenseExpiry" name="license_expiry" class="form-input editable">
+                </div>
+            </div>
+        </div>
+        <div class="edit-modal-actions">
+            <button type="button" class="btn-close" onclick="closeEditModal()">Hủy</button>
+            <button type="submit" class="btn-save-modal">Lưu thay đổi</button>
+        </div>
+    </form>
+</div>
 
-            message.textContent = msg;
-            popup.style.display = 'flex';
-            setTimeout(() => {
-                popup.style.display = 'none';
-            }, 3000);
-        }
+<!-- Delete Modal -->
+<div id="deleteModal" class="delete-modal-overlay">
+    <form method="POST" action="" class="delete-modal-box">
+        {% csrf_token %}
+        <i class="fa-solid fa-circle-exclamation delete-modal-icon"></i>
+        <div class="delete-modal-title">Xác nhận xóa</div>
+        <div class="delete-modal-msg">Bạn có chắc chắn muốn xóa tài khoản tài xế này khỏi hệ thống?</div>
+        <div class="delete-modal-actions">
+            <button type="button" class="btn-delete-cancel" onclick="closeDeleteModal()">Hủy</button>
+            <button type="submit" class="btn-delete-confirm">Xác nhận xóa</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
 
-        let drivers = [
-            {% for tx in taixe_list %}
+{% block extra_js %}
+<script id="djangoMessages" type="application/json">
+    [
+        {% for msg in messages %}
+            {"text": "{{ msg.message|escapejs }}", "tags": "{{ msg.tags|escapejs }}"}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+</script>
+
+<script>
+    let drivers = [
+        {% for tx in taixe_list %}
         {
             id: "{{ tx.id }}",
-                name: "{{ tx.ten }}",
-                    username: "{{ tx.username }}",
-                        phone: "{{ tx.soDienThoai }}",
-                            cccd: "{{ tx.soCCCD }}",
-                                license: "{{ tx.soBangLai }}",
-                                    licenseType: "{{ tx.loaiBangLai }}",
-                                licenseExpiry: "{{ tx.ngayHetHanBangLai|date:'Y-m-d' }}",
-                                            avatar: "{{ tx.hinhAnh }}" || "https://ui-avatars.com/api/?name={{ tx.ten|urlencode }}&background=random"
+            name: "{{ tx.ten }}",
+            username: "{{ tx.username }}",
+            phone: "{{ tx.soDienThoai }}",
+            cccd: "{{ tx.soCCCD }}",
+            license: "{{ tx.soBangLai }}",
+            licenseType: "{{ tx.loaiBangLai }}",
+            licenseExpiry: "{{ tx.ngayHetHanBangLai|date:'Y-m-d' }}",
+            avatar: "{{ tx.hinhAnh }}" || "https://ui-avatars.com/api/?name={{ tx.ten|urlencode }}&background=random"
         },
         {% endfor %}
-        ];
-        let selectedDriverId = null;
+    ];
+    let selectedDriverId = null;
 
-        function renderDrivers() {
-            const grid = document.getElementById('driverGrid');
-            grid.innerHTML = '';
+    function renderDrivers() {
+        const grid = document.getElementById('driverGrid');
+        grid.innerHTML = '';
 
-            if (drivers.length === 0) {
-                grid.innerHTML = '<div style="color:#777; margin-top:20px;">Không có dữ liệu tài xế.</div>';
-                return;
-            }
-
-            drivers.forEach(driver => {
-                const item = document.createElement('div');
-                item.className = 'driver-item';
-                item.onclick = () => showDriverDetails(driver.id);
-                item.innerHTML = `
-                    <img src="${driver.avatar}" alt="Avatar" class="driver-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=random'">
-                    <div class="driver-info">
-                        <div class="driver-name">${driver.name}</div>
-                        <div class="driver-phone">${driver.phone}</div>
-                    </div>
-                    <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal('${driver.id}')">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </div>
-                `;
-                grid.appendChild(item);
-            });
+        if (drivers.length === 0) {
+            grid.innerHTML = '<div style="color:#777; margin-top:20px;">Không có dữ liệu tài xế.</div>';
+            return;
         }
 
-        function showDriverDetails(id) {
-            const driver = drivers.find(d => String(d.id) === String(id));
-            if (!driver) return;
-
-            selectedDriverId = id;
-            document.getElementById('detailAvatar').src = driver.avatar;
-            document.getElementById('detailId').value = driver.id; // Added ID
-            document.getElementById('detailName').value = driver.name;
-            document.getElementById('detailCCCD').value = driver.cccd;
-            document.getElementById('detailLicense').value = driver.license;
-            document.getElementById('detailLicenseType').value = driver.licenseType;
-            document.getElementById('detailLicenseExpiry').value = driver.licenseExpiry;
-
-            document.getElementById('driverListView').style.display = 'none';
-            document.getElementById('driverDetailsView').style.display = 'flex';
-        }
-
-        function hideDriverDetails() {
-            document.getElementById('driverListView').style.display = 'block';
-            document.getElementById('driverDetailsView').style.display = 'none';
-            renderDrivers();
-        }
-
-        function openCreateModal() {
-            document.getElementById('createModal').style.display = 'flex';
-        }
-
-        function closeCreateModal() {
-            document.getElementById('createModal').style.display = 'none';
-            document.getElementById('createDriverForm').reset();
-        }
-
-        // Validators
-        function isValidCCCD(str) { return /^\d{12}$/.test(str); }
-
-        function submitCreateForm() {
-            const cccd = document.getElementById('createCCCD').value.trim();
-            const license = document.getElementById('createLicense').value.trim();
-            if (!license) return showGlobalPopup('error', 'Vui lòng nhập Số bằng lái.');
-
-            if (imgFile && imgFile.size > 2 * 1024 * 1024) return showGlobalPopup('error', 'Ảnh vượt quá 2MB.');
-
-            document.getElementById('createDriverForm').submit();
-        }
-
-        function openEditModal() {
-            const driver = drivers.find(d => String(d.id) === String(selectedDriverId));
-            if (!driver) return;
-
-            document.getElementById('editName').value = driver.name || '';
-            document.getElementById('editPhone').value = driver.phone || '';
-            document.getElementById('editCCCD').value = driver.cccd || '';
-            document.getElementById('editLicense').value = driver.license || '';
-            document.getElementById('editLicenseType').value = driver.licenseType || 'B1';
-            document.getElementById('editLicenseExpiry').value = driver.licenseExpiry || '';
-
-            if (driver.avatar) {
-                document.getElementById('editAvatarPreview').src = driver.avatar;
-            }
-
-            let form = document.querySelector('#editModal form');
-            form.action = `/sua-tai-xe/${selectedDriverId}/`;
-
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-        }
-
-        // Close modal when clicking outside on overlay
-        window.onclick = function (event) {
-            const createModal = document.getElementById('createModal');
-            const editModal = document.getElementById('editModal');
-            const deleteModal = document.getElementById('deleteModal');
-
-            if (event.target == createModal) closeCreateModal();
-            if (event.target == editModal) closeEditModal();
-            if (event.target == deleteModal) closeDeleteModal();
-        }
-
-        function saveEditModal() {
-            const form = document.querySelector('#editModal form');
-            form.action = `/sua-tai-xe/${selectedDriverId}/`;
-            form.submit();
-        }
-
-        let driverToDelete = null;
-        function showDeleteModal(id) {
-            driverToDelete = id;
-            const form = document.querySelector('#deleteModal form');
-            form.action = `/xoa-tai-xe/${id}/`;
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-        }
-
-        function confirmDelete() {
-            const form = document.querySelector('#deleteModal form');
-            form.action = `/xoa-tai-xe/${driverToDelete}/`;
-            form.submit();
-        }
-
-        function showSuccess(msg) {
-            const popup = document.getElementById('successPopup');
-            document.getElementById('successText').textContent = msg;
-            popup.style.display = 'flex';
-            setTimeout(() => {
-                popup.style.display = 'none';
-            }, 2000);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderDrivers();
-
-            const msgsText = document.getElementById('djangoMessages').textContent.trim();
-            if (msgsText && msgsText !== '[]') {
-                try {
-                    const msgs = JSON.parse(msgsText);
-                    msgs.forEach(msg => {
-                        if (msg.tags.includes('success') || msg.text.toLowerCase().includes('thành công')) {
-                            showGlobalPopup('success', msg.text);
-                        } else {
-                            showGlobalPopup('error', msg.text);
-                        }
-                    });
-                } catch (e) { }
-            }
+        drivers.forEach(driver => {
+            const item = document.createElement('div');
+            item.className = 'driver-item';
+            item.onclick = () => showDriverDetails(driver.id);
+            item.innerHTML = `
+                <img src="${driver.avatar}" alt="Avatar" class="driver-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=random'">
+                <div class="driver-info">
+                    <div class="driver-name">${driver.name}</div>
+                    <div class="driver-phone">${driver.phone}</div>
+                </div>
+                <div class="driver-action" onclick="event.stopPropagation(); showDeleteModal('${driver.id}')">
+                    <i class="fa-regular fa-trash-can"></i>
+                </div>
+            `;
+            grid.appendChild(item);
         });
-    </script>
+    }
 
-    <!-- Consolidated Create Modal -->
-    <div id="createModal" class="create-modal-overlay">
-        <form method="POST" action="{% url 'them_tai_xe' %}" enctype="multipart/form-data" id="createDriverForm"
-            class="create-modal-box">
-            {% csrf_token %}
-            <div class="create-modal-header">
-                <span class="create-modal-title">Tạo tài khoản tài xế</span>
-                <button type="button" class="modal-close-icon" onclick="closeCreateModal()">&times;</button>
-            </div>
+    function showDriverDetails(id) {
+        const driver = drivers.find(d => String(d.id) === String(id));
+        if (!driver) return;
 
-            <div class="create-modal-body">
-                <!-- Row 1: Account credentials (strictly 3 columns) -->
-                <div class="account-row">
-                    <div class="form-group">
-                        <label class="form-label">Tên đăng nhập <span class="required">*</span></label>
-                        <input type="text" name="username" class="form-input editable highlight" value="{{ ma_tai_xe_moi }}"
-                            readonly required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Mật khẩu <span class="required">*</span></label>
-                        <input type="password" name="password" class="form-input editable highlight" placeholder="..."
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Xác nhận mật khẩu <span class="required">*</span></label>
-                        <input type="password" name="confirm_password" class="form-input editable" required>
-                    </div>
-                </div>
+        selectedDriverId = id;
+        document.getElementById('detailAvatar').src = driver.avatar;
+        document.getElementById('detailId').value = driver.id;
+        document.getElementById('detailName').value = driver.name;
+        document.getElementById('detailCCCD').value = driver.cccd;
+        document.getElementById('detailLicense').value = driver.license;
+        document.getElementById('detailLicenseType').value = driver.licenseType;
+        document.getElementById('detailLicenseExpiry').value = driver.licenseExpiry;
 
-                <!-- Row 2: Profile mapping (strictly 2 columns) -->
-                <div class="profile-grid">
-                    <!-- Pair 1 -->
-                    <div class="form-group">
-                        <label class="form-label">Họ tên tài xế <span class="required">*</span></label>
-                        <input type="text" name="full_name" class="form-input editable" placeholder="Nhập họ tên"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Số bằng lái</label>
-                        <input type="text" name="license_no" id="createLicense" class="form-input editable"
-                            placeholder="Nhập số bằng lái">
-                    </div>
+        document.getElementById('driverListView').style.display = 'none';
+        document.getElementById('driverDetailsView').style.display = 'flex';
+    }
 
-                    <!-- Pair 2 -->
-                    <div class="form-group">
-                        <label class="form-label">Số điện thoại <span class="required">*</span></label>
-                        <input type="text" name="phone" id="createPhone" class="form-input editable"
-                            placeholder="Nhập số điện thoại" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Loại bằng lái</label>
-                        <select name="license_type" class="form-input editable">
-                            <option value="B1" selected>B1</option>
-                            <option value="B">B</option>
-                            <option value="C">C</option>
-                            <option value="C1">C1</option>
-                        </select>
-                    </div>
+    function hideDriverDetails() {
+        document.getElementById('driverListView').style.display = 'block';
+        document.getElementById('driverDetailsView').style.display = 'none';
+        renderDrivers();
+    }
 
-                    <!-- Pair 3 -->
-                    <div class="form-group">
-                        <label class="form-label">Số CCCD</label>
-                        <input type="text" name="cccd" id="createCCCD" class="form-input editable"
-                            placeholder="Nhập số CCCD">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ngày hết hạn bằng lái</label>
-                        <input type="date" name="license_expiry" id="createLicenseExpiry" class="form-input editable">
-                    </div>
+    function openCreateModal() { document.getElementById('createModal').style.display = 'flex'; }
+    function closeCreateModal() { 
+        document.getElementById('createModal').style.display = 'none';
+        document.getElementById('createDriverForm').reset();
+    }
 
-                    <!-- Row 5: Avatar on the right -->
-                    <div class="placeholder"></div> <!-- Empty left column -->
-                    <div class="form-group">
-                        <label class="form-label">Ảnh đại diện</label>
-                        <div class="file-input-wrapper">
-                            <input type="file" name="hinh_anh" id="createImage" accept=".jpg, .jpeg, .png">
-                        </div>
-                    </div>
-                </div>
-            </div>
+    function openEditModal() {
+        const driver = drivers.find(d => String(d.id) === String(selectedDriverId));
+        if (!driver) return;
+        document.getElementById('editName').value = driver.name || '';
+        document.getElementById('editPhone').value = driver.phone || '';
+        document.getElementById('editCCCD').value = driver.cccd || '';
+        document.getElementById('editLicense').value = driver.license || '';
+        document.getElementById('editLicenseType').value = driver.licenseType || 'B1';
+        document.getElementById('editLicenseExpiry').value = driver.licenseExpiry || '';
+        if (driver.avatar) document.getElementById('editAvatarPreview').src = driver.avatar;
+        document.querySelector('#editModal form').action = `/sua-tai-xe/${selectedDriverId}/`;
+        document.getElementById('editModal').style.display = 'flex';
+    }
 
-            <div class="create-modal-footer">
-                <button type="submit" class="btn-create-submit">Tạo tài khoản</button>
-            </div>
-        </form>
-    </div>
+    function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+    function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
 
-    <!-- Edit Modal -->
-    <div id="editModal" class="edit-modal-overlay">
-        <form method="POST" action="" enctype="multipart/form-data" class="edit-modal-box">
-            {% csrf_token %}
-            <div class="edit-modal-title">Chỉnh sửa thông tin tài xế</div>
-            <div class="edit-modal-body">
-                <div class="edit-modal-left">
-                    <img id="editAvatarPreview" class="edit-avatar" src="" alt="Avatar">
-                    <div class="form-group" style="margin-top: 10px;">
-                        <input type="file" name="hinh_anh" style="font-size: 12px; width: 100%;">
-                    </div>
-                </div>
-                <div class="edit-modal-right">
-                    <div class="form-group">
-                        <label class="form-label">Họ tên tài xế</label>
-                        <input type="text" id="editName" name="full_name" class="form-input editable">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Số điện thoại</label>
-                        <input type="text" id="editPhone" name="phone" class="form-input editable">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Số CCCD</label>
-                        <input type="text" id="editCCCD" name="cccd" class="form-input editable">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Số bằng lái</label>
-                        <input type="text" id="editLicense" name="license_no" class="form-input editable">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Loại bằng lái</label>
-                        <select id="editLicenseType" name="license_type" class="form-input editable">
-                            <option value="B1">B1</option>
-                            <option value="B">B</option>
-                            <option value="C">C</option>
-                            <option value="C1">C1</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ngày hết hạn bằng lái</label>
-                        <input type="date" id="editLicenseExpiry" name="license_expiry" class="form-input editable">
-                    </div>
-                </div>
-            </div>
-            <div class="edit-modal-actions">
-                <button type="button" class="btn-close" onclick="closeEditModal()">Hủy</button>
-                <button type="submit" class="btn-save-modal">Lưu thay đổi</button>
-            </div>
-        </form>
-    </div>
+    let driverToDelete = null;
+    function showDeleteModal(id) {
+        driverToDelete = id;
+        document.querySelector('#deleteModal form').action = `/xoa-tai-xe/${id}/`;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
 
-    <!-- Delete Modal -->
-    <div id="deleteModal" class="delete-modal-overlay">
-        <form method="POST" action="" class="delete-modal-box">
-            {% csrf_token %}
-            <i class="fa-solid fa-circle-exclamation delete-modal-icon"></i>
-            <div class="delete-modal-title">Xác nhận xóa</div>
-            <div class="delete-modal-msg">Bạn có chắc chắn muốn xóa tài khoản tài xế này khỏi hệ thống?</div>
-            <div class="delete-modal-actions">
-                <button type="button" class="btn-delete-cancel" onclick="closeDeleteModal()">Hủy</button>
-                <button type="submit" class="btn-delete-confirm">Xác nhận xóa</button>
-            </div>
-        </form>
-    </div>
+    window.onclick = function(event) {
+        if (event.target.className.includes('modal-overlay')) {
+            closeCreateModal();
+            closeEditModal();
+            closeDeleteModal();
+        }
+    }
 
-    <!-- Success Popup -->
-    <div id="successPopup" class="success-popup-overlay">
-        <div class="success-popup-box">
-            <i class="fa-solid fa-circle-check success-icon"></i>
-            <div id="successText" class="success-text">Thành công!</div>
-        </div>
-    </div>
-
-</body>
-
-</html>
+    document.addEventListener('DOMContentLoaded', () => {
+        renderDrivers();
+        // Integration with nhaxe.html's globalPopup
+        const msgsText = document.getElementById('djangoMessages').textContent.trim();
+        if (msgsText && msgsText !== '[]') {
+            try {
+                const msgs = JSON.parse(msgsText);
+                msgs.forEach(msg => {
+                    const type = (msg.tags.includes('success') || msg.text.toLowerCase().includes('thành công')) ? 'success' : 'error';
+                    if (typeof showGlobalPopup === 'function') {
+                        showGlobalPopup(type, msg.text);
+                    }
+                });
+            } catch (e) { }
+        }
+    });
+</script>
+{% endblock %}

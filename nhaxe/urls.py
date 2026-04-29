@@ -65,6 +65,9 @@ urlpatterns = [
     path('suachuyenxe/<str:pk>/', chuyenxe_views.suachuyenxe, name='suachuyenxe'), # Đã sửa
     path('hoanthanh-chuyenxe/<str:pk>/', chuyenxe_views.hoanthanh_chuyenxe, name='hoanthanh_chuyenxe'),
     path('quanlytuyenxe', tuyenxe_views.quanlytuyenxe, name='quanlytuyenxe'),
+    path('them-tuyen-xe', tuyenxe_views.them_tuyen_xe, name='them_tuyen_xe'),
+    path('sua-tuyen-xe/<str:pk>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),
+    path('xoa-tuyen-xe/<str:pk>/', tuyenxe_views.xoa_tuyen_xe, name='xoa_tuyen_xe'),
 
     # --- Tài xế (Nhà xe quản lý) ---
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),

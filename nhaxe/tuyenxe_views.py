@@ -71,8 +71,20 @@ def tinh_quang_duong_osrm(diem_di, diem_den, ds_trung_gian_str=None):
         print(f"Lỗi OSRM: {e}")
     return None, None
 
+from datetime import datetime
+
 def quanlytuyenxe(request):
     nha_xe_id = request.session.get('user_id')
+    nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
+    
+    # Thông báo chuyến trễ
+    today = datetime.now().date()
+    overdue_trips = ChuyenXe.objects.filter(
+        TuyenXe__nhaXe_id=nha_xe_id,
+        NgayKhoiHanh__lt=today,
+        TrangThai='Chưa hoàn thành'
+    ).select_related('TuyenXe')
+    overdue_trips_count = overdue_trips.count()
 
     # Lấy từ Database thay vì API
     danh_sach_tuyen = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
@@ -81,7 +93,11 @@ def quanlytuyenxe(request):
     context = {
         'nha_xe_id': nha_xe_id,
         'danh_sach_tuyen': danh_sach_tuyen,
-        'tat_ca_ten_tuyen_json': json.dumps(tat_ca_ten_tuyen)
+        'tat_ca_ten_tuyen_json': json.dumps(tat_ca_ten_tuyen),
+        'nha_xe': nha_xe_obj,
+        'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
+        'overdue_trips': overdue_trips,
+        'overdue_trips_count': overdue_trips_count
     }
     return render(request, 'home/quanlytuyenxe.html', context)
 

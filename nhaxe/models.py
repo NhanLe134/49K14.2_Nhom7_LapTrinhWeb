@@ -57,7 +57,7 @@ class User_Authentication(models.Model):
 class Taixe(models.Model):
     TaixeID = models.CharField(max_length=10, primary_key=True)
     HoTen = models.CharField(max_length=200, null=True, blank=True)
-    HinhAnhURL = models.TextField(null=True, blank=True)
+    HinhAnhURL = models.TextField(null=True,blank=True)
     SoBangLai = models.CharField(max_length=20, unique=True)
     soCCCD = models.CharField(
         max_length=12, 
@@ -148,7 +148,7 @@ class TuyenXe(models.Model):
     diemDen = models.CharField(max_length=500, default='Huế')
     QuangDuong = models.IntegerField(null=True, blank=True)
     DiemTrungGian = models.CharField(max_length=500, null=True, blank=True)
-    ThoiGian = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    ThoiGian = models.FloatField(null=True, blank=True) # Thời gian di chuyển (giờ)
 
     def __str__(self):
         return self.tenTuyen if self.tenTuyen else self.tuyenXeID
@@ -165,6 +165,25 @@ class ChuyenXe(models.Model):
     TrangThai = models.CharField(max_length=50, null=True, blank=True, default='Chưa hoàn thành')
 
     def save(self, *args, **kwargs):
+        # Tự động tính GioDen = GioDi + TuyenXe.ThoiGian
+        if self.GioDi:
+            try:
+                import datetime
+                gio_di_obj = self.GioDi
+                if isinstance(gio_di_obj, str):
+                    if len(gio_di_obj) == 5:
+                        gio_di_obj = datetime.datetime.strptime(gio_di_obj, '%H:%M').time()
+                    else:
+                        gio_di_obj = datetime.datetime.strptime(gio_di_obj, '%H:%M:%S').time()
+
+                tuyen = self.TuyenXe
+                if isinstance(gio_di_obj, datetime.time) and tuyen and tuyen.ThoiGian:
+                    full_datetime = datetime.datetime.combine(datetime.date.today(), gio_di_obj)
+                    arrival_datetime = full_datetime + datetime.timedelta(hours=float(tuyen.ThoiGian))
+                    self.GioDen = arrival_datetime.time()
+            except Exception as e:
+                print(f"Lỗi tính giờ đến: {e}")
+
         is_new = not self.ChuyenXeID
         if is_new:
             # Tìm mã CX00001, CX00002... còn trống đầu tiên
@@ -230,8 +249,8 @@ class Ve(models.Model):
     DiemTra = models.CharField(max_length=500, null=True, blank=True, db_column='DiemTra')
     NgayDat = models.DateTimeField(auto_now_add=True)
     GiaVe = models.DecimalField(max_digits=12, decimal_places=0)
-    TrangThaiThanhToan = models.CharField(max_length=50, null=True, blank=True)
     TrangThai = models.CharField(max_length=50, default='Đã đặt')
+    TrangThaiThanhToan = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.VeID
