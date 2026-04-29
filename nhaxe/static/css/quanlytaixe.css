@@ -27,23 +27,6 @@
     font-size: 1.4rem;
 }
 
-/* Override sidebar active state to match the image */
-.sidebar-item.active {
-    margin: 5px 15px 5px 15px !important;
-    border-radius: 8px !important;
-    border-left: none !important;
-    padding: 12px 15px !important;
-}
-
-.sidebar-item.active {
-    background-color: #e5f5fb !important;
-    color: #15baf6 !important;
-}
-
-.sidebar-item.active i {
-    color: #15baf6 !important;
-}
-
 /* Driver Grid Layout */
 .driver-grid {
     display: grid;

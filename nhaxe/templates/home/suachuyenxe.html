@@ -6,10 +6,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chỉnh sửa chuyến xe - Vexeapp</title>
-    <!-- Use FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/themchuyenxe.css' %}">
+    <style>
+        /* Tối ưu hóa để không tràn màn hình và căn giữa */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            /* Chặn cuộn toàn trang */
+        }
+
+        .main-wrapper {
+            display: flex;
+            height: calc(100vh - 120px);
+            /* Trừ chiều cao header và footer */
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .main-content-form {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f4f7f6;
+            height: 100%;
+            overflow-y: auto;
+            /* Cho phép cuộn nếu nội dung chính (bao gồm form) quá dài */
+            display: flex;
+            justify-content: center;
+            /* Căn giữa ngang */
+            align-items: center;
+            /* Căn giữa dọc */
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            /* Loại bỏ margin để căn giữa tốt hơn */
+            box-sizing: border-box;
+            /* Đảm bảo padding không làm tràn width */
+            /* Không thêm overflow-y: auto; vào đây để form không tự cuộn */
+        }
+
+        .form-title {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: #06A0E2;
+            text-align: center;
+            border-bottom: 2px solid #06A0E2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            height: 70px;
+            flex-shrink: 0;
+        }
+
+        .footer-banner {
+            height: 50px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn-cancel,
+        .btn-submit {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-submit {
+            background: #06A0E2;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #058bc4;
+        }
+    </style>
 </head>
 
 <body>
@@ -20,118 +144,81 @@
             <h1>NHÀ XE HÙNG CƯỜNG</h1>
         </div>
         <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
+            <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
             <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
-
             <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
+                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item"><i class="fa-solid fa-gear"></i> Quản lý
+                    tài khoản</a>
+                <a href="{% url 'dangxuat' %}" class="dropdown-item"><i
+                        class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
             </div>
         </div>
     </header>
 
-    <!-- Main Wrapper -->
     <div class="main-wrapper">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
+            <a href="{% url 'nhaxe' %}" class="sidebar-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item"><i class="fa-solid fa-users"></i> Quản lý tài xế</a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item"><i class="fa-solid fa-route"></i> Quản lý tuyến
+                xe</a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item"><i class="fa-solid fa-tags"></i> Quản lý loại
+                xe</a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active"><i class="fa-solid fa-map"></i> Quản lý
+                chuyến xe</a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item"><i class="fa-solid fa-car"></i> Quản lý phương
+                tiện</a>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content-form">
             <div class="form-container">
-                <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
+                <h2 class="form-title">SỬA CHUYẾN XE: {{ chuyen.ChuyenXeID }}</h2>
 
-                <div
-                    style="display: flex; justify-content: flex-end; font-weight: bold; font-size: 1.1em; color: #111; margin-bottom: 5px; flex-direction: column; align-items: flex-end; line-height: 1.4;">
-                    <div>Số ghế: <span id="seatCount"></span></div>
-                    <div id="topPriceDisplay" style="display: none;">Giá vé: <span id="priceVal"></span></div>
-                </div>
-
-                {% if messages %}
-                <ul class="django-messages">
-                    {% for msg in messages %}
-                    <li class="msg-{{ msg.tags }}">{{ msg }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-
-                <form id="tripForm" method="POST" action="{% url 'suachuyenxe' %}">
+                <form id="tripForm" method="POST" action="{% url 'suachuyenxe' chuyen.ChuyenXeID %}">
                     {% csrf_token %}
-                    <input type="hidden" name="id" value="{{ chuyen.ChuyenXeID }}">
-                    
+
                     <div class="form-group">
                         <label for="route">Tuyến xe</label>
                         <select id="route" name="tuyenxe" class="form-control" required>
-                            <option value="">Chọn tuyến xe</option>
                             {% for tuyen in tuyen_xe_list %}
-                            {% with tid=tuyen.tuyenXeID|stringformat:"s" %}
-                            <option value="{{ tuyen.tuyenXeID }}" {% if chuyen.TuyenXe|stringformat:"s" == tid %}selected{% endif %}>
-                                {{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})
+                            <option value="{{ tuyen.tuyenXeID }}" {% if chuyen.TuyenXe.tuyenXeID == tuyen.tuyenXeID %}selected{% endif %}>
+                                {{ tuyen.tenTuyen|default:tuyen.tuyenXeID }}
                             </option>
-                            {% endwith %}
                             {% endfor %}
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="date">Ngày chạy</label>
-                        <input type="date" name="date" id="date" class="form-control" value="{{ chuyen.NgayKhoiHanh }}" required>
+                        <input type="date" name="date" id="date" class="form-control" value="{{ formatted_date }}"
+                            required>
                     </div>
 
                     <div class="form-group">
                         <label for="time">Giờ xuất phát</label>
-                        <input type="time" name="time" id="time" class="form-control" value="{{ chuyen.GioDi|slice:':5' }}" required>
+                        <input type="time" name="time" id="time" class="form-control" value="{{ formatted_time }}"
+                            required>
                     </div>
 
                     <div class="form-group">
-                        <label for="carType">Xe (Biển số - Loại chỗ)</label>
+                        <label for="carType">Xe</label>
                         <select id="carType" name="xe" class="form-control" required>
-                            <option value="">Chọn xe</option>
                             {% for xe in xe_list %}
-                            {% with xid=xe.XeID|stringformat:"s" %}
-                            <option value="{{ xe.XeID }}" {% if chuyen.Xe|stringformat:"s" == xid %}selected{% endif %}>
-                                {{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ
+                            <option value="{{ xe.XeID }}" {% if chuyen.Xe.XeID == xe.XeID %}selected{% endif %}>
+                                {{ xe.BienSoXe }} ({{ xe.Loaixe.SoCho }} chỗ)
                             </option>
-                            {% endwith %}
                             {% endfor %}
                         </select>
                     </div>
 
-                    <!-- Tài xế -->
                     <div class="form-group">
                         <label for="taixe">Tài xế</label>
                         <select id="taixe" name="taixe" class="form-control" required>
-                            <option value="">Chọn tài xế</option>
-                            {% for ct in taixe_list %}
-                            {% with txid=ct.Taixe.TaixeID|stringformat:"s" %}
-                            <option value="{{ ct.Taixe.TaixeID }}" {% if chuyen.Taixe|stringformat:"s" == txid %}selected{% endif %}>
-                                {{ ct.HoTen }} ({{ ct.Taixe.TaixeID }})
+                            {% for tx in taixe_list %}
+                            <option value="{{ tx.TaixeID }}" {% if chuyen.Taixe.TaixeID == tx.TaixeID %}selected{% endif %}>
+                                {{ tx.HoTen }}
                             </option>
-                            {% endwith %}
                             {% endfor %}
                         </select>
                     </div>
@@ -139,43 +226,24 @@
                     <div class="form-buttons">
                         <button type="button" class="btn-cancel"
                             onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Hủy</button>
-                        <button type="submit" class="btn-submit">Xác nhận</button>
+                        <button type="submit" class="btn-submit">Lưu</button>
                     </div>
                 </form>
             </div>
         </main>
     </div>
 
-    <!-- Popup -->
-    <div class="popup-overlay" id="popupOverlay">
-        <div class="popup-box">
-            <i class="fa-regular fa-circle-check popup-icon"></i>
-            <div class="popup-message">Sửa chuyến xe thành công</div>
-        </div>
-    </div>
-
-    <!-- Footer -->
     <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng | Liên hệ: Nhóm 07</div>
     </footer>
 
-    <script src="{% static 'js/common.js' %}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
-
-            if (userBtn && userMenu) {
-                userBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('show');
-                });
-
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('show');
-                });
-            }
+        document.getElementById('userDropdownBtn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            document.getElementById('userMenu').classList.toggle('show');
+        });
+        document.addEventListener('click', function () {
+            document.getElementById('userMenu').classList.remove('show');
         });
     </script>
 </body>

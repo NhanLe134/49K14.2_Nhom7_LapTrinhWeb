@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+import re
 
 # 1. Bảng KhachHang (Khách hàng)
 class KhachHang(models.Model):
@@ -7,7 +8,9 @@ class KhachHang(models.Model):
     HovaTen = models.CharField(max_length=200, null=True, blank=True) # Sửa từ HoVaTen
     Email = models.CharField(max_length=100, unique=True, null=True, blank=True)
     NgaySinh = models.DateField(null=True, blank=True)
-    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    AnhDaiDienURL = models.TextField(null=True, blank=True)
+    NgayDangKy = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return self.HovaTen or self.KhachHangID
@@ -17,11 +20,11 @@ class Nhaxe(models.Model):
     NhaxeID = models.CharField(max_length=10, primary_key=True)
     Email = models.CharField(max_length=100, unique=True)
     NgayDangKy = models.DateTimeField(auto_now_add=True)
-    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    AnhDaiDienURL = models.TextField(null=True,blank=True)
     DiaChiTruSo = models.CharField(max_length=200, null=True, blank=True)
     TenNhaXe = models.CharField(max_length=200, null=True, blank=True) # Tên nhà xe
     SoDienThoai = models.CharField(
-        max_length=20,
+        max_length=20,  # Nới rộng từ 10 thành 20
         unique=True,
         validators=[RegexValidator(regex=r'^\d{10,12}$', message="SĐT nhà xe phải có từ 10-12 chữ số")]
     )
@@ -29,7 +32,7 @@ class Nhaxe(models.Model):
     TongDiemDanhGia = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.TenNhaXe or self.NhaxeID
+        return self.NhaxeID
 
 # 2. Bảng User_Authentication (Xác thực người dùng)
 class User_Authentication(models.Model):
@@ -43,7 +46,7 @@ class User_Authentication(models.Model):
     SoDienThoai = models.CharField(
         max_length=20, 
         unique=True,
-        null=True, blank=True,
+        null=True, blank=True, # Cho phép null
         validators=[RegexValidator(regex=r'^\d{10,12}$', message="SĐT phải từ 10-12 số")]
     )
 
@@ -116,9 +119,22 @@ class Xe(models.Model):
     XeID = models.CharField(max_length=10, primary_key=True)
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
     Loaixe = models.ForeignKey(Loaixe, on_delete=models.CASCADE)
-    TrangThai = models.CharField(max_length=50, null=True, blank=True)
+    TrangThai = models.CharField(max_length=50, null=True, blank=True) # Nới rộng thành 50
     SoGhe = models.IntegerField(null=True, blank=True)
     BienSoXe = models.CharField(max_length=20, unique=True)
+    HinhAnhXe = models.ImageField(upload_to='xe_images/', null=True, blank=True)
+
+    @property
+    def ten_loai_xe(self):
+        chi_tiet = CHITIETLOAIXE.objects.filter(Nhaxe=self.Nhaxe, Loaixe=self.Loaixe).first()
+        if chi_tiet and chi_tiet.TenLoaiXe:
+            return chi_tiet.TenLoaiXe
+
+        so_cho = self.Loaixe.SoCho if self.Loaixe else 0
+        if so_cho == 4: return "Loại xe A"
+        if so_cho == 7: return "Loại xe B"
+        if so_cho == 9: return "Loại xe C"
+        return f"Loại xe {so_cho} chỗ"
 
     def __str__(self):
         return self.BienSoXe
@@ -132,6 +148,7 @@ class TuyenXe(models.Model):
     diemDen = models.CharField(max_length=500, default='Huế')
     QuangDuong = models.IntegerField(null=True, blank=True)
     DiemTrungGian = models.CharField(max_length=500, null=True, blank=True)
+    ThoiGian = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
 
     def __str__(self):
         return self.tenTuyen if self.tenTuyen else self.tuyenXeID
@@ -141,21 +158,59 @@ class ChuyenXe(models.Model):
     ChuyenXeID = models.CharField(max_length=10, primary_key=True)
     Xe = models.ForeignKey(Xe, on_delete=models.SET_NULL, null=True, blank=True)
     TuyenXe = models.ForeignKey(TuyenXe, on_delete=models.CASCADE)
-    Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE)
+    Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE,null=True,blank=True)
     NgayKhoiHanh = models.DateField(null=True, blank=True)
     GioDi = models.TimeField(null=True, blank=True)
     GioDen = models.TimeField(null=True, blank=True)
-    TrangThai = models.CharField(max_length=50, null=True, blank=True)
+    TrangThai = models.CharField(max_length=50, null=True, blank=True, default='Chưa hoàn thành')
+
+    def save(self, *args, **kwargs):
+        is_new = not self.ChuyenXeID
+        if is_new:
+            # Tìm mã CX00001, CX00002... còn trống đầu tiên
+            num = 1
+            while True:
+                new_id = f'CX{num:05d}'
+                if not ChuyenXe.objects.filter(ChuyenXeID=new_id).exists():
+                    self.ChuyenXeID = new_id
+                    break
+                num += 1
+        
+        super().save(*args, **kwargs)
+
+        # Tự động tạo ghế nếu là chuyến xe mới
+        if is_new and self.Xe and self.Xe.Loaixe:
+            so_cho = self.Xe.Loaixe.SoCho
+            prefix = 'A'
+            if so_cho == 7: prefix = 'B'
+            elif so_cho == 9: prefix = 'C'
+            
+            ghe_list = []
+            for i in range(1, so_cho + 1):
+                so_ghe_str = f"{prefix}{i}"
+                ghe_id = f"{self.ChuyenXeID}{so_ghe_str}"
+                # Tránh tạo trùng nếu đã tồn tại
+                if not GheNgoi.objects.filter(gheID=ghe_id).exists():
+                    ghe_list.append(GheNgoi(
+                        gheID=ghe_id,
+                        ChuyenXe=self,
+                        soGhe=so_ghe_str,
+                        trangThai='Còn trống'
+                    ))
+            
+            if ghe_list:
+                GheNgoi.objects.bulk_create(ghe_list)
+
 
     def __str__(self):
         return self.ChuyenXeID
 
 # 11. Bảng Ghế Ngồi
 class GheNgoi(models.Model):
-    gheID = models.CharField(max_length=10, primary_key=True)
+    gheID = models.CharField(max_length=20, primary_key=True) # Nới rộng để chứa CX00001A1
     ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE)
-    soGhe = models.CharField(max_length=5, null=True, blank=True)
-    trangThai = models.CharField(max_length=20, null=True, blank=True)
+    soGhe = models.CharField(max_length=10, null=True, blank=True)
+    trangThai = models.CharField(max_length=20, default='Còn trống')
 
     def __str__(self):
         return f"{self.soGhe} - {self.ChuyenXe.ChuyenXeID}"

@@ -7,6 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng ký tài khoản khách hàng</title>
     <link rel="stylesheet" href="{% static 'css/khachhang_dangky_style.css' %}">
+    <style>
+        /* Thêm style cho viền đỏ khi có lỗi */
+        .input-error {
+            border-color: red !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -18,7 +24,7 @@
 
     <div class="registration-container">
         <main class="kh-main-content">
-            <form id="formDangKyKhachHang">
+            <form id="formDangKyKhachHang" onsubmit="handleRegistrationSubmit(event)" novalidate>
 
                 <div class="input-group">
                     <label for="hoVaTen">Họ và tên</label>
@@ -57,7 +63,7 @@
                 </div>
 
                 <div class="kh-footer">
-                    <button type="button" class="btn-cancel">Hủy</button>
+                    <button type="button" class="btn-cancel" onclick="showCancelModal()">Hủy</button>
                     <button type="submit" class="btn-submit">Xác thực</button>
                 </div>
             </form>
@@ -67,12 +73,9 @@
     <div id="otpModal" class="modal-overlay">
         <div class="otp-container">
             <div class="otp-header">
-                <button type="button" class="btn-close-otp">
-                    <span class="close-icon-x">&times;</span>
-                </button>
+                <button type="button" class="btn-close-otp" onclick="closeOtpModal()">&times;</button>
             </div>
             <div class="otp-content">
-                <div class="otp-logo-placeholder">Logo<br>App</div>
                 <h3 class="otp-title">Nhập mã OTP</h3>
                 <div class="otp-inputs">
                     <input type="text" maxlength="1" class="otp-box">
@@ -82,10 +85,10 @@
                     <input type="text" maxlength="1" class="otp-box">
                     <input type="text" maxlength="1" class="otp-box">
                 </div>
-                <span class="error-text otp-error-msg" id="err-otp">Mã xác thực không đúng</span>
+                <span class="error-text otp-error-msg" id="err-otp"></span>
                 <div class="otp-actions">
-                    <button type="button" class="btn-resend">Gửi lại mã</button>
-                    <button type="button" class="btn-complete">Hoàn thành</button>
+                    <button type="button" class="btn-resend" id="btnResendOtp" onclick="handleResendOtp()">Gửi lại mã</button>
+                    <button type="button" class="btn-complete" onclick="handleOtpCompletion()">Hoàn thành</button>
                 </div>
             </div>
         </div>
@@ -104,152 +107,257 @@
 
     <div id="errorModal" class="modal-overlay">
         <div class="alert-modal-container">
-            <div class="alert-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </div>
-            <p class="alert-message" style="margin-bottom: 0;">Hệ thống lỗi, vui lòng thử lại sau!</p>
+            <div class="alert-icon">&times;</div>
+            <p class="alert-message" id="errorMessageText"></p>
         </div>
     </div>
 
     <div id="successModal" class="modal-overlay">
         <div class="alert-modal-container">
-            <div class="alert-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-            </div>
-            <p class="alert-message" style="margin-bottom: 0;">Tạo tài khoản thành công</p>
+            <div class="alert-icon">&#10003;</div>
+            <p class="alert-message" id="successMessageText">Tạo tài khoản thành công</p>
         </div>
     </div>
 
     <script>
         const URL_INDEX = "{% url 'index' %}";
+        const URL_SEND_OTP = "{% url 'send_registration_otp' %}";
+        const URL_VERIFY = "{% url 'verify_and_register' %}";
+        const CSRF_TOKEN = "{{ csrf_token }}";
+        let resendTimer;
+        const RESEND_COOLDOWN = 60;
 
-        document.getElementById('formDangKyKhachHang').addEventListener('submit', function (event) {
-            event.preventDefault();
+        // --- UI & ERROR HELPER ---
+        function displayFieldError(fieldId, message) {
+            const errorSpan = document.getElementById(`err-${fieldId}`);
+            const input = document.getElementById(fieldId);
+            if (message) {
+                errorSpan.textContent = `* ${message}`; // Thêm dấu *
+                errorSpan.style.display = 'block';
+                input.classList.add('input-error'); // Thêm viền đỏ
+            } else {
+                errorSpan.textContent = '';
+                errorSpan.style.display = 'none';
+                input.classList.remove('input-error'); // Xóa viền đỏ
+            }
+        }
+
+        // --- VALIDATION LOGIC ---
+        function validateForm() {
             let isValid = true;
+            const fields = [
+                { id: 'hoVaTen', name: 'Họ và tên', rules: { required: true, noSpecialChars: true } },
+                { id: 'ngaySinh', name: 'Ngày sinh', rules: { required: true } },
+                { id: 'username', name: 'Tên đăng nhập', rules: { required: true } },
+                { id: 'password', name: 'Mật khẩu', rules: { required: true, minLength: 8 } },
+                { id: 'rePassword', name: 'Nhập lại mật khẩu', rules: { required: true, match: 'password' } },
+                { id: 'phone', name: 'Số điện thoại', rules: { required: true, isPhone: true } }
+            ];
 
-            function checkEmpty(inputId, errorMsgName) {
-                const input = document.getElementById(inputId);
-                const errorSpan = document.getElementById('err-' + inputId);
-                input.classList.remove('input-error');
-                errorSpan.classList.remove('show-error');
-                if (input.value.trim() === '') {
-                    input.classList.add('input-error');
-                    errorSpan.textContent = `*Vui lòng nhập ${errorMsgName}`;
-                    errorSpan.classList.add('show-error');
-                    isValid = false;
-                    return false;
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                let errorMessage = '';
+
+                if (field.rules.required && !input.value.trim()) {
+                    errorMessage = `Vui lòng nhập ${field.name}.`;
+                } else if (field.rules.noSpecialChars && /[!@#$%^&*(),.?":{}|<>]/.test(input.value)) {
+                    errorMessage = `${field.name} không được chứa kí tự đặc biệt.`;
+                } else if (field.rules.minLength && input.value.length < field.rules.minLength) {
+                    errorMessage = `${field.name} phải có tối thiểu ${field.rules.minLength} ký tự.`;
+                } else if (field.rules.match && input.value !== document.getElementById(field.rules.match).value) {
+                    errorMessage = `Mật khẩu nhập lại không khớp.`;
+                } else if (field.rules.isPhone && !/^0[35789][0-9]{8}$/.test(input.value)) {
+                    errorMessage = `${field.name} không hợp lệ.`;
                 }
-                return true;
-            }
 
-            const isHoTenValid = checkEmpty('hoVaTen', 'họ và tên');
-            const isNgaySinhValid = checkEmpty('ngaySinh', 'ngày sinh');
-            const isUserValid = checkEmpty('username', 'tên đăng nhập');
-            const isPassValid = checkEmpty('password', 'mật khẩu');
-            const isRePassValid = checkEmpty('rePassword', 'lại mật khẩu');
-            const isPhoneValid = checkEmpty('phone', 'số điện thoại');
-
-            const passInput = document.getElementById('password');
-            const rePassInput = document.getElementById('rePassword');
-            const passError = document.getElementById('err-password');
-            const rePassError = document.getElementById('err-rePassword');
-
-            if (isPassValid) {
-                const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-                if (!strongPasswordRegex.test(passInput.value)) {
-                    passInput.classList.add('input-error');
-                    passError.textContent = '*Mật khẩu phải từ 8 ký tự, gồm chữ hoa, thường, số và ký tự đặc biệt';
-                    passError.classList.add('show-error');
-                    isValid = false;
-                }
-            }
-
-            if (isRePassValid) {
-                if (passInput.value !== rePassInput.value) {
-                    rePassInput.classList.add('input-error');
-                    rePassError.textContent = '*Mật khẩu nhập lại không khớp';
-                    rePassError.classList.add('show-error');
-                    isValid = false;
-                }
-            }
-
-            if (!isHoTenValid || !isNgaySinhValid || !isUserValid || !isPhoneValid) {
-                isValid = false;
-            }
-
-            if (isValid) {
-                document.getElementById('otpModal').classList.add('show-modal');
-            }
-        });
-
-        document.querySelector('.btn-close-otp').addEventListener('click', function () {
-            document.getElementById('otpModal').classList.remove('show-modal');
-        });
-
-        const otpBoxes = document.querySelectorAll('.otp-box');
-        otpBoxes.forEach((box, index) => {
-            box.addEventListener('input', function () {
-                if (this.value.length === 1 && index < otpBoxes.length - 1) {
-                    otpBoxes[index + 1].focus();
-                }
+                displayFieldError(field.id, errorMessage);
+                if (errorMessage) isValid = false;
             });
-            box.addEventListener('keydown', function (e) {
-                if (e.key === 'Backspace' && this.value === '' && index > 0) {
-                    otpBoxes[index - 1].focus();
-                }
-            });
-        });
 
-        document.querySelector('.btn-complete').addEventListener('click', function () {
+            return isValid;
+        }
+
+        // --- MAIN HANDLERS ---
+        function handleRegistrationSubmit(event) {
+            event.preventDefault();
+            if (!validateForm()) return;
+
+            const formData = {
+                hoVaTen: document.getElementById('hoVaTen').value,
+                ngaySinh: document.getElementById('ngaySinh').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                phone: document.getElementById('phone').value,
+            };
+
+            fetch(URL_SEND_OTP, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    openOtpModal();
+                } else {
+                    const errorMap = {
+                        'Tên đăng nhập đã tồn tại.': 'username',
+                        'Số điện thoại đã được sử dụng.': 'phone',
+                        'Mật khẩu phải có ít nhất 8 ký tự.': 'password',
+                        'Họ tên không được chứa ký tự đặc biệt.': 'hoVaTen'
+                    };
+                    const fieldId = errorMap[data.message];
+                    if (fieldId) {
+                        displayFieldError(fieldId, data.message);
+                    } else {
+                        showError(data.message || 'Lỗi không xác định.');
+                    }
+                }
+            })
+            .catch(() => showError('Lỗi kết nối. Vui lòng thử lại.'));
+        }
+
+        function handleOtpCompletion() {
             let otpValue = "";
-            otpBoxes.forEach(box => { otpValue += box.value; });
+            document.querySelectorAll('.otp-box').forEach(box => { otpValue += box.value; });
             const otpErrorSpan = document.getElementById('err-otp');
 
-            if (otpValue.length < 6) {
-                otpErrorSpan.textContent = 'Vui lòng nhập đủ 6 số OTP';
-                otpErrorSpan.classList.add('show-otp-err');
-            } else if (otpValue !== "123456") {
-                otpErrorSpan.textContent = 'Mã xác thực không đúng';
-                otpErrorSpan.classList.add('show-otp-err');
-            } else {
-                otpErrorSpan.classList.remove('show-otp-err');
-                document.getElementById('otpModal').classList.remove('show-modal');
-                document.getElementById('successModal').classList.add('show-modal');
-                setTimeout(function () {
-                    document.getElementById('successModal').classList.remove('show-modal');
-                }, 3000);
+            if (!otpValue.trim()) {
+                otpErrorSpan.textContent = '* Vui lòng nhập mã OTP.';
+                otpErrorSpan.style.display = 'block';
+                return;
             }
-        });
+            if (otpValue.length < 6) {
+                otpErrorSpan.textContent = '* Vui lòng nhập đủ 6 số OTP.';
+                otpErrorSpan.style.display = 'block';
+                return;
+            }
+            otpErrorSpan.textContent = '';
+            otpErrorSpan.style.display = 'none';
 
-        document.querySelector('.btn-cancel').addEventListener('click', function () {
-            document.getElementById('confirmModal').classList.add('show-modal');
-        });
-        document.getElementById('btnKhongHuy').addEventListener('click', function () {
-            document.getElementById('confirmModal').classList.remove('show-modal');
-        });
-        document.getElementById('btnDongYHuy').addEventListener('click', function () {
-            window.location.href = URL_INDEX;
-        });
-        function showError() {
-            document.getElementById('errorModal').classList.add('show-modal');
-            setTimeout(function () {
-                document.getElementById('errorModal').classList.remove('show-modal');
-            }, 3000);
+            fetch(URL_VERIFY, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                body: JSON.stringify({ otp: otpValue }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    closeOtpModal();
+                    showSuccess(data.message);
+                    setTimeout(() => { window.location.href = URL_INDEX; }, 2000);
+                } else {
+                    otpErrorSpan.textContent = `* ${data.message}` || '* Lỗi không xác định.';
+                    otpErrorSpan.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                otpErrorSpan.textContent = '* Lỗi hệ thống. Vui lòng thử lại sau!';
+                otpErrorSpan.style.display = 'block';
+            });
         }
+
+        function handleResendOtp() {
+            const formData = {
+                hoVaTen: document.getElementById('hoVaTen').value,
+                ngaySinh: document.getElementById('ngaySinh').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                phone: document.getElementById('phone').value,
+            };
+            fetch(URL_SEND_OTP, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                body: JSON.stringify(formData),
+            }).then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    startResendTimer();
+                    document.getElementById('err-otp').textContent = '';
+                    document.getElementById('err-otp').style.display = 'none';
+                } else {
+                    document.getElementById('err-otp').textContent = `* ${data.message}`;
+                    document.getElementById('err-otp').style.display = 'block';
+                }
+            });
+        }
+
+        // --- MODAL & UI HELPERS ---
+        function openOtpModal() {
+            document.getElementById('otpModal').classList.add('show-modal');
+            document.querySelector('.otp-box').focus();
+            startResendTimer();
+        }
+
+        function closeOtpModal() {
+            document.getElementById('otpModal').classList.remove('show-modal');
+            clearInterval(resendTimer);
+        }
+
+        function startResendTimer() {
+            const btnResend = document.getElementById('btnResendOtp');
+            let timeLeft = RESEND_COOLDOWN;
+            btnResend.disabled = true;
+
+            resendTimer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(resendTimer);
+                    btnResend.disabled = false;
+                    btnResend.textContent = 'Gửi lại mã';
+                } else {
+                    btnResend.textContent = `Gửi lại mã (${timeLeft}s)`;
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        function showCancelModal() { document.getElementById('confirmModal').classList.add('show-modal'); }
+        document.getElementById('btnKhongHuy').addEventListener('click', () => document.getElementById('confirmModal').classList.remove('show-modal'));
+        document.getElementById('btnDongYHuy').addEventListener('click', () => window.location.href = URL_INDEX);
+
+        function showError(message) {
+            document.getElementById('errorMessageText').textContent = message;
+            const errorModal = document.getElementById('errorModal');
+            errorModal.classList.add('show-modal');
+            setTimeout(() => errorModal.classList.remove('show-modal'), 3000);
+        }
+
+        function showSuccess(message) {
+            document.getElementById('successMessageText').textContent = message;
+            document.getElementById('successModal').classList.add('show-modal');
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const formInputs = Array.from(document.querySelectorAll('#formDangKyKhachHang input'));
+            formInputs.forEach((input, index) => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const nextInput = formInputs[index + 1];
+                        if (nextInput) {
+                            nextInput.focus();
+                        } else {
+                            document.querySelector('.btn-submit').focus();
+                        }
+                    }
+                });
+            });
+
+            const otpBoxes = document.querySelectorAll('.otp-box');
+            otpBoxes.forEach((box, index) => {
+                box.addEventListener('input', () => {
+                    if (box.value.length === 1 && index < otpBoxes.length - 1) {
+                        otpBoxes[index + 1].focus();
+                    }
+                });
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && box.value.length === 0 && index > 0) {
+                        otpBoxes[index - 1].focus();
+                    }
+                });
+            });
+        });
     </script>
 
-    <div class="footer">
-        KẾT NỐI HÀNH TRÌNH DI SẢN
-    </div>
-    <script src="{% static 'js/common.js' %}"></script>
 </body>
-
 </html>

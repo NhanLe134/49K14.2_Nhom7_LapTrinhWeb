@@ -5,6 +5,9 @@ from . import chuyenxe_views
 from . import taixe_views
 from . import tuyenxe_views
 from . import xuly_timkiem_view
+from . import feedback_views
+from . import payment_views
+from . import xu_ly_tim_kiem
 from . import booking_views
 from . import quanlyve_views
 
@@ -18,11 +21,18 @@ urlpatterns = [
     path('timkiem_ve', xuly_timkiem_view.view_tim_kiem_ve, name='view_tim_kiem_ve'),
     path('api/lay_so_do_ghe', xuly_timkiem_view.lay_so_do_ghe_api, name='api_lay_so_do_ghe'),
     path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),
-
     # ==================== ĐẶT VÉ ====================
     path('dat_ve_thong_tin', booking_views.dat_ve_thong_tin, name='dat_ve_thong_tin'),
     path('xac_nhan_dat_ve', booking_views.xac_nhan_dat_ve, name='xac_nhan_dat_ve'),
     path('huy-ve/<str:ve_id>/', booking_views.huy_ve, name='huy_ve'),
+
+    # ==================== OTP ĐĂNG KÝ ====================
+    path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
+    path('send_registration_otp', views.send_registration_otp, name='send_registration_otp'),
+    path('verify_and_register', views.verify_and_register, name='verify_and_register'),
+    path('dangky_nhaxe', views.dangky_nhaxe, name='dangky_nhaxe'),
+    path('send_registration_otp_nhaxe', views.send_registration_otp_nhaxe, name='send_registration_otp_nhaxe'),
+    path('verify_and_register_nhaxe', views.verify_and_register_nhaxe, name='verify_and_register_nhaxe'),
 
     # ==================== KHÁCH HÀNG ====================
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
@@ -32,6 +42,11 @@ urlpatterns = [
     path('danhgiachuyenxe', views.danhgiachuyenxe, name='danhgiachuyenxe'),
     path('quanlyve', quanlyve_views.quanlyve, name='quanlyve'),
     path('vietdanhgia', views.vietdanhgia, name='vietdanhgia'),
+
+    # Thanh toán
+    path('dat-ve/', payment_views.dat_ve, name='dat_ve'),
+    path('payment/<str:ve_id>/', payment_views.process_payment, name='process_payment'),
+    path('confirm-payment/<str:ve_id>/', payment_views.confirm_payment, name='confirm_payment'),
 
     # ==================== NHÀ XE ====================
     path('dangky_nhaxe', views.dangky_nhaxe, name='dangky_nhaxe'),
@@ -45,8 +60,9 @@ urlpatterns = [
     path('quanlychuyenxe', chuyenxe_views.quanlychuyenxe, name='quanlychuyenxe'),
     path('themchuyenxe', chuyenxe_views.themchuyenxe, name='themchuyenxe'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
-    path('suachuyenxe', chuyenxe_views.suachuyenxe, name='suachuyenxe'),
     path('lotrinh', views.lotrinh, name='lotrinh'),
+    path('suachuyenxe/<str:pk>/', chuyenxe_views.suachuyenxe, name='suachuyenxe'), # Đã sửa
+    path('hoanthanh-chuyenxe/<str:pk>/', chuyenxe_views.hoanthanh_chuyenxe, name='hoanthanh_chuyenxe'),
     path('quanlytuyenxe', tuyenxe_views.quanlytuyenxe, name='quanlytuyenxe'),
 
     # --- Tài xế (Nhà xe quản lý) ---
@@ -63,5 +79,9 @@ urlpatterns = [
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
     path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
+# Thao tác quản lý tài xế
+    path('them-tai-xe', taixe_views.them_tai_xe, name='them_tai_xe'),
+    path('sua-tai-xe/<str:pk>/', taixe_views.sua_tai_xe, name='sua_tai_xe'),
+    path('xoa-tai-xe/<str:pk>/', taixe_views.xoa_tai_xe, name='xoa_tai_xe'),
 
 ]

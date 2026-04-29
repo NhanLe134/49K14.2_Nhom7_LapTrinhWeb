@@ -20,7 +20,12 @@ def quanlyve(request):
         
         today = datetime.now().date()
         
+        # Lấy ID các vé đã đánh giá
+        from .models import DanhGia
+        ve_da_danh_gia_ids = list(DanhGia.objects.filter(KhachHang_id=user_id).values_list('Ve_id', flat=True))
+
         for v in ve_list_all:
+            v.da_danh_gia = v.VeID in ve_da_danh_gia_ids
             # Tự động cập nhật vé thành 'Đã đi' chỉ khi chuyến xe đã hoàn thành
             if v.TrangThai == 'Đã đặt' and v.ChuyenXe and v.ChuyenXe.TrangThai == 'Hoàn thành':
                 v.TrangThai = 'Đã đi'

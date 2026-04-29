@@ -1,0 +1,224 @@
+{% extends 'home/khachhang.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
+<style>
+    .payment-wrapper {
+        background-color: #f6fafe;
+        padding: 40px 20px;
+        min-height: 80vh;
+        display: flex;
+        justify-content: center;
+    }
+    .payment-container {
+        background: white;
+        max-width: 900px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        display: flex;
+        overflow: hidden;
+    }
+    .payment-info {
+        flex: 1;
+        padding: 40px;
+        border-right: 1px solid #eee;
+    }
+    .payment-methods {
+        flex: 1;
+        padding: 40px;
+        background-color: #fafbfc;
+    }
+    .ticket-id {
+        color: #888;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    .ticket-bus-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #06A0E2;
+        margin-bottom: 20px;
+    }
+    .info-group {
+        margin-bottom: 20px;
+    }
+    .info-label {
+        font-size: 0.85rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+    }
+    .amount-box {
+        background: #f0f9ff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 30px;
+        border: 1px dashed #06A0E2;
+    }
+    .amount-total {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #06A0E2;
+    }
+
+    /* Methods Style */
+    .method-item {
+        background: white;
+        border: 2px solid #eee;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+    }
+    .method-item:hover {
+        border-color: #06A0E2;
+    }
+    .method-item.active {
+        border-color: #06A0E2;
+        background-color: #f0f9ff;
+    }
+    .method-icon {
+        width: 45px;
+        height: 45px;
+        background: #f0f0f0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #555;
+    }
+    .method-item.active .method-icon {
+        background: #06A0E2;
+        color: white;
+    }
+    .method-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+
+    #qr-section {
+        margin-top: 20px;
+        text-align: center;
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .qr-image {
+        width: 200px;
+        height: 200px;
+        margin: 15px auto;
+        border: 1px solid #ddd;
+        padding: 5px;
+        background: white;
+    }
+    .btn-confirm {
+        width: 100%;
+        padding: 15px;
+        background: #06A0E2;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-top: 30px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-confirm:hover {
+        background: #058ac4;
+    }
+</style>
+
+<div class="payment-wrapper">
+    <div class="payment-container">
+        <!-- Bên trái: Thông tin vé -->
+        <div class="payment-info">
+            <div class="ticket-id">Mã vé: #{{ ve.VeID }}</div>
+            <div class="ticket-bus-name">{{ ve.ChuyenXe.TuyenXe.nhaXe.TenNhaXe|default:ve.ChuyenXe.TuyenXe.nhaXe.NhaxeID }}</div>
+            
+            <div class="info-group">
+                <div class="info-label">Chuyến xe</div>
+                <div class="info-value">{{ ve.ChuyenXe.TuyenXe.TenTuyen }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Khởi hành</div>
+                <div class="info-value">{{ ve.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }} - {{ ve.ChuyenXe.GioKhoiHanh|time:"H:i" }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Số ghế</div>
+                <div class="info-value">{{ ve.Ghe.TenGhe }}</div>
+            </div>
+
+            <div class="amount-box">
+                <div class="info-label">Tổng thanh toán</div>
+                <div class="amount-total">{{ ve.GiaVe }} VNĐ</div>
+            </div>
+        </div>
+
+        <!-- Bên phải: Phương thức thanh toán -->
+        <div class="payment-methods">
+            <h3 style="margin-bottom: 25px;">Chọn phương thức thanh toán</h3>
+            
+            <form action="{% url 'confirm_payment' ve.VeID %}" method="POST" id="paymentForm">
+                {% csrf_token %}
+                <input type="hidden" name="phuong_thuc" id="selectedMethod" value="Tiền mặt">
+
+                <div class="method-item active" onclick="selectMethod('Tiền mặt', this)">
+                    <div class="method-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    <div class="method-name">Tiền mặt tại nhà xe</div>
+                </div>
+
+                <div class="method-item" onclick="selectMethod('Chuyển khoản', this)">
+                    <div class="method-icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <div class="method-name">Chuyển khoản / Quét mã QR</div>
+                </div>
+
+                <!-- Phần QR hiện ra khi chọn chuyển khoản -->
+                <div id="qr-section">
+                    <p style="font-size: 0.9rem; color: #666;">Quét mã QR bằng ứng dụng Ngân hàng của bạn</p>
+                    <img src="{{ qr_url }}" class="qr-image" alt="VietQR">
+                    <div style="text-align: left; font-size: 0.85rem; padding: 10px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px;">
+                        <strong>Ghi chú:</strong> Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống tự động xác nhận.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-confirm">Xác nhận thanh toán</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectMethod(method, element) {
+        // Cập nhật giá trị input hidden
+        document.getElementById('selectedMethod').value = method;
+        
+        // Cập nhật UI active
+        document.querySelectorAll('.method-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+
+        // Hiển thị/Ẩn phần QR
+        const qrSection = document.getElementById('qr-section');
+        if (method === 'Chuyển khoản') {
+            qrSection.style.display = 'block';
+        } else {
+            qrSection.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

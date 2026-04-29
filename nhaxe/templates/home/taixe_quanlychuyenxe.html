@@ -13,6 +13,28 @@
     <!-- FIX ĐƯỜNG DẪN -->
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}">
+    <style>
+        /* Status Badge Overrides to match Nhà xe */
+        .status-badge {
+            padding: 6px 15px !important;
+            border-radius: 20px !important;
+            font-size: 0.9rem !important;
+            font-weight: 700 !important;
+            display: inline-block !important;
+            text-align: center !important;
+            min-width: 140px !important; /* Tăng nhẹ để chứa text dài hơn */
+        }
+
+        .status-chua-hoan-thanh {
+            background-color: #FEF08A !important; /* Vàng sáng */
+            color: #713F12 !important;            /* Nâu đậm */
+        }
+
+        .status-hoan-thanh {
+            background-color: #E8F5E9 !important; /* Xanh lá nhạt */
+            color: #1B5E20 !important;            /* Xanh lá đậm */
+        }
+    </style>
 </head>
 
 <body>
@@ -49,9 +71,11 @@
             <a href="{% url 'taixe_quanlychuyenxe' %}" class="sidebar-item active">
                 <i class="fa-solid fa-map"></i> Quản lý chuyến xe
             </a>
+
         </aside>
 
         <main class="main-content-qlcx">
+            {% comment %} 
             {% if messages %}
             <ul class="django-messages" style="margin: 20px 0 0 0; max-width: 1000px;">
                 {% for msg in messages %}
@@ -59,11 +83,12 @@
                 {% endfor %}
             </ul>
             {% endif %}
+            {% endcomment %}
             
             <div class="trip-list" style="margin-top: 20px;">
                 {% for chuyen in chuyen_xe_list %}
                 <div class="trip-card" onclick="window.location.href='{% url 'taixe_chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'" style="cursor: pointer;">
-                    <img class="trip-image" src="{% static 'img/xe1.jpg' %}" alt="xe">
+                    <img class="trip-image" src="{% if chuyen.seat_count == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.seat_count == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
                     <div class="trip-info-main">
                         <div class="trip-title">
                             <strong>{{ chuyen.ChuyenXeID }}</strong>
@@ -71,14 +96,15 @@
                         </div>
                         <div class="trip-details">
                             <p>Giờ xuất phát: {{ chuyen.GioDi|time:"H:i" }}</p>
-                            <p>Loại xe: {{ chuyen.Xe.Loaixe.SoCho }} chỗ</p>
+                            <p>Tổng số ghế: {{ chuyen.seat_count|default:0 }}</p>
+                            <p>Ghế trống: {{ chuyen.available_seats }}</p>
                         </div>
                     </div>
                     <div class="trip-actions">
                         {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai|lower == 'completed' %}
-                            <span class="status-badge" style="background-color: #E8F5E9; color: #1B5E20; padding: 6px 15px; border-radius: 20px;">Hoàn thành</span>
+                            <span class="status-badge status-hoan-thanh">Hoàn thành</span>
                         {% else %}
-                            <span class="status-badge">Đang chờ</span>
+                            <span class="status-badge status-chua-hoan-thanh">Chưa hoàn thành</span>
                         {% endif %}
                     </div>
                 </div>

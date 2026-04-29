@@ -41,10 +41,13 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <a href="{% url 'taixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+                <i class="fa-solid fa-house"></i> Trang chủ
             </a>
             <a href="{% url 'taixe_quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
+                <i class="fa-solid fa-map"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'thongtin_taixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-gear"></i> Thông tin tài khoản
             </a>
         </aside>
 
@@ -70,15 +73,15 @@
                 </div>
                 <div class="status-dropdown" style="position: relative; display: inline-block; cursor: pointer;">
                     {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
-                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #DCFCE7; color: #16a34a;">Hoàn thành</div>
+                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #E8F5E9 !important; color: #1B5E20 !important;">Hoàn thành</div>
                     {% else %}
-                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #F8FDE9; color: #C0CD1C;">Chưa hoàn thành</div>
+                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #FEF08A !important; color: #713F12 !important;">Chưa hoàn thành</div>
                     {% endif %}
                     <div id="statusMenu" class="status-menu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; flex-direction: column; gap: 5px; z-index: 10;">
                         {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
-                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #F8FDE9; color: #C0CD1C; margin-bottom: 5px;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>
+                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #FEF08A !important; color: #713F12 !important; margin-bottom: 5px;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>
                         {% else %}
-                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #DCFCE7; color: #16a34a; margin-bottom: 5px;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>
+                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #E8F5E9 !important; color: #1B5E20 !important; margin-bottom: 5px;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>
                         {% endif %}
                     </div>
                 </div>

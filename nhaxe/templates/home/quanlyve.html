@@ -113,7 +113,11 @@
                                         <div class="ticket-seats">Mã số ghế: {{ v.Ghe.soGhe|default:"Đang chờ" }}</div>
                                     </div>
                                 </div>
-                                <button class="btn-completed">Đã hoàn thành</button>
+                                {% if v.da_danh_gia %}
+                                    <button class="btn-completed">Đã hoàn thành</button>
+                                {% else %}
+                                    <button class="btn-review" onclick="event.stopPropagation(); window.location.href='{% url 'vietdanhgia' v.VeID %}'" style="background: #12b7f5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Chờ đánh giá</button>
+                                {% endif %}
                             </div>
                             {% endfor %}
                         {% else %}
