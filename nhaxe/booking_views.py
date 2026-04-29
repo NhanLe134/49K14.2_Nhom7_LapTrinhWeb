@@ -125,7 +125,7 @@ def xac_nhan_dat_ve(request):
 
 def huy_ve(request, ve_id):
     """
-    Hàm xử lý hủy vé: Xóa bản ghi vé và chuyển trạng thái ghế sang 'Còn trống'.
+    Hàm xử lý hủy vé: Cập nhật trạng thái vé thành 'Đã hủy' và chuyển trạng thái ghế sang 'Còn trống'.
     """
     try:
         # Lấy bản ghi vé
@@ -137,8 +137,10 @@ def huy_ve(request, ve_id):
             ghe.trangThai = "Còn trống"
             ghe.save()
             
-        # Xóa vé khỏi database đúng như yêu cầu "mất dữ liệu" của bạn
-        ve.delete()
+        # Cập nhật trạng thái vé thay vì xóa
+        ve.TrangThai = "Đã hủy"
+        ve.TrangThaiThanhToan = "Đã hủy"
+        ve.save()
         
         return JsonResponse({'status': 'success', 'message': 'Hủy vé thành công và đã giải phóng chỗ.'})
     except Exception as e:

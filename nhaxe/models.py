@@ -36,6 +36,7 @@ class User_Authentication(models.Model):
     UserID = models.CharField(max_length=10, primary_key=True)
     KhachHang = models.ForeignKey(KhachHang, on_delete=models.SET_NULL, null=True, blank=True)
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.SET_NULL, null=True, blank=True)
+    Taixe = models.ForeignKey('Taixe', on_delete=models.SET_NULL, null=True, blank=True)
     TenDangNhap = models.CharField(max_length=200, unique=True)
     MatKhau = models.CharField(max_length=200)
     Vaitro = models.CharField(max_length=20) # 'Nhaxe' hoặc 'Khach'
@@ -53,7 +54,7 @@ class User_Authentication(models.Model):
 class Taixe(models.Model):
     TaixeID = models.CharField(max_length=10, primary_key=True)
     HoTen = models.CharField(max_length=200, null=True, blank=True)
-    HinhAnhURL = models.CharField(max_length=255, null=True, blank=True)
+    HinhAnhURL = models.TextField(null=True, blank=True)
     SoBangLai = models.CharField(max_length=20, unique=True)
     soCCCD = models.CharField(
         max_length=12, 
@@ -73,6 +74,7 @@ class Taixe(models.Model):
         null=True, 
         blank=True
     )
+    NgayHetHanBangLai = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.TaixeID
@@ -174,6 +176,7 @@ class Ve(models.Model):
     NgayDat = models.DateTimeField(auto_now_add=True)
     GiaVe = models.DecimalField(max_digits=12, decimal_places=0)
     TrangThaiThanhToan = models.CharField(max_length=50, null=True, blank=True)
+    TrangThai = models.CharField(max_length=50, default='Đã đặt')
 
     def __str__(self):
         return self.VeID

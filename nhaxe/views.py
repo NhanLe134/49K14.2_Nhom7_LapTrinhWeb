@@ -329,15 +329,6 @@ def quanly_khachhang(request):
     except:
         return render(request, 'home/quanly_khachhang.html', {'khach_hang': None})
 
-def quanlyve(request):
-    user_id = request.session.get('user_id')
-    try:
-        ve_list = Ve.objects.filter(KhachHang_id=user_id).order_by('-NgayDat')
-        return render(request, 'home/quanlyve.html', {'ve_list': ve_list})
-    except Exception as e:
-        messages.error(request, f"Lỗi lấy danh sách vé: {str(e)}")
-        return render(request, 'home/quanlyve.html', {'ve_list': []})
-
 # ==================== TÀI XẾ (tx) ====================
 
 def taixe(request):

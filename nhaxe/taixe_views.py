@@ -36,6 +36,7 @@ def quanlytaixe(request):
             'soBangLai':      driver.SoBangLai,
             'soCCCD':         driver.soCCCD,
             'loaiBangLai':    driver.LoaiBangLai,
+            'ngayHetHanBangLai': driver.NgayHetHanBangLai,
             'hinhAnh':        driver.HinhAnhURL,
         })
     
@@ -60,6 +61,14 @@ def them_tai_xe(request):
         cccd = request.POST.get('cccd')
         license_no = request.POST.get('license_no')
         license_type = request.POST.get('license_type', 'B1')
+        license_expiry = request.POST.get('license_expiry') or None
+        
+        hinh_anh_url = ""
+        if 'hinh_anh' in request.FILES:
+            import base64
+            file = request.FILES['hinh_anh']
+            encoded_string = base64.b64encode(file.read()).decode('utf-8')
+            hinh_anh_url = f"data:{file.content_type};base64,{encoded_string}"
         
         # 2. Validation
         if password != confirm_password:
@@ -84,23 +93,26 @@ def them_tai_xe(request):
                     if num > max_num: max_num = num
             new_id = f"TAI{max_num + 1:04d}"
 
-            # 4. Lưu User
-            new_user = User_Authentication.objects.create(
-                UserID=new_id,
-                TenDangNhap=username,
-                MatKhau=password,
-                SoDienThoai=phone,
-                Vaitro="taixe",
-                Nhaxe_id=request.session.get('ma_nha_xe')
-            )
-
-            # 5. Lưu Taixe
+            # 4. Lưu Taixe trước
             new_driver = Taixe.objects.create(
                 TaixeID=new_id,
                 HoTen=full_name,
                 SoBangLai=license_no,
                 soCCCD=cccd,
                 LoaiBangLai=license_type,
+                NgayHetHanBangLai=license_expiry,
+                HinhAnhURL=hinh_anh_url,
+            )
+
+            # 5. Lưu User với foreign key Taixe
+            new_user = User_Authentication.objects.create(
+                UserID=new_id,
+                TenDangNhap=username,
+                MatKhau=password,
+                SoDienThoai=phone,
+                Vaitro="taixe",
+                Nhaxe_id=request.session.get('ma_nha_xe'),
+                Taixe=new_driver
             )
 
             # 6. Lưu CHITIETTAIXE
@@ -126,6 +138,14 @@ def sua_tai_xe(request, pk):
     if request.method == 'POST':
         phone = request.POST.get('phone')
         license_type = request.POST.get('license_type', 'B1')
+        license_expiry = request.POST.get('license_expiry') or None
+        
+        hinh_anh_url = None
+        if 'hinh_anh' in request.FILES:
+            import base64
+            file = request.FILES['hinh_anh']
+            encoded_string = base64.b64encode(file.read()).decode('utf-8')
+            hinh_anh_url = f"data:{file.content_type};base64,{encoded_string}"
         
         try:
             full_name = request.POST.get('full_name')
@@ -138,12 +158,17 @@ def sua_tai_xe(request, pk):
             )
             
             # 2. Cập nhật Taixe
-            Taixe.objects.filter(TaixeID=pk).update(
-                HoTen=full_name,
-                SoBangLai=license_no,
-                soCCCD=cccd,
-                LoaiBangLai=license_type,
-            )
+            update_data = {
+                'HoTen': full_name,
+                'SoBangLai': license_no,
+                'soCCCD': cccd,
+                'LoaiBangLai': license_type,
+                'NgayHetHanBangLai': license_expiry,
+            }
+            if hinh_anh_url:
+                update_data['HinhAnhURL'] = hinh_anh_url
+                
+            Taixe.objects.filter(TaixeID=pk).update(**update_data)
             
             # 3. Cập nhật CHITIETTAIXE
             CHITIETTAIXE.objects.filter(Taixe_id=pk).update(HoTen=full_name)
