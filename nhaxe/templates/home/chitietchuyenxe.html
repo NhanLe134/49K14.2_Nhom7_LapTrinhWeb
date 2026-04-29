@@ -10,6 +10,59 @@
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
     <style>
+        /* Force Layout - No Scroll Body */
+        html, body {
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .main-wrapper {
+            flex: 1 !important;
+            display: flex !important;
+            overflow: hidden !important;
+        }
+
+        .main-content-ctcx {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            padding: 20px 40px !important;
+        }
+
+        .passenger-list {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            padding-right: 10px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Adjustments for better fit */
+        .trip-detail-card {
+            flex-shrink: 0 !important;
+            margin-bottom: 10px !important;
+        }
+
+        .section-title {
+            flex-shrink: 0 !important;
+            margin-bottom: 15px !important;
+            margin-top: 10px !important;
+        }
+
+        .action-row {
+            flex-shrink: 0 !important;
+            margin-bottom: 20px !important;
+        }
+
         /* Success Popup overlay */
         .popup-overlay-success {
             position: fixed;
@@ -48,6 +101,29 @@
             font-size: 1.4rem;
             font-weight: 600;
             color: #111;
+        }
+
+        /* Status Badge Overrides */
+        .detail-badge {
+            padding: 6px 20px !important;
+            border-radius: 20px !important;
+            font-size: 1rem !important;
+            font-weight: 700 !important;
+            display: inline-block !important;
+            text-align: center !important;
+            min-width: 150px !important;
+            cursor: pointer !important;
+            user-select: none !important;
+        }
+
+        .status-chua-hoan-thanh {
+            background-color: #FEF08A !important; /* Vàng sáng */
+            color: #713F12 !important;            /* Nâu đậm */
+        }
+
+        .status-hoan-thanh {
+            background-color: #E8F5E9 !important; /* Xanh lá nhạt */
+            color: #1B5E20 !important;            /* Xanh lá đậm */
         }
     </style>
 </head>
@@ -122,16 +198,14 @@
                     <p>Ghế trống: <span id="detailEmptySeats">...</span></p>
                 </div>
                 <div class="status-dropdown" style="position: relative; display: inline-block; cursor: pointer;">
-                    {% if trip_status == 'Hoàn thành' or trip_status|lower == 'completed' %}
-                        <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" 
-                             style="user-select: none; background-color: #E8F5E9; color: #1B5E20; padding: 6px 20px; border-radius: 20px;">Hoàn thành</div>
+                    {% if trip_status == 'Hoàn thành' %}
+                        <div class="detail-badge status-hoan-thanh" id="detailBadge" onclick="toggleStatusMenu()">Hoàn thành</div>
                         <div id="statusMenu" class="status-menu"
                             style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; flex-direction: column; gap: 5px; z-index: 10;">
-                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #FEF9C3; color: #854d0e;" onclick="selectStatus('Đang chờ')">Chưa hoàn thành</div>
+                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #FEF08A; color: #713F12;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>
                         </div>
                     {% else %}
-                        <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" 
-                             style="user-select: none; background-color: #FEF9C3; color: #854d0e; padding: 6px 20px; border-radius: 20px;">Chưa hoàn thành</div>
+                        <div class="detail-badge status-chua-hoan-thanh" id="detailBadge" onclick="toggleStatusMenu()">Chưa hoàn thành</div>
                         <div id="statusMenu" class="status-menu"
                             style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; flex-direction: column; gap: 5px; z-index: 10;">
                             <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #E8F5E9; color: #1B5E20;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>
@@ -254,9 +328,9 @@
                     document.getElementById('detailRoute').textContent = trip.route;
                     document.getElementById('detailTime').textContent = trip.time;
 
-                    const seats = parseInt(trip.carType) || 4;
-                    document.getElementById('detailTotalSeats').textContent = seats;
-                    document.getElementById('detailEmptySeats').textContent = seats > 3 ? seats - 3 : 0;
+                    const totalSeats = parseInt(trip.carType) || 0;
+                    document.getElementById('detailTotalSeats').textContent = totalSeats;
+                    document.getElementById('detailEmptySeats').textContent = trip.available_seats || 0;
 
                     if (trip.driver) {
                         btnAssign.style.display = 'block';
@@ -314,13 +388,11 @@
 
             if (status === 'completed' || status === 'Hoàn thành') {
                 badgeElem.textContent = 'Hoàn thành';
-                badgeElem.style.backgroundColor = '#E8F5E9';
-                badgeElem.style.color = '#1B5E20';
-                menuElem.innerHTML = `<div class="status-option" style="${styleTemplate} background: #FEF9C3; color: #854d0e;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>`;
+                badgeElem.className = 'detail-badge status-hoan-thanh';
+                menuElem.innerHTML = `<div class="status-option" style="${styleTemplate} background: #FEF08A; color: #713F12;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>`;
             } else {
                 badgeElem.textContent = 'Chưa hoàn thành';
-                badgeElem.style.backgroundColor = '#FEF9C3';
-                badgeElem.style.color = '#854d0e';
+                badgeElem.className = 'detail-badge status-chua-hoan-thanh';
                 menuElem.innerHTML = `<div class="status-option" style="${styleTemplate} background: #E8F5E9; color: #1B5E20;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>`;
             }
         }

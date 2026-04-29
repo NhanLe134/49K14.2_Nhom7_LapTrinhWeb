@@ -8,8 +8,8 @@
     <!-- Use FontAwesome for icons -->
     {% load static %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/themchuyenxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}?v={% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/themchuyenxe.css' %}?v={% now 'U' %}">
 </head>
 
 <body>
@@ -74,55 +74,78 @@
 
                 <form id="tripForm" method="POST" action="{% url 'themchuyenxe' %}">
                     {% csrf_token %}
-                    <!-- Tên tuyến xe -->
-                    <div class="form-group">
-                        <label for="route">Tuyến xe</label>
-                        <select id="route" name="tuyenxe" class="form-control" required>
-                            <option value="" disabled selected>Chọn tuyến xe</option>
-                            {% for tuyen in tuyen_xe_list %}
-                            <option value="{{ tuyen.tuyenXeID }}">{{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    <div class="form-grid">
+                        <!-- Tên tuyến xe -->
+                        <div class="form-group">
+                            <label for="route">Tên tuyến xe</label>
+                            <select id="route" name="tuyenxe" class="form-control" required>
+                                <option value="" disabled selected>Chọn nơi xuất phát</option>
+                                {% for tuyen in tuyen_xe_list %}
+                                <option value="{{ tuyen.tuyenXeID }}">{{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                    <!-- Ngày chạy -->
-                    <div class="form-group">
-                        <label for="date">Ngày chạy</label>
-                        <input type="date" name="date" id="date" class="form-control" required>
-                    </div>
+                        <!-- Ngày chạy -->
+                        <div class="form-group">
+                            <label for="date">Ngày chạy</label>
+                            <input type="date" name="date" id="date" class="form-control" required placeholder="Vui lòng nhập ngày chạy">
+                        </div>
 
-                    <!-- Giờ xuất phát -->
-                    <div class="form-group">
-                        <label for="time">Giờ xuất phát</label>
-                        <input type="time" name="time" id="time" class="form-control" required>
-                    </div>
+                        <!-- Giờ xuất phát -->
+                        <div class="form-group">
+                            <label for="time">Giờ xuất phát</label>
+                            <select id="time" name="time" class="form-control" required>
+                                <option value="" disabled selected>Chọn giờ xuất phát</option>
+                                <option value="04:00">04:00</option>
+                                <option value="05:00">05:00</option>
+                                <option value="06:00">06:00</option>
+                                <option value="07:00">07:00</option>
+                                <option value="08:00">08:00</option>
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="12:00">12:00</option>
+                                <option value="13:00">13:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="18:00">18:00</option>
+                                <option value="19:00">19:00</option>
+                                <option value="20:00">20:00</option>
+                                <option value="21:00">21:00</option>
+                                <option value="22:00">22:00</option>
+                            </select>
+                        </div>
 
-                    <!-- Xe -->
-                    <div class="form-group">
-                        <label for="carType">Xe (Biển số - Loại chỗ)</label>
-                        <select id="carType" name="xe" class="form-control" required>
-                            <option value="" disabled selected>Chọn xe</option>
-                            {% for xe in xe_list %}
-                            <option value="{{ xe.XeID }}">{{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                        <!-- Loại xe -->
+                        <div class="form-group">
+                            <label for="carType">Xe (Biển số - Loại chỗ)</label>
+                            <select id="carType" name="xe" class="form-control" required>
+                                <option value="" disabled selected>Chọn xe</option>
+                                {% for xe in xe_list %}
+                                <option value="{{ xe.XeID }}">{{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                    <!-- Tài xế -->
-                    <div class="form-group">
-                        <label for="taixe">Tài xế</label>
-                        <select id="taixe" name="taixe" class="form-control" required>
-                            <option value="" disabled selected>Chọn tài xế</option>
-                            {% for tx in taixe_list %}
-                            <option value="{{ tx.TaixeID }}">{{ tx.ten|default:tx.TaixeID }}</option>
-                            {% endfor %}
-                        </select>
+                        <!-- Tài xế -->
+                        <div class="form-group">
+                            <label for="taixe">Tài xế</label>
+                            <select id="taixe" name="taixe" class="form-control" required>
+                                <option value="" disabled selected>Chọn tài xế</option>
+                                {% for tx in taixe_list %}
+                                <option value="{{ tx.TaixeID }}">{{ tx.ten|default:tx.TaixeID }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Nút bấm -->
                     <div class="form-buttons">
                         <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Hủy</button>
-                        <button type="submit" class="btn-submit">Xác nhận</button>
+                        <button type="submit" class="btn-submit">Lưu</button>
                     </div>
                 </form>
             </div>
@@ -139,8 +162,20 @@
 
     <!-- Footer -->
     <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+        <div class="footer-content">
+            <div class="footer-info-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>Địa chỉ: TP Đà Nẵng</span>
+            </div>
+            <div class="footer-info-item">
+                <i class="fa-solid fa-phone"></i>
+                <span>Hotline: 1900 63 39 63</span>
+            </div>
+            <div class="footer-info-item">
+                <i class="fa-solid fa-envelope"></i>
+                <span>Email: hungcuong@nxe.vn</span>
+            </div>
+        </div>
     </footer>
 
     <script>

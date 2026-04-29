@@ -68,27 +68,27 @@
                     <h2 class="ticket-section-title">Danh sách vé đã đặt</h2>
 
                     <div class="ticket-grid">
-                        {% if ve_list %}
-                            {% for v in ve_list %}
-                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTenKhach }}', '{{ v.NgayDat }}', '{{ v.GiaVe }}')">
+                        {% if ve_booked %}
+                            {% for v in ve_booked %}
+                            <div class="ticket-card" onclick="openTicketDetail('{{ v.VeID }}', '{{ v.HoTen }}', '{{ v.NgayDat|date:'d/m/Y' }}', '{{ v.GiaVe }}')">
                                 <div class="ticket-card-content">
                                     <div class="ticket-time-col">
-                                        <div class="ticket-time">{{ v.GioDi|default:"07:00" }}</div>
-                                        <div class="ticket-date">{{ v.NgayKhoiHanh|default:"Chưa có" }}</div>
+                                        <div class="ticket-time">{{ v.gio_di }}</div>
+                                        <div class="ticket-date">{{ v.ngay_khoi_hanh }}</div>
                                     </div>
                                     <div class="ticket-divider"></div>
                                     <div class="ticket-info-col">
-                                        <div class="ticket-route">{{ v.TenTuyen|default:"Đang cập nhật" }}</div>
-                                        <div class="ticket-bus">{{ v.TenNhaXe|default:"Vexeapp" }}</div>
+                                        <div class="ticket-route">{{ v.ten_tuyen }}</div>
+                                        <div class="ticket-bus">Hùng Cường</div>
                                         <div class="ticket-qty">Số lượng ghế: 1</div>
-                                        <div class="ticket-seats">Mã số ghế: {{ v.SoGhe|default:"Đang chờ" }}</div>
+                                        <div class="ticket-seats">Mã số ghế: {{ v.so_ghe }}</div>
                                     </div>
                                 </div>
-                                <button class="btn-cancel">Hủy</button>
+                                <button class="btn-cancel" onclick="event.stopPropagation(); showCancelConfirm('{{ v.VeID }}')">Hủy</button>
                             </div>
                             {% endfor %}
                         {% else %}
-                            <p style="padding: 20px; text-align: center; color: #666;">Bạn chưa có vé nào được đặt.</p>
+                            <p style="padding: 20px; text-align: center; color: #666; width: 100%;">Bạn chưa có vé nào được đặt.</p>
                         {% endif %}
                     </div>
                 </div> <!-- End view-booked -->
@@ -97,107 +97,32 @@
                 <div id="view-completed" style="display: none;">
                     <h2 class="ticket-section-title">Danh sách vé đã đi</h2>
                     <div class="ticket-grid">
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">15:15</div>
-                                    <div class="ticket-date">07/01/2026</div>
+                        {% if ve_completed %}
+                            {% for v in ve_completed %}
+                            <div class="ticket-card">
+                                <div class="ticket-card-content">
+                                    <div class="ticket-time-col">
+                                        <div class="ticket-time">{{ v.gio_di }}</div>
+                                        <div class="ticket-date">{{ v.ngay_khoi_hanh }}</div>
+                                    </div>
+                                    <div class="ticket-divider"></div>
+                                    <div class="ticket-info-col">
+                                        <div class="ticket-route">{{ v.ten_tuyen }}</div>
+                                        <div class="ticket-bus">Hùng Cường</div>
+                                        <div class="ticket-qty">Số lượng ghế: 1</div>
+                                        <div class="ticket-seats">Mã số ghế: {{ v.so_ghe }}</div>
+                                    </div>
                                 </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Đà Nẵng - Huế</div>
-                                    <div class="ticket-bus">Long Hùng</div>
-                                    <div class="ticket-qty">Số lượng ghế: 02</div>
-                                    <div class="ticket-seats">Mã số ghế: C6 - C7</div>
-                                </div>
+                                {% if v.da_danh_gia %}
+                                    <button class="btn-completed">Đã hoàn thành</button>
+                                {% else %}
+                                    <button class="btn-review" onclick="window.location.href='{% url 'vietdanhgia' v.VeID %}'" style="background: #12b7f5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Chờ đánh giá</button>
+                                {% endif %}
                             </div>
-                            <button class="btn-completed">Đã hoàn thành</button>
-                        </div>
-
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">11:15</div>
-                                    <div class="ticket-date">01/11/2025</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Đà Nẵng - Huế</div>
-                                    <div class="ticket-bus">Đà Nẵng - Huế</div>
-                                    <div class="ticket-qty">Số lượng ghế: 01</div>
-                                    <div class="ticket-seats">Mã số ghế: B3</div>
-                                </div>
-                            </div>
-                            <button class="btn-completed">Đã hoàn thành</button>
-                        </div>
-
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">10:20</div>
-                                    <div class="ticket-date">01/01/2026</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Huế - Đà Nẵng</div>
-                                    <div class="ticket-bus">Châu Thanh</div>
-                                    <div class="ticket-qty">Số lượng ghế: 03</div>
-                                    <div class="ticket-seats">Mã số ghế: A1 - A2 - A3</div>
-                                </div>
-                            </div>
-                            <button class="btn-completed">Đã hoàn thành</button>
-                        </div>
-
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">07:10</div>
-                                    <div class="ticket-date">27/10/2025</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Hội An - Huế</div>
-                                    <div class="ticket-bus">Long Hùng</div>
-                                    <div class="ticket-qty">Số lượng ghế: 04</div>
-                                    <div class="ticket-seats">Mã số ghế: C2 - C3 - C7 - C8</div>
-                                </div>
-                            </div>
-                            <button class="btn-completed">Đã hoàn thành</button>
-                        </div>
-
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">16:00</div>
-                                    <div class="ticket-date">15/12/2025</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Hội An - Huế</div>
-                                    <div class="ticket-bus">Phương Trang</div>
-                                    <div class="ticket-qty">Số lượng ghế: 01</div>
-                                    <div class="ticket-seats">Mã số ghế: A1</div>
-                                </div>
-                            </div>
-                            <button class="btn-completed">Đã hoàn thành</button>
-                        </div>
-
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">10:00</div>
-                                    <div class="ticket-date">17/10/2025</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Huế - Đà Nẵng</div>
-                                    <div class="ticket-bus">Phương Trang</div>
-                                    <div class="ticket-qty">Số lượng ghế: 04</div>
-                                    <div class="ticket-seats">Mã số ghế: C1 - C3 - C7 - C8</div>
-                                </div>
-                            </div>
-                            <button class="btn-completed">Đã hoàn thành</button>
-                        </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="padding: 20px; text-align: center; color: #666; width: 100%;">Bạn chưa có chuyến xe nào đã hoàn thành.</p>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -205,39 +130,28 @@
                 <div id="view-cancelled" style="display: none;">
                     <h2 class="ticket-section-title">Danh sách vé đã hủy</h2>
                     <div class="ticket-grid">
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">12:30</div>
-                                    <div class="ticket-date">26/11/2025</div>
+                        {% if ve_cancelled %}
+                            {% for v in ve_cancelled %}
+                            <div class="ticket-card">
+                                <div class="ticket-card-content">
+                                    <div class="ticket-time-col">
+                                        <div class="ticket-time">{{ v.gio_di }}</div>
+                                        <div class="ticket-date">{{ v.ngay_khoi_hanh }}</div>
+                                    </div>
+                                    <div class="ticket-divider"></div>
+                                    <div class="ticket-info-col">
+                                        <div class="ticket-route">{{ v.ten_tuyen }}</div>
+                                        <div class="ticket-bus">Hùng Cường</div>
+                                        <div class="ticket-qty">Số lượng ghế: 1</div>
+                                        <div class="ticket-seats">Mã số ghế: {{ v.so_ghe }}</div>
+                                    </div>
                                 </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Đà Nẵng - Huế</div>
-                                    <div class="ticket-bus">Phương Trang</div>
-                                    <div class="ticket-qty">Số lượng ghế: 01</div>
-                                    <div class="ticket-seats">Mã số ghế: C6</div>
-                                </div>
+                                <button class="btn-cancelled">Đã hủy</button>
                             </div>
-                            <button class="btn-cancelled">Đã hủy</button>
-                        </div>
-
-                        <div class="ticket-card">
-                            <div class="ticket-card-content">
-                                <div class="ticket-time-col">
-                                    <div class="ticket-time">09:25</div>
-                                    <div class="ticket-date">20/11/2025</div>
-                                </div>
-                                <div class="ticket-divider"></div>
-                                <div class="ticket-info-col">
-                                    <div class="ticket-route">Đà Nẵng - Huế</div>
-                                    <div class="ticket-bus">Long Hùng</div>
-                                    <div class="ticket-qty">Số lượng ghế: 03</div>
-                                    <div class="ticket-seats">Mã số ghế: A1 - A2 - A3</div>
-                                </div>
-                            </div>
-                            <button class="btn-cancelled">Đã hủy</button>
-                        </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="padding: 20px; text-align: center; color: #666; width: 100%;">Bạn chưa có vé nào bị hủy.</p>
+                        {% endif %}
                     </div>
                 </div>
 

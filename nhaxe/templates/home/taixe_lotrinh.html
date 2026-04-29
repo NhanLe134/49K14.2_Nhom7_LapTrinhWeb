@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{% static 'css/lotrinh.css' %}">
     <!-- Leaflet.js -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="referrer" content="no-referrer-when-downgrade">
 </head>
 
 <body>
@@ -54,6 +55,9 @@
             </a>
             <a href="{% url 'taixe_quanlychuyenxe' %}" class="sidebar-item active">
                 <i class="fa-solid fa-map"></i> Quản lý chuyến xe
+            </a>
+            <a href="{% url 'thongtin_taixe' %}" class="sidebar-item">
+                <i class="fa-solid fa-gear"></i> Thông tin tài khoản
             </a>
         </aside>
 
@@ -126,14 +130,14 @@
     <!-- Leaflet.js -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Geocode địa chỉ ưu tiên vùng Huế - Đà Nẵng
         async function geocode(address) {
             if (!address || address === 'N/A' || address === '') return null;
-            
-            const q = encodeURIComponent(address + ', Việt Nam');
             try {
-                // Giới hạn tìm kiếm trong khu vực Huế - Đà Nẵng (viewbox & bounded=1)
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.0,16.8,108.8,15.5&bounded=1`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const q = encodeURIComponent(address + ', Việt Nam');
+                // Giới hạn trong vùng từ Bắc Huế đến Nam Đà Nẵng (vbox: west, north, east, south)
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.2,16.8,108.4,15.9&bounded=1&accept-language=vi`);
                 const data = await res.json();
                 if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
             } catch (e) {
@@ -153,8 +157,10 @@
 
             // Khởi tạo bản đồ Leaflet
             const map = L.map('map').setView([16.0544, 108.2022], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
             }).addTo(map);
 
             // Lấy danh sách điểm dừng từ DOM
@@ -172,10 +178,20 @@
                 const c = await geocode(allStops[i]);
                 if (c) {
                     coords.push(c);
-                    // Thêm marker
-                    const icon = i === 0 ? '🟢' : (i === allStops.length - 1 ? '🔴' : '🔵');
-                    L.marker(c).addTo(map)
-                        .bindPopup(`<b>${icon} ${allStops[i]}</b><br>Điểm ${i + 1}/${allStops.length}`);
+                    
+                    // Tạo Marker dạng hình tròn
+                    const isStartOrEnd = (i === 0 || i === allStops.length - 1);
+                    const markerColor = i === 0 ? '#16a34a' : (i === allStops.length - 1 ? '#dc2626' : '#06A0E2');
+
+                    L.circleMarker(c, {
+                        radius: isStartOrEnd ? 8 : 6,
+                        fillColor: markerColor,
+                        color: "#fff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }).addTo(map)
+                      .bindPopup(`<b>${allStops[i]}</b><br>Điểm ${i + 1}/${allStops.length}`);
                 }
             }
 
@@ -187,7 +203,12 @@
                     const routeData = await routeRes.json();
                     if (routeData.code === 'Ok' && routeData.routes.length > 0) {
                         const routeCoords = routeData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                        L.polyline(routeCoords, { color: '#06A0E2', weight: 5, opacity: 0.8 }).addTo(map);
+                        L.polyline(routeCoords, { 
+                            color: '#06A0E2', 
+                            weight: 6, 
+                            opacity: 0.7,
+                            lineJoin: 'round'
+                        }).addTo(map);
                     }
                 } catch(e) {
                     L.polyline(coords, { color: '#06A0E2', weight: 4, dashArray: '10, 10' }).addTo(map);

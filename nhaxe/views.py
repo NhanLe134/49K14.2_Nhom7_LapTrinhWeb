@@ -70,16 +70,18 @@ def chitietchuyenxe(request):
         cx = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe', 'Taixe'), pk=chuyenxe_id)
         
         # Format dữ liệu cho template
-        route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
-        if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
-            route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+        if cx.TuyenXe:
+            route_name = cx.TuyenXe.tenTuyen or "Chưa rõ"
             
+        # Lấy số ghế set cứng theo loại xe (Loaixe.SoCho)
+        total_seats = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 0
+
         trip_data = {
             'id': cx.ChuyenXeID,
             'route': route_name,
             'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
-            'carType': str(cx.Xe.SoGhe) if cx.Xe else '4',
-            'status': cx.TrangThai or 'pending',
+            'carType': str(total_seats),
+            'status': cx.TrangThai or 'Chưa hoàn thành',
             'driver': cx.Taixe.HoTen if cx.Taixe else 'Chưa phân công'
         }
     except Exception:
@@ -88,11 +90,16 @@ def chitietchuyenxe(request):
             
     # Lấy danh sách hành khách từ bảng vé
     ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
+    ticket_count = ve_list.count()
+    available_seats = (cx.Xe.SoGhe - ticket_count) if cx.Xe and cx.Xe.SoGhe else 0
+
+    # Cập nhật trip_data với available_seats
+    trip_data['available_seats'] = available_seats
 
     return render(request, 'home/chitietchuyenxe.html', {
         'trip_json': json.dumps(trip_data),
         'chuyenxe_id': chuyenxe_id,
-        'trip_status': cx.TrangThai or '',
+        'trip_status': cx.TrangThai or 'Chưa hoàn thành',
         've_list': ve_list
     })
 
@@ -119,9 +126,8 @@ def nhaxe(request):
         formatted_trips = []
         for cx in trips_queryset:
             # Lấy tên lộ trình
-            route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
-            if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
-                route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+            if cx.TuyenXe:
+                route_name = cx.TuyenXe.tenTuyen or "Chưa rõ"
                 
             formatted_trips.append({
                 'driver': cx.Taixe.HoTen if cx.Taixe else 'Chưa phân công',
@@ -311,13 +317,48 @@ def quanly_khachhang(request):
 
 def quanlyve(request):
     user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
     try:
+        from .models import DanhGia
         # Lấy vé của khách hàng
-        ve_list = Ve.objects.filter(KhachHang_id=user_id).order_by('-NgayDat')
-        return render(request, 'home/quanlyve.html', {'ve_list': ve_list})
+        all_ve = Ve.objects.filter(KhachHang_id=user_id).select_related('ChuyenXe', 'ChuyenXe__TuyenXe', 'ChuyenXe__Xe').order_by('-NgayDat')
+        
+        # Lấy ID các vé đã đánh giá
+        ve_da_danh_gia_ids = list(DanhGia.objects.filter(KhachHang_id=user_id).values_list('Ve_id', flat=True))
+        
+        ve_booked = []
+        ve_completed = []
+        ve_cancelled = []
+        
+        for v in all_ve:
+            # Map dữ liệu cho template
+            v.ten_tuyen = v.ChuyenXe.TuyenXe.tenTuyen if v.ChuyenXe.TuyenXe else "Chưa rõ"
+            v.ngay_khoi_hanh = v.ChuyenXe.NgayKhoiHanh.strftime('%d/%m/%Y') if v.ChuyenXe.NgayKhoiHanh else ""
+            v.gio_di = v.ChuyenXe.GioDi.strftime('%H:%M') if v.ChuyenXe.GioDi else ""
+            v.so_ghe = v.Ghe.soGhe if v.Ghe else "Đang chờ"
+            v.da_danh_gia = v.VeID in ve_da_danh_gia_ids
+            
+            status = v.ChuyenXe.TrangThai
+            if status == 'Hoàn thành':
+                ve_completed.append(v)
+            elif status == 'Đã hủy':
+                ve_cancelled.append(v)
+            else:
+                ve_booked.append(v)
+
+        return render(request, 'home/quanlyve.html', {
+            've_booked': ve_booked,
+            've_completed': ve_completed,
+            've_cancelled': ve_cancelled
+        })
     except Exception as e:
         messages.error(request, f"Lỗi lấy danh sách vé: {str(e)}")
-        return render(request, 'home/quanlyve.html', {'ve_list': []})
+        return render(request, 'home/quanlyve.html', {
+            've_booked': [],
+            've_completed': [],
+            've_cancelled': []
+        })
 
 # ==================== TÀI XẾ (tx) ====================
 

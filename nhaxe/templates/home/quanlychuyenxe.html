@@ -10,6 +10,38 @@
     <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
     <link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}">
     <style>
+        /* Force Layout - No Scroll Body */
+        html, body {
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .main-wrapper {
+            flex: 1 !important;
+            display: flex !important;
+            overflow: hidden !important;
+        }
+
+        .main-content-qlcx {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .trip-list {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            padding-right: 10px;
+        }
+
         /* Popup overlay */
         .popup-overlay {
             position: fixed;
@@ -48,6 +80,27 @@
             font-size: 1.4rem;
             font-weight: 600;
             color: #111;
+        }
+
+        /* Status Badge Overrides */
+        .status-badge {
+            padding: 6px 15px !important;
+            border-radius: 20px !important;
+            font-size: 0.9rem !important;
+            font-weight: 700 !important;
+            display: inline-block !important;
+            text-align: center !important;
+            min-width: 120px !important;
+        }
+
+        .status-chua-hoan-thanh {
+            background-color: #FEF08A !important; /* Vàng sáng */
+            color: #713F12 !important;            /* Nâu đậm */
+        }
+
+        .status-hoan-thanh {
+            background-color: #E8F5E9 !important; /* Xanh lá nhạt */
+            color: #1B5E20 !important;            /* Xanh lá đậm */
         }
     </style>
 </head>
@@ -117,7 +170,7 @@
             <div class="trip-list">
                 {% for chuyen in chuyen_xe_list %}
                 <div class="trip-card" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'" style="cursor: pointer;">
-                    <img class="trip-image" src="{% static 'img/xe1.jpg' %}" alt="xe">
+                    <img class="trip-image" src="{% if chuyen.seat_count == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.seat_count == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
                     <div class="trip-info-main">
                         <div class="trip-title">
                             <strong>{{ chuyen.ChuyenXeID }}</strong>
@@ -125,18 +178,17 @@
                         </div>
                         <div class="trip-details">
                             <p>Giờ xuất phát: {{ chuyen.gio_di_fmt }}</p>
-                            <p>Loại xe: {{ chuyen.seat_count }} chỗ</p>
+                            <p>Tổng số ghế: {{ chuyen.seat_count }}</p>
+                            <p>Ghế trống: {{ chuyen.available_seats }}</p>
                         </div>
                     </div>
                     <div class="trip-actions">
-                        {% with status=chuyen.TrangThai|lower|cut:" " %}
-                        {% if 'hoan' in status and 'thanh' in status or status == 'completed' %}
-                            <span class="status-badge" style="background-color: #E8F5E9; color: #1B5E20; padding: 6px 15px; border-radius: 20px;">Hoàn thành</span>
+                        {% if chuyen.TrangThai == 'Hoàn thành' %}
+                            <span class="status-badge status-hoan-thanh">Hoàn thành</span>
                         {% else %}
-                            <span class="status-badge" style="background-color: #FEF9C3; color: #854d0e;">{{ chuyen.TrangThai|default:'Chưa hoàn thành' }}</span>
+                            <span class="status-badge status-chua-hoan-thanh">Chưa hoàn thành</span>
                         {% endif %}
-                        {% endwith %}
-                        <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' %}?id={{ chuyen.ChuyenXeID }}'">Chỉnh sửa</button>
+                        <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' chuyen.ChuyenXeID %}'">Chỉnh sửa</button>
                     </div>
                 </div>
                 {% empty %}
@@ -177,26 +229,26 @@
             // Logic Popup thành công
             const popup = document.getElementById('successPopup');
             const popupText = document.getElementById('popupMsgText');
-            
+
             // Tìm tất cả message success từ Django
             const successMsgs = document.querySelectorAll('.msg-success');
             if (successMsgs.length > 0) {
                 // Lấy nội dung message đầu tiên
                 const msgContent = successMsgs[0].innerText;
                 popupText.innerText = msgContent;
-                
+
                 // Hiển thị popup
                 popup.classList.add('active');
-                
+
                 // Ẩn alert mặc định nếu là success để không bị lặp
                 successMsgs.forEach(m => m.style.display = 'none');
-                
+
                 // Tự động đóng sau 2 giây
                 setTimeout(() => {
                     popup.classList.remove('active');
                 }, 2000);
             }
-            
+
             // Click ra ngoài popup để đóng
             popup.addEventListener('click', () => {
                 popup.classList.remove('active');

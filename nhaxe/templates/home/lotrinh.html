@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{% static 'css/lotrinh.css' %}">
     <!-- Leaflet.js - Miễn phí, không cần API key -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="referrer" content="no-referrer-when-downgrade">
 </head>
 
 <body>
@@ -138,17 +139,17 @@
     <script>
         const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
 
-        // Geocode địa chỉ bằng Nominatim (miễn phí)
-        // Geocode địa chỉ ưu tiên vùng Huế - Đà Nẵng
         async function geocode(address) {
             if (!address || address === 'N/A') return null;
-            
-            const query = address + ', Thừa Thiên Huế hoặc Đà Nẵng, Việt Nam';
-            const q = encodeURIComponent(query);
             try {
-                // Thêm viewbox để giới hạn khu vực miền Trung (Huế - Đà Nẵng)
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.5,16.6,108.5,15.8&bounded=1`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Thêm ", Việt Nam" để tăng độ chính xác
+                const q = encodeURIComponent(address + ', Việt Nam');
+                // Giới hạn trong vùng từ Bắc Huế đến Nam Đà Nẵng (vbox: west, north, east, south)
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.2,16.8,108.4,15.9&bounded=1&accept-language=vi`);
                 const data = await res.json();
+                
                 if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
             } catch (e) {
                 console.error("Lỗi Geocode:", e);
@@ -165,18 +166,22 @@
 
             // Khởi tạo bản đồ Leaflet
             const map = L.map('map').setView([16.0544, 108.2022], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
             }).addTo(map);
 
-            // Lấy danh sách điểm dừng từ DOM
-            const pickups = [...document.querySelectorAll('.loc-row.loc-up .loc-text')].map(el => el.textContent.trim());
-            const drops = [...document.querySelectorAll('.loc-row.loc-down .loc-text')].map(el => el.textContent.trim());
-            const allStops = [];
-            pickups.forEach(p => { if (!allStops.includes(p)) allStops.push(p); });
-            drops.forEach(d => { if (!allStops.includes(d)) allStops.push(d); });
+            // Lấy danh sách điểm dừng từ DOM (Lọc bỏ N/A và trùng lặp)
+            const pickupElements = document.querySelectorAll('.loc-row.loc-up .loc-text');
+            const dropElements = document.querySelectorAll('.loc-row.loc-down .loc-text');
+            
+            const pickups = [...pickupElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
+            const drops = [...dropElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
+            
+            const allStops = [...new Set([...pickups, ...drops])];
 
-            if (allStops.length < 2) return;
+            if (allStops.length < 1) return;
 
             // Geocode tất cả điểm dừng
             const coords = [];
@@ -184,10 +189,20 @@
                 const c = await geocode(allStops[i]);
                 if (c) {
                     coords.push(c);
-                    // Thêm marker
-                    const icon = i === 0 ? '🟢' : (i === allStops.length - 1 ? '🔴' : '🔵');
-                    L.marker(c).addTo(map)
-                        .bindPopup(`<b>${icon} ${allStops[i]}</b><br>Điểm ${i + 1}/${allStops.length}`);
+                    
+                    // Tạo Marker dạng hình tròn (giống Google Maps)
+                    const isStartOrEnd = (i === 0 || i === allStops.length - 1);
+                    const markerColor = i === 0 ? '#16a34a' : (i === allStops.length - 1 ? '#dc2626' : '#06A0E2');
+                    
+                    L.circleMarker(c, {
+                        radius: isStartOrEnd ? 8 : 6,
+                        fillColor: markerColor,
+                        color: "#fff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }).addTo(map)
+                      .bindPopup(`<b>${allStops[i]}</b><br>Điểm ${i + 1}/${allStops.length}`);
                 }
             }
 
@@ -199,7 +214,12 @@
                     const routeData = await routeRes.json();
                     if (routeData.code === 'Ok' && routeData.routes.length > 0) {
                         const routeCoords = routeData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                        L.polyline(routeCoords, { color: '#06A0E2', weight: 5, opacity: 0.8 }).addTo(map);
+                        L.polyline(routeCoords, { 
+                            color: '#06A0E2', 
+                            weight: 6, 
+                            opacity: 0.7,
+                            lineJoin: 'round'
+                        }).addTo(map);
                     }
                 } catch(e) {
                     // Nếu OSRM lỗi, vẽ đường thẳng

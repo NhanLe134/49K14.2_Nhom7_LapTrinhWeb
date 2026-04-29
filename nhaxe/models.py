@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+import re
 
 # 1. Bảng KhachHang (Khách hàng)
 class KhachHang(models.Model):
@@ -135,24 +136,36 @@ class TuyenXe(models.Model):
 
 # 10. Bảng ChuyenXe (Chuyến xe)
 class ChuyenXe(models.Model):
-    ChuyenXeID = models.CharField(max_length=10, primary_key=True)
+    ChuyenXeID = models.CharField(max_length=10, primary_key=True, blank=True) # Cho phép tự sinh
     Xe = models.ForeignKey(Xe, on_delete=models.SET_NULL, null=True, blank=True)
     TuyenXe = models.ForeignKey(TuyenXe, on_delete=models.CASCADE)
     Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE)
     NgayKhoiHanh = models.DateField(null=True, blank=True)
     GioDi = models.TimeField(null=True, blank=True)
     GioDen = models.TimeField(null=True, blank=True)
-    TrangThai = models.CharField(max_length=50, null=True, blank=True) # Nới rộng thành 50
+    TrangThai = models.CharField(max_length=50, null=True, blank=True, default='Chưa hoàn thành')
+
+    def save(self, *args, **kwargs):
+        if not self.ChuyenXeID:
+            # Tìm mã CX00001, CX00002... còn trống đầu tiên
+            num = 1
+            while True:
+                new_id = f'CX{num:05d}'
+                if not ChuyenXe.objects.filter(ChuyenXeID=new_id).exists():
+                    self.ChuyenXeID = new_id
+                    break
+                num += 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.ChuyenXeID
 
 # 11. Bảng Ghế Ngồi
 class GheNgoi(models.Model):
-    gheID = models.CharField(max_length=10, primary_key=True)
+    gheID = models.CharField(max_length=20, primary_key=True) # Nới rộng để chứa CX00001A1
     ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE)
-    soGhe = models.CharField(max_length=5, null=True, blank=True)
-    trangThai = models.CharField(max_length=20, null=True, blank=True)
+    soGhe = models.CharField(max_length=10, null=True, blank=True)
+    trangThai = models.CharField(max_length=20, default='Còn trống')
 
     def __str__(self):
         return f"{self.soGhe} - {self.ChuyenXe.ChuyenXeID}"
@@ -183,7 +196,7 @@ class ThanhToan(models.Model):
     Ve = models.OneToOneField(Ve, on_delete=models.CASCADE)
     SoTien = models.DecimalField(max_digits=12, decimal_places=0)
     PhuongThucTT = models.CharField(max_length=20, null=True, blank=True)
-    NgayThanhToan = models.DateTimeField(null=True, blank=True)
+    NgayThanhToan = models.DateTimeField(auto_now_add=True)
     MaGiaoDich = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
@@ -202,3 +215,4 @@ class DanhGia(models.Model):
 
     def __str__(self):
         return f"{self.DanhGiaID} - {self.Diemso} sao"
+
