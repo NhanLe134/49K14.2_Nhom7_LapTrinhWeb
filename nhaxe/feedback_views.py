@@ -19,20 +19,24 @@ def danhgiachuyenxe(request, tab=None):
     han_7_ngay = bay_gio - timedelta(days=7)
     han_3_ngay = bay_gio - timedelta(days=3)
 
-    # 1. Lấy vé CHƯA đánh giá và CHƯA quá 7 ngày kể từ ngày khởi hành
+    # 1. Lấy vé CHƯA đánh giá
+    from .models import DanhGia
     ve_da_danh_gia_ids = DanhGia.objects.filter(KhachHang_id=khach_hang_id).values_list('Ve_id', flat=True)
+    
+    # Sử dụng defer() để bỏ qua cột AnhDaiDienURL không tồn tại trong DB, tránh lỗi ProgrammingError
     ve_cho_danh_gia = Ve.objects.filter(
         KhachHang_id=khach_hang_id,
-        TrangThai='Đã đi',
-        ChuyenXe__NgayKhoiHanh__gte=han_7_ngay.date() # Chỉ lấy vé trong vòng 7 ngày qua
-    ).exclude(VeID__in=ve_da_danh_gia_ids)
+        TrangThai='Đã đi'
+    ).exclude(VeID__in=ve_da_danh_gia_ids).select_related('ChuyenXe__TuyenXe__nhaXe').defer('ChuyenXe__TuyenXe__nhaXe__AnhDaiDienURL')
     
     chuyen_xe_cho_danh_gia = []
     for ve in ve_cho_danh_gia:
         chuyen_xe_cho_danh_gia.append({'chuyen': ve.ChuyenXe, 've': ve})
 
-    # 2. Lấy danh sách đã đánh giá (Lấy tất cả, không lọc thời gian)
-    danh_sach_da_danh_gia = DanhGia.objects.filter(KhachHang_id=khach_hang_id).order_by('-NgayDanhGia')
+    # 2. Lấy danh sách đã đánh giá (Sử dụng defer để tránh cột AnhDaiDienURL lỗi)
+    danh_sach_da_danh_gia = DanhGia.objects.filter(
+        KhachHang_id=khach_hang_id
+    ).select_related('Nhaxe').defer('Nhaxe__AnhDaiDienURL').order_by('-NgayDanhGia')
     
     for dg in danh_sach_da_danh_gia:
         # Lấy tên hiển thị an toàn
@@ -53,7 +57,15 @@ def danhgiachuyenxe(request, tab=None):
 def vietdanhgia(request, ve_id):
     """Hiển thị form đánh giá (Hỗ trợ cả Thêm mới và Sửa)."""
     khach_hang_id = request.session.get('user_id')
-    ve = get_object_or_404(Ve, pk=ve_id)
+    if not khach_hang_id:
+        messages.error(request, "Vui lòng đăng nhập để thực hiện chức năng này.")
+        return redirect('dangnhap')
+
+    ve = get_object_or_404(
+        Ve.objects.select_related('ChuyenXe__TuyenXe__nhaXe').defer('ChuyenXe__TuyenXe__nhaXe__AnhDaiDienURL'), 
+        pk=ve_id, 
+        KhachHang_id=khach_hang_id
+    )
     
     # Kiểm tra xem đã có đánh giá chưa
     danh_gia_cu = DanhGia.objects.filter(Ve_id=ve_id, KhachHang_id=khach_hang_id).first()
@@ -77,16 +89,23 @@ def submit_danhgia(request):
     """Lưu hoặc cập nhật đánh giá."""
     if request.method == 'POST':
         khach_hang_id = request.session.get('user_id')
+        if not khach_hang_id:
+            messages.error(request, "Vui lòng đăng nhập để thực hiện chức năng này.")
+            return redirect('dangnhap')
+
         ve_id = request.POST.get('ve_id')
         nhaxe_id = request.POST.get('nhaxe_id')
         diem_so = int(request.POST.get('diem_so'))
         nhan_xet = request.POST.get('nhan_xet')
         an_danh = request.POST.get('an_danh') == 'on'
 
-        danh_gia_exist = DanhGia.objects.filter(Ve_id=ve_id).first()
+        # Đảm bảo vé thuộc về khách hàng đang đăng nhập
+        ve = get_object_or_404(Ve, pk=ve_id, KhachHang_id=khach_hang_id)
+
+        danh_gia_exist = DanhGia.objects.filter(Ve_id=ve_id, KhachHang_id=khach_hang_id).first()
 
         try:
-            nhaxe = Nhaxe.objects.get(NhaxeID=nhaxe_id)
+            nhaxe = Nhaxe.objects.defer('AnhDaiDienURL').get(NhaxeID=nhaxe_id)
             if nhaxe.SoLuotDanhGia is None: nhaxe.SoLuotDanhGia = 0
             if nhaxe.TongDiemDanhGia is None: nhaxe.TongDiemDanhGia = 0
 
@@ -130,6 +149,6 @@ def submit_danhgia(request):
             return redirect('dadanhgia')
         except Exception as e:
             messages.error(request, f"Lỗi: {e}")
-            return redirect('chodanhgia')
+            return redirect('danhgiachuyenxe')
 
-    return redirect('chodanhgia')
+    return redirect('danhgiachuyenxe')

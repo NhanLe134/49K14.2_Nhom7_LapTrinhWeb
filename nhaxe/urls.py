@@ -38,11 +38,12 @@ urlpatterns = [
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
     path('khachhang', views.khachhang, name='khachhang'),
     path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
-    path('dadanhgia', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
-    path('danhgiachuyenxe', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
-    path('quanlyve', quanlyve_views.quanlyve, name='quanlyve'),
-    path('vietdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='vietdanhgia'),
-    path('submit_danhgia', feedback_views.submit_danhgia, name='submit_danhgia'),
+    path('danhgiachuyenxe/', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
+    path('danhgiachuyenxe/dadanhgia/', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
+    path('quanlyve/', quanlyve_views.quanlyve, name='quanlyve'),
+    path('danhgiachuyenxe/themdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='themdanhgia'),
+    path('danhgiachuyenxe/suadanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='suadanhgia'),
+    path('submit_danhgia/', feedback_views.submit_danhgia, name='submit_danhgia'),
 
     # Thanh toán
     path('dat-ve/', payment_views.dat_ve, name='dat_ve'),
