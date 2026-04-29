@@ -57,16 +57,21 @@ def themchuyenxe(request):
     if request.method == 'POST':
         tuyen_id = request.POST.get('tuyenxe')
         xe_id = request.POST.get('xe')
-        taixe_id = request.POST.get('taixe')
         ngay = request.POST.get('date')
         gio = request.POST.get('time')
         
         try:
+            # Lấy tài xế đầu tiên của nhà xe để gán tạm (vượt qua constraint database)
+            first_taixe = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).first()
+            if not first_taixe:
+                messages.error(request, 'Nhà xe của bạn chưa có tài xế nào. Vui lòng thêm tài xế trước khi tạo chuyến xe.')
+                return redirect('quanlytaixe')
+
             # Tạo bản ghi - ChuyenXeID và GheNgoi sẽ được tự động sinh (Signal + Model.save)
             chuyen = ChuyenXe.objects.create(
                 TuyenXe_id=tuyen_id,
                 Xe_id=xe_id,
-                Taixe_id=taixe_id,
+                Taixe=first_taixe,
                 NgayKhoiHanh=ngay,
                 GioDi=gio,
                 TrangThai='Chưa hoàn thành'
@@ -75,6 +80,8 @@ def themchuyenxe(request):
             return redirect('quanlychuyenxe')
         except Exception as e:
             messages.error(request, f'Lỗi khi thêm chuyến xe: {str(e)}')
+
+
 
     # Dropdown options lọc theo nhà xe
     tuyen_xe_list = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)

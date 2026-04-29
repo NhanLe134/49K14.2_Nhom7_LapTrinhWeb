@@ -68,35 +68,19 @@
             <h2 class="section-title">Danh sách tài xế</h2>
 
             <div class="driver-list">
-                <div class="driver-card" onclick="openConfirmPopup('Huy Phong')">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="driver-info">Huy Phong</div>
+                {% for tx in taixe_list %}
+                <div class="driver-card" onclick="openConfirmPopup('{{ tx.TaixeID }}', '{{ tx.HoTen|default:tx.TaixeID }}')">
+                    <i class="fa-regular fa-user passenger-icon" style="font-size: 2rem; margin-right: 20px; color: #38bdf8;"></i>
+                    <div class="driver-info">{{ tx.HoTen|default:tx.TaixeID }}</div>
                     <div class="driver-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>2 năm</p>
-                        <p>1 Hùng Vương, Đà Nẵng</p>
+                        <p>SĐT: {{ tx.User_Authentication.SoDienThoai|default:"Chưa có" }}</p>
+                        <p>Bằng lái: {{ tx.LoaiBangLai|default:"B2" }}</p>
+                        <p>Số CCCD: {{ tx.soCCCD|default:"N/A" }}</p>
                     </div>
                 </div>
-
-                <div class="driver-card" onclick="openConfirmPopup('Thanh Nhã')">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="driver-info">Thanh Nhã</div>
-                    <div class="driver-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>1 năm</p>
-                        <p>1 Tố Hữu, Đà Nẵng</p>
-                    </div>
-                </div>
-
-                <div class="driver-card" onclick="openConfirmPopup('Quang Khôi')">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="driver-info">Quang Khôi</div>
-                    <div class="driver-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>2 năm</p>
-                        <p>25 Phan Thanh, Đà Nẵng</p>
-                    </div>
-                </div>
+                {% empty %}
+                <p style="text-align: center; color: #666; width: 100%; margin-top: 20px;">Không tìm thấy tài xế nào trong hệ thống.</p>
+                {% endfor %}
             </div>
         </main>
     </div>
@@ -105,7 +89,7 @@
     <div class="popup-overlay" id="confirmPopup">
         <div class="popup-box confirm-box">
             <div class="popup-title">Thông báo</div>
-            <div class="popup-message">Bạn có muốn phân công tài xế <br> <b id="driverNameSpan"></b> không?</div>
+            <div class="popup-message">Bạn có muốn phân công tài xế <br> <b id="driverNameSpan"></b> cho chuyến xe này không?</div>
             <div class="popup-actions">
                 <button class="btn-no" onclick="closeConfirm()">Không</button>
                 <button class="btn-yes" onclick="processAssign()">Đồng ý</button>
@@ -116,9 +100,9 @@
     <!-- Success Popup -->
     <div class="popup-overlay" id="successPopup">
         <div class="popup-box">
-            <div class="popup-title" style="margin-bottom: 20px;">Thông báo</div>
-            <div class="popup-message" style="margin-bottom: 10px;">Bạn đã phân công tài xế</div>
-            <button class="btn-yes" style="margin-top: 10px;" onclick="finishAssign()">Đồng ý</button>
+            <i class="fa-regular fa-circle-check popup-icon" style="font-size: 3.5rem; color: #22c55e; margin-bottom: 20px;"></i>
+            <div class="popup-message" style="font-size: 1.3rem; margin-bottom: 10px;">Phân công tài xế thành công</div>
+            <button class="btn-yes" style="margin-top: 15px;" onclick="finishAssign()">Đồng ý</button>
         </div>
     </div>
 
@@ -129,33 +113,36 @@
     </footer>
 
     <script>
-        const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
+        const URL_CHITIETCHUYENXE = "{% url 'chitietchuyenxe' %}";
 
         document.addEventListener('DOMContentLoaded', () => {
             const userBtn = document.getElementById('userDropdownBtn');
             const userMenu = document.getElementById('userMenu');
 
-            userBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                userMenu.classList.toggle('show');
-            });
-
-            document.addEventListener('click', () => {
-                userMenu.classList.remove('show');
-            });
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', () => {
+                    userMenu.classList.remove('show');
+                });
+            }
         });
 
         const urlParams = new URLSearchParams(window.location.search);
         const tripId = urlParams.get('id');
-        let selectedDriver = '';
+        let selectedDriverId = '';
+        let selectedDriverName = '';
 
         const confirmPopupElem = document.getElementById('confirmPopup');
         const successPopupElem = document.getElementById('successPopup');
         const driverNameSpan = document.getElementById('driverNameSpan');
 
-        function openConfirmPopup(driverName) {
-            selectedDriver = driverName;
-            driverNameSpan.textContent = driverName;
+        function openConfirmPopup(id, name) {
+            selectedDriverId = id;
+            selectedDriverName = name;
+            driverNameSpan.textContent = name;
             confirmPopupElem.classList.add('active');
         }
 
@@ -164,31 +151,38 @@
         }
 
         function processAssign() {
-            closeConfirm();
+            if (!tripId || !selectedDriverId) return;
 
-            if (tripId) {
-                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                const idx = trips.findIndex(t => t.id === tripId);
-                if (idx !== -1) {
-                    trips[idx].driver = selectedDriver;
-                    localStorage.setItem('app_trips', JSON.stringify(trips));
+            // CSRF Token
+            const csrftoken = '{{ csrf_token }}';
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: `taixe_id=${selectedDriverId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    closeConfirm();
+                    successPopupElem.classList.add('active');
+                } else {
+                    alert('Lỗi: ' + data.message);
                 }
-            }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Đã có lỗi xảy ra khi kết nối máy chủ.');
+            });
+        }
 
-            successPopupElem.innerHTML = `
-                <div class="popup-box">
-                    <i class="fa-regular fa-circle-check popup-icon"></i>
-                    <div class="popup-message">Phân công tài xế thành công</div>
-                </div>
-            `;
-            successPopupElem.classList.add('active');
-
-            setTimeout(() => {
-                window.location.href = URL_QUANLYCHUYENXE;
-            }, 1500);
+        function finishAssign() {
+            window.location.href = URL_CHITIETCHUYENXE + '?id=' + tripId;
         }
     </script>
     <script src="{% static 'js/common.js' %}"></script>
 </body>
-
 </html>

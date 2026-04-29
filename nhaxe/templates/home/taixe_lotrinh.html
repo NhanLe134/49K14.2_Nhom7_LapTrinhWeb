@@ -162,13 +162,28 @@
             }).addTo(map);
 
             // Lấy danh sách điểm dừng từ DOM
-            const pickups = [...document.querySelectorAll('.loc-row.loc-up .loc-text')].map(el => el.textContent.trim());
-            const drops = [...document.querySelectorAll('.loc-row.loc-down .loc-text')].map(el => el.textContent.trim());
-            const allStops = [];
-            pickups.forEach(p => { if (p !== 'N/A' && !allStops.includes(p)) allStops.push(p); });
-            drops.forEach(d => { if (d !== 'N/A' && !allStops.includes(d)) allStops.push(d); });
+            const pickupElements = document.querySelectorAll('.loc-row.loc-up .loc-text');
+            const dropElements = document.querySelectorAll('.loc-row.loc-down .loc-text');
+            
+            const pickups = [...pickupElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
+            const drops = [...dropElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
+            
+            // Điểm bắt đầu và kết thúc từ Tuyến xe
+            const startPoint = "{{ chuyen.TuyenXe.diemDi|default:'' }}";
+            const endPoint = "{{ chuyen.TuyenXe.diemDen|default:'' }}";
+
+            // Tạo danh sách điểm: [Điểm đi] + [Các điểm đón/trả] + [Điểm đến]
+            let allStops = [];
+            if (startPoint) allStops.push(startPoint);
+            
+            // Thêm các điểm trung gian (loại bỏ trùng lặp với điểm đầu/cuối)
+            const intermediateStops = [...new Set([...pickups, ...drops])].filter(s => s !== startPoint && s !== endPoint);
+            allStops = [...allStops, ...intermediateStops];
+            
+            if (endPoint && endPoint !== startPoint) allStops.push(endPoint);
 
             if (allStops.length < 1) return;
+
 
             // Geocode tất cả điểm dừng
             const coords = [];

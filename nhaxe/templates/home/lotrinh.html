@@ -172,16 +172,29 @@
                 maxZoom: 20
             }).addTo(map);
 
-            // Lấy danh sách điểm dừng từ DOM (Lọc bỏ N/A và trùng lặp)
+            // Lấy danh sách điểm dừng từ DOM
             const pickupElements = document.querySelectorAll('.loc-row.loc-up .loc-text');
             const dropElements = document.querySelectorAll('.loc-row.loc-down .loc-text');
             
             const pickups = [...pickupElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
             const drops = [...dropElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
             
-            const allStops = [...new Set([...pickups, ...drops])];
+            // Điểm bắt đầu và kết thúc từ Tuyến xe
+            const startPoint = "{{ chuyen.TuyenXe.diemDi|default:'' }}";
+            const endPoint = "{{ chuyen.TuyenXe.diemDen|default:'' }}";
+
+            // Tạo danh sách điểm: [Điểm đi] + [Các điểm đón/trả] + [Điểm đến]
+            let allStops = [];
+            if (startPoint) allStops.push(startPoint);
+            
+            // Thêm các điểm trung gian (loại bỏ trùng lặp với điểm đầu/cuối)
+            const intermediateStops = [...new Set([...pickups, ...drops])].filter(s => s !== startPoint && s !== endPoint);
+            allStops = [...allStops, ...intermediateStops];
+            
+            if (endPoint && endPoint !== startPoint) allStops.push(endPoint);
 
             if (allStops.length < 1) return;
+
 
             // Geocode tất cả điểm dừng
             const coords = [];

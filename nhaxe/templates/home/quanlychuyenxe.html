@@ -169,29 +169,35 @@
 
             <div class="trip-list">
                 {% for chuyen in chuyen_xe_list %}
-                <div class="trip-card" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'" style="cursor: pointer;">
-                    <img class="trip-image" src="{% if chuyen.seat_count == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.seat_count == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
-                    <div class="trip-info-main">
-                        <div class="trip-title">
-                            <strong>{{ chuyen.ChuyenXeID }}</strong>
-                            <p>{{ chuyen.route_name }}</p>
-                        </div>
-                        <div class="trip-details">
-                            <p>Giờ xuất phát: {{ chuyen.gio_di_fmt }}</p>
-                            <p>Tổng số ghế: {{ chuyen.seat_count }}</p>
-                            <p>Ghế trống: {{ chuyen.available_seats }}</p>
+                <div class="trip-card">
+                    <!-- Clickable area -->
+                    <div class="trip-card-link" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'" style="cursor: pointer; display: flex; flex: 1; align-items: center;">
+                        <img class="trip-image" src="{% if chuyen.seat_count == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.seat_count == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
+                        <div class="trip-info-main">
+                            <div class="trip-title">
+                                <strong>{{ chuyen.ChuyenXeID }}</strong>
+                                <p>{{ chuyen.route_name }}</p>
+                            </div>
+                            <div class="trip-details">
+                                <p>Giờ xuất phát: {{ chuyen.gio_di_fmt }}</p>
+                                <p>Tổng số ghế: {{ chuyen.seat_count }}</p>
+                                <p>Ghế trống: {{ chuyen.available_seats }}</p>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- Actions area -->
                     <div class="trip-actions">
                         {% if chuyen.TrangThai == 'Hoàn thành' %}
                             <span class="status-badge status-hoan-thanh">Hoàn thành</span>
                         {% else %}
                             <span class="status-badge status-chua-hoan-thanh">Chưa hoàn thành</span>
                         {% endif %}
-                        <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' chuyen.ChuyenXeID %}'">Chỉnh sửa</button>
+                        <button class="btn-edit" onclick="window.location.href='{% url 'suachuyenxe' chuyen.ChuyenXeID %}'">Chỉnh sửa</button>
                     </div>
                 </div>
                 {% empty %}
+
                 <p style="text-align:center; padding: 20px; color: #666;">Chưa có chuyến xe nào.</p>
                 {% endfor %}
             </div>

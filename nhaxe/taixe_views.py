@@ -275,4 +275,31 @@ def taixe_lotrinh(request):
         'chuyen': chuyen,
         've_list': ve_list
     })
-def phancongtaixe(request): return render(request, 'home/phancongtaixe.html')
+def phancongtaixe(request):
+    nha_xe_id = request.session.get('user_id')
+    if not nha_xe_id:
+        return redirect('dangnhap')
+
+    trip_id = request.GET.get('id')
+    if not trip_id:
+        return redirect('quanlychuyenxe')
+
+    # Xử lý khi phân công tài xế qua POST
+    if request.method == 'POST':
+        taixe_id = request.POST.get('taixe_id')
+        try:
+            chuyen = ChuyenXe.objects.get(ChuyenXeID=trip_id)
+            chuyen.Taixe_id = taixe_id
+            chuyen.save()
+            messages.success(request, 'Phân công tài xế thành công.')
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    # Lấy danh sách tài xế của nhà xe này
+    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
+    
+    return render(request, 'home/phancongtaixe.html', {
+        'trip_id': trip_id,
+        'taixe_list': taixe_list
+    })

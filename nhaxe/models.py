@@ -9,6 +9,8 @@ class KhachHang(models.Model):
     Email = models.CharField(max_length=100, unique=True, null=True, blank=True)
     NgaySinh = models.DateField(null=True, blank=True)
     AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    NgayDangKy = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return self.HovaTen or self.KhachHangID
@@ -153,14 +155,15 @@ class ChuyenXe(models.Model):
     ChuyenXeID = models.CharField(max_length=10, primary_key=True)
     Xe = models.ForeignKey(Xe, on_delete=models.SET_NULL, null=True, blank=True)
     TuyenXe = models.ForeignKey(TuyenXe, on_delete=models.CASCADE)
-    Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE)
+    Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE,null=True,blank=True)
     NgayKhoiHanh = models.DateField(null=True, blank=True)
     GioDi = models.TimeField(null=True, blank=True)
     GioDen = models.TimeField(null=True, blank=True)
     TrangThai = models.CharField(max_length=50, null=True, blank=True, default='Chưa hoàn thành')
 
     def save(self, *args, **kwargs):
-        if not self.ChuyenXeID:
+        is_new = not self.ChuyenXeID
+        if is_new:
             # Tìm mã CX00001, CX00002... còn trống đầu tiên
             num = 1
             while True:
@@ -169,7 +172,32 @@ class ChuyenXe(models.Model):
                     self.ChuyenXeID = new_id
                     break
                 num += 1
+        
         super().save(*args, **kwargs)
+
+        # Tự động tạo ghế nếu là chuyến xe mới
+        if is_new and self.Xe and self.Xe.Loaixe:
+            so_cho = self.Xe.Loaixe.SoCho
+            prefix = 'A'
+            if so_cho == 7: prefix = 'B'
+            elif so_cho == 9: prefix = 'C'
+            
+            ghe_list = []
+            for i in range(1, so_cho + 1):
+                so_ghe_str = f"{prefix}{i}"
+                ghe_id = f"{self.ChuyenXeID}{so_ghe_str}"
+                # Tránh tạo trùng nếu đã tồn tại
+                if not GheNgoi.objects.filter(gheID=ghe_id).exists():
+                    ghe_list.append(GheNgoi(
+                        gheID=ghe_id,
+                        ChuyenXe=self,
+                        soGhe=so_ghe_str,
+                        trangThai='Còn trống'
+                    ))
+            
+            if ghe_list:
+                GheNgoi.objects.bulk_create(ghe_list)
+
 
     def __str__(self):
         return self.ChuyenXeID

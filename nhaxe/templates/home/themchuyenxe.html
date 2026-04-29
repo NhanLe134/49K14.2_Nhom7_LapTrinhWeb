@@ -130,16 +130,7 @@
                             </select>
                         </div>
 
-                        <!-- Tài xế -->
-                        <div class="form-group">
-                            <label for="taixe">Tài xế</label>
-                            <select id="taixe" name="taixe" class="form-control" required>
-                                <option value="" disabled selected>Chọn tài xế</option>
-                                {% for tx in taixe_list %}
-                                <option value="{{ tx.TaixeID }}">{{ tx.ten|default:tx.TaixeID }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+
                     </div>
 
                     <!-- Nút bấm -->

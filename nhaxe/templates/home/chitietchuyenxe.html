@@ -332,14 +332,15 @@
                     document.getElementById('detailTotalSeats').textContent = totalSeats;
                     document.getElementById('detailEmptySeats').textContent = trip.available_seats || 0;
 
-                    if (trip.driver) {
+                    if (trip.taixe_id) {
                         btnAssign.style.display = 'block';
-                        btnAssign.textContent = 'Hi\u1ec3n th\u1ecb l\u1ed9 tr\u00ecnh';
+                        btnAssign.textContent = 'Hiển thị lộ trình chuyến';
                         btnAssign.onclick = () => {
                             window.location.href = URL_LOTRINH + '?id=' + trip.id;
                         };
                     } else {
                         btnAssign.style.display = 'block';
+                        btnAssign.textContent = 'Phân công tài xế';
                         btnAssign.onclick = () => {
                             window.location.href = URL_PHANCONGTAIXE + '?id=' + trip.id;
                         };

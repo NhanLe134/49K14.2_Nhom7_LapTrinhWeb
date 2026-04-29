@@ -365,20 +365,32 @@ def chitietchuyenxe(request):
         total_seats = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 0
 
         route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
+        # Nếu tên tuyến chưa có thông tin điểm đi/đến thì mới nối thêm
         if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
-            route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+            if cx.TuyenXe.diemDi not in route_name or cx.TuyenXe.diemDen not in route_name:
+                route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+
+
+        # Chọn ảnh dựa trên số chỗ
+        trip_image = "/static/img/xe1.jpg"
+        if total_seats == 4: trip_image = "/static/img/xe4cho.jpeg"
+        elif total_seats == 7: trip_image = "/static/img/xe7cho.jpg"
+        elif total_seats == 9: trip_image = "/static/img/xe9cho.webp"
 
         trip_data = {
             'id': cx.ChuyenXeID,
+            'driver': cx.Taixe.HoTen if (cx.Taixe and cx.Taixe.TaixeID != 'TX000') else None,
+            'taixe_id': cx.Taixe.TaixeID if (cx.Taixe and cx.Taixe.TaixeID != 'TX000') else None,
             'route': route_name,
-            'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
+            'time': cx.GioDi.strftime('%H:%M') if cx.GioDi else 'N/A',
             'carType': str(total_seats),
-            'status': cx.TrangThai or 'Chưa hoàn thành',
-            'driver': cx.Taixe.HoTen if cx.Taixe else 'Chưa phân công'
+            'image': trip_image,
+            'status': cx.TrangThai or 'Chưa hoàn thành'
         }
-    except Exception:
-        messages.error(request, "Không tìm thấy thông tin chuyến xe.")
-        return redirect('index')
+    except Exception as e:
+        messages.error(request, f"Lỗi hiển thị chi tiết: {str(e)}")
+        return redirect('quanlychuyenxe')
+
 
     ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
     ticket_count = ve_list.count()
@@ -410,31 +422,37 @@ def danhgiachuyenxe(request):
 # ==================== NHÀ XE (nx) ====================
 
 def nhaxe(request):
-    # Sử dụng Django ORM kết nối trực tiếp Supabase
+    # Lấy mã nhà xe từ session
+    nha_xe_id = request.session.get('user_id')
+    if not nha_xe_id:
+        return redirect('dangnhap')
+
     try:
-        # Lấy danh sách chuyến xe và các thông tin liên quan (Optimize JOINs)
-        trips_queryset = ChuyenXe.objects.select_related('TuyenXe', 'Taixe').all()
+        # 1. Lấy danh sách tài xế thuộc nhà xe này (qua CHITIETTAIXE)
+        drivers_queryset = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
+        unique_drivers = [t.HoTen for t in drivers_queryset if t.HoTen]
+        if not unique_drivers:
+            unique_drivers = ["Chưa có tài xế"]
+
+        # 2. Lấy danh sách chuyến xe thuộc nhà xe này (Lọc qua Tuyến xe -> Nhà xe)
+        trips_queryset = ChuyenXe.objects.filter(TuyenXe__nhaXe_id=nha_xe_id)\
+                                        .select_related('TuyenXe', 'Taixe')\
+                                        .order_by('NgayKhoiHanh', 'GioDi')
         
         formatted_trips = []
         for cx in trips_queryset:
             # Lấy tên lộ trình
             route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
-            if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
-                route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
-                
+            
             formatted_trips.append({
                 'driver': cx.Taixe.HoTen if cx.Taixe else 'Chưa phân công',
                 'date': cx.NgayKhoiHanh.strftime('%Y-%m-%d') if cx.NgayKhoiHanh else '',
                 'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
                 'route': route_name
             })
-            
-        # Lấy danh sách tên tài xế duy nhất
-        taixe_names = list(Taixe.objects.exclude(HoTen__isnull=True).values_list('HoTen', flat=True).distinct())
-        unique_drivers = taixe_names if taixe_names else ['Chưa có tài xế']
         
     except Exception as e:
-        print(f"Error in ORM nhaxe view: {e}")
+        print(f"Error in nhaxe view: {e}")
         formatted_trips = []
         unique_drivers = ['Lỗi kết nối database']
 
@@ -443,6 +461,7 @@ def nhaxe(request):
         'trips_json': json.dumps(formatted_trips)
     }
     return render(request, 'home/nhaxe.html', context)
+
 
 def thong_tin_nha_xe(request):
     user_id = request.session.get('user_id')
