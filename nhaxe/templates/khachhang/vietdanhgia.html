@@ -3,6 +3,21 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/danhgiachuyenxe.css' %}">
+<style>
+    /* Styling for the stars */
+    .rating-section .stars i {
+        font-size: 24px;
+        color: #ccc; /* Default empty star color */
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    /* Selected or hovered star color */
+    .rating-section .stars i.active-star,
+    .rating-section .stars i.hover-star {
+        color: #F4CA5B;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,30 +30,34 @@
             <hr class="divider">
             
             <div class="trip-info-summary">
-                <div class="bus-name-blue">Khang Limousine</div>
+                <div class="bus-name-blue">{{ nhaxe.TenNhaXe|default:nhaxe.NhaxeID }}</div>
                 <div class="info-row"><strong>Lộ trình:</strong> {{ chuyen.TuyenXe.tenTuyen }}</div>
                 <div class="info-row"><strong>Ngày:</strong> {{ chuyen.NgayKhoiHanh|date:"d/m/Y" }}</div>
                 <div class="info-row"><strong>Giờ:</strong> {{ chuyen.GioDi|time:"H:i" }} - {{ chuyen.GioDen|time:"H:i" }}</div>
             </div>
 
-            <form action="{% url 'submit_danhgia' %}" method="POST" class="evaluation-form">
+            <form action="{% url 'submit_danhgia' %}" method="POST" class="evaluation-form" onsubmit="return validateRating()">
                 {% csrf_token %}
                 <input type="hidden" name="nhaxe_id" value="{{ nhaxe.NhaxeID }}">
                 <input type="hidden" name="ve_id" value="{{ ve.VeID }}">
                 
                 <div class="rating-section">
-                    <span class="rating-label">Đánh giá chất lượng dịch vụ</span>
+                    <span class="rating-label">Đánh giá chất lượng dịch vụ <span style="color:red;">*</span></span>
                     <div class="stars" id="ratingStars">
-                        {% for i in "12345"|make_list %}
-                        <i class="fa-solid fa-star {% if danh_gia_cu and forloop.counter <= danh_gia_cu.Diemso %}active-star{% endif %}" data-value="{{ forloop.counter }}"></i>
-                        {% endfor %}
+                        <!-- Default 5 stars -->
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 1 %}active-star{% endif %}" data-value="1"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 2 %}active-star{% endif %}" data-value="2"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 3 %}active-star{% endif %}" data-value="3"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 4 %}active-star{% endif %}" data-value="4"></i>
+                        <i class="fa-solid fa-star {% if danh_gia_cu and danh_gia_cu.Diemso >= 5 %}active-star{% endif %}" data-value="5"></i>
                     </div>
                     <input type="hidden" name="diem_so" id="diem_so_input" value="{{ danh_gia_cu.Diemso|default:'' }}" required>
+                    <div id="rating-error" style="color: red; font-size: 13px; display: none; margin-top: 5px;">Vui lòng chọn số sao đánh giá.</div>
                 </div>
 
                 <div class="review-content-section">
                     <label class="review-label">Nội dung đánh giá:</label>
-                    <textarea name="nhan_xet" class="review-textarea" rows="4" placeholder="Vui lòng nội dung đánh giá">{{ danh_gia_cu.Nhanxet|default:'' }}</textarea>
+                    <textarea name="nhan_xet" class="review-textarea" rows="4" placeholder="Vui lòng nhập nội dung đánh giá">{{ danh_gia_cu.Nhanxet|default:'' }}</textarea>
                 </div>
 
                 <div class="form-actions">
@@ -53,33 +72,61 @@
     </div>
 </main>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    // Hàm cập nhật màu sao
-    function updateStars(value) {
-        document.querySelectorAll('#ratingStars i').forEach(s => {
-            if (parseInt(s.getAttribute('data-value')) <= parseInt(value)) {
-                s.classList.add('active-star');
-            } else {
-                s.classList.remove('active-star');
-            }
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const stars = document.querySelectorAll('#ratingStars i');
+        const input = document.getElementById('diem_so_input');
+        const ratingError = document.getElementById('rating-error');
 
-    // Xử lý chọn sao bằng JS
-    const stars = document.querySelectorAll('#ratingStars i');
-    const input = document.getElementById('diem_so_input');
+        // Hàm để cập nhật UI dựa trên giá trị (từ hover hoặc click)
+        function updateStarsUI(rating, className) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.getAttribute('data-value'));
+                if (starValue <= rating) {
+                    star.classList.add(className);
+                } else {
+                    star.classList.remove(className);
+                }
+            });
+        }
 
-    stars.forEach(star => {
-        star.addEventListener('click', () => {
-            const value = star.getAttribute('data-value');
-            input.value = value;
-        });
+        stars.forEach(star => {
+            // Hover: thay đổi màu tạm thời
+            star.addEventListener('mouseover', () => {
+                const value = parseInt(star.getAttribute('data-value'));
+                updateStarsUI(value, 'hover-star');
+            });
 
-        star.addEventListener('mouseout', () => {
-            stars.forEach(s => {
-                s.style.color = '';
+            // Click: lưu giá trị và áp dụng màu active-star cố định
+            star.addEventListener('click', () => {
+                const value = parseInt(star.getAttribute('data-value'));
+                input.value = value;
+                ratingError.style.display = 'none'; // Ẩn thông báo lỗi nếu đã chọn sao
+
+                // Xóa class active-star cũ và set lại từ đầu
+                stars.forEach(s => s.classList.remove('active-star'));
+                updateStarsUI(value, 'active-star');
             });
         });
+
+        // Khi chuột rời khỏi vùng đánh giá sao, khôi phục giao diện theo giá trị đã chọn trong input
+        document.getElementById('ratingStars').addEventListener('mouseout', () => {
+            stars.forEach(s => s.classList.remove('hover-star'));
+        });
     });
+
+    function validateRating() {
+        const input = document.getElementById('diem_so_input');
+        const ratingError = document.getElementById('rating-error');
+
+        if (!input.value) {
+            ratingError.style.display = 'block';
+            return false; // Ngăn form submit
+        }
+        return true;
+    }
 </script>
 {% endblock %}
