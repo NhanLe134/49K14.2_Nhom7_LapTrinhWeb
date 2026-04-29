@@ -6,24 +6,39 @@
 }
 
 body {
-    background-color: #ffffff;
+    background: url('../img/Dangnhap.jfif') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    position: relative;
+}
+
+/* Hiệu ứng mờ nền trắng phủ lên ảnh */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.85); /* Độ mờ của hình nền */
+    z-index: 0;
 }
 
 .main-content {
+    position: relative;
+    z-index: 1;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 15px;
+    padding-top: 40px;
 }
 
 .logo-container {
-    width: 200px;
-    height: 200px;
-    margin-bottom: 5px;
+    width: 250px;
+    margin-bottom: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -31,104 +46,69 @@ body {
 
 .logo-container img {
     max-width: 100%;
-    max-height: 100%;
+    height: auto;
     object-fit: contain;
-    border-radius: 50%;
 }
 
-.login-form {
+.login-form-container {
     width: 100%;
-    max-width: 420px;
+    max-width: 450px;
     padding: 20px;
 }
 
+.login-form {
+    padding: 10px;
+}
+
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    color: #0581B8;
+    color: #00AEEF; /* Màu xanh dương sáng trong mẫu */
     font-weight: 700;
-    margin-bottom: 10px;
-    font-size: 1.15rem;
-}
-
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+    margin-bottom: 12px;
+    font-size: 1.2rem;
 }
 
 .input-wrapper input {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid #dcdcdc;
-    border-radius: 6px;
-    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 10px; /* Bo góc tròn hơn theo mẫu */
+    font-size: 1.05rem;
     color: #333;
     outline: none;
+    background: white;
     transition: border-color 0.3s;
-    background: transparent;
-    position: relative;
-    z-index: 2;
 }
 
 .input-wrapper input:focus {
-    border-color: #0581B8;
+    border-color: #00AEEF;
 }
 
-/* Custom placeholder to allow red asterisk */
-.custom-placeholder {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #a0a0a0;
-    font-size: 1rem;
-    z-index: 1;
-    transition: opacity 0.2s;
-    pointer-events: none;
+.input-wrapper input::placeholder {
+    color: #999;
+    font-weight: 400;
 }
 
-.input-wrapper input:focus+.custom-placeholder,
-.input-wrapper input:valid+.custom-placeholder {
-    opacity: 0;
-}
-
-.required-star {
-    color: #ff3b3b;
-}
-
-.form-actions {
+.form-actions-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
     padding: 0 5px;
 }
 
-.form-actions a {
-    color: #0581B8;
+.action-link {
+    color: #00AEEF;
     text-decoration: none;
-    font-size: 1.05rem;
-    font-weight: 500;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
-.form-actions a:hover {
+.action-link.underline {
     text-decoration: underline;
-}
-
-.input-error {
-    color: #cc0000;
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-top: 5px;
-    font-style: italic;
-    display: none;
-}
-
-.input-wrapper.error input {
-    border-color: #cc0000;
 }
 
 .btn-container {
@@ -137,44 +117,65 @@ body {
 }
 
 .btn-login {
-    background-color: #06A0E2;
+    background-color: #00AEEF;
     color: white;
     border: none;
-    padding: 12px 45px;
-    border-radius: 6px;
-    font-size: 1.15rem;
-    font-weight: 600;
+    padding: 14px 60px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: transform 0.2s, background-color 0.3s;
 }
 
 .btn-login:hover {
-    background-color: #0581B8;
+    background-color: #008fcc;
+    transform: translateY(-2px);
 }
 
-.footer {
-    background-color: #06A0E2;
+/* Footer đăng nhập */
+.login-footer {
+    position: relative;
+    z-index: 1;
+    background-color: #00AEEF;
     color: white;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
-
-.forgot-pass {
     display: flex;
-    justify-content: center;
-    margin-top: 20px;
+    justify-content: space-between;
+    padding: 12px 5%;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
-.forgot-pass a {
-    color: #666;
-    text-decoration: none;
-    font-size: 0.95rem;
+.footer-left, .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.forgot-pass a:hover {
-    color: #0581B8;
-    text-decoration: underline;
+.footer-left i, .footer-right i {
+    font-size: 1.2rem;
+}
+
+/* Django messages styling */
+.django-messages {
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+.django-messages li {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.msg-error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+.msg-success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+
+.input-error {
+    color: #dc2626;
+    font-size: 0.9rem;
+    margin-top: 5px;
+    display: none;
 }

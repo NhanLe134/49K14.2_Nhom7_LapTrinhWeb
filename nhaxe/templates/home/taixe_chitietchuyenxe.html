@@ -1,183 +1,154 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="vi">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Màn hình quản lý chuyến xe - Chi tiết Tài xế</title>
-    <!-- Use FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
-</head>
+{% block title %}Chi tiết chuyến xe Tài xế - Vexeapp{% endblock %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+{% block active_chuyenxe_tx %}active{% endblock %}
+{% block color_chuyenxe_tx %}#06A0E2{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
+<style>
+    .status-badge-tx {
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 800;
+        cursor: pointer;
+        font-size: 0.95rem;
+        display: inline-block;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: all 0.2s;
+    }
+    .status-badge-tx:hover { transform: scale(1.05); }
+    
+    .status-menu {
+        background: white;
+        border-radius: 12px;
+        padding: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        border: 1px solid #eee;
+    }
+    .status-option {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    .status-option:hover { filter: brightness(0.95); }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content-ctcx">
+    <h2 class="section-title">Thông tin chuyến xe</h2>
+    
+    <div class="trip-detail-card">
+        <img src="{% if chuyen.Xe.Loaixe.SoCho == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.Xe.Loaixe.SoCho == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
+        <div class="detail-route">{{ chuyen.TuyenXe.diemDi }} - {{ chuyen.TuyenXe.diemDen }}</div>
+        <div class="detail-stats">
+            <p>Giờ xuất phát: <span>{{ chuyen.GioDi|time:"H:i" }}</span></p>
+            <p>Tổng số ghế: <span>{{ chuyen.Xe.Loaixe.SoCho }}</span></p>
+            <p>Biển số xe: <span>{{ chuyen.Xe.BienSoXe }}</span></p>
         </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
-
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thongtin_taixe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'taixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'taixe_quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
-            </a>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content-ctcx">
-            {% if messages %}
-            <ul class="django-messages" style="margin: 0 0 20px 0; max-width: 1000px;">
-                {% for msg in messages %}
-                <li class="msg-{{ msg.tags }}">{{ msg }}</li>
-                {% endfor %}
-            </ul>
+        <div class="status-dropdown" style="position: relative; display: inline-block;">
+            {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
+            <div class="status-badge-tx" onclick="toggleStatusMenu()" style="background-color: #E8F5E9; color: #1B5E20;">Hoàn thành</div>
+            {% else %}
+            <div class="status-badge-tx" onclick="toggleStatusMenu()" style="background-color: #FEF08A; color: #713F12;">Chưa hoàn thành</div>
             {% endif %}
-
-            <h2 class="section-title">Thông tin chuyến xe</h2>
             
-            <div class="trip-detail-card" id="tripDetailBox">
-                <img src="{% static 'img/xe2.jpg' %}" alt="xe" id="detailImage">
-                <div class="detail-route" id="detailRoute">{{ chuyen.TuyenXe.diemDi }} - {{ chuyen.TuyenXe.diemDen }}</div>
-                <div class="detail-stats">
-                    <p>Giờ xuất phát: <span id="detailTime">{{ chuyen.GioDi|time:"H:i" }}</span></p>
-                    <p>Tổng số ghế: <span id="detailTotalSeats">{{ chuyen.Xe.Loaixe.SoCho }}</span></p>
-                    <p>Biển số xe: <span id="detailEmptySeats">{{ chuyen.Xe.BienSoXe }}</span></p>
-                </div>
-                <div class="status-dropdown" style="position: relative; display: inline-block; cursor: pointer;">
-                    {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
-                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #DCFCE7; color: #16a34a;">Hoàn thành</div>
-                    {% else %}
-                    <div class="detail-badge" id="detailBadge" onclick="toggleStatusMenu()" style="user-select: none; background-color: #F8FDE9; color: #C0CD1C;">Chưa hoàn thành</div>
-                    {% endif %}
-                    <div id="statusMenu" class="status-menu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; flex-direction: column; gap: 5px; z-index: 10;">
-                        {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
-                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #F8FDE9; color: #C0CD1C; margin-bottom: 5px;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>
-                        {% else %}
-                            <div class="status-option" style="border-radius: 30px; padding: 8px 15px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #DCFCE7; color: #16a34a; margin-bottom: 5px;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-row">
-                <button class="btn-assign" id="btnAssignDriver" onclick="window.location.href='{% url 'taixe_lotrinh' %}?id={{ chuyen.ChuyenXeID }}'">Hiển thị lộ trình</button>
-            </div>
-
-            <h2 class="section-title">Danh sách hành khách</h2>
-            <div class="passenger-list">
-                {% for ve in ve_list %}
-                <div class="passenger-card">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="passenger-name">{{ ve.HoTen|default:"Khách hàng" }}</div>
-                    <div class="passenger-contact">
-                        <p>SĐT: {{ ve.SoDienThoai|default:"Chưa có" }}</p>
-                        <p>Điểm đón: {{ ve.DiemDon|default:"N/A" }}</p>
-                        <p>Điểm trả: {{ ve.DiemTra|default:"N/A" }}</p>
-                    </div>
-                    <div class="passenger-seat">{{ ve.Ghe.soGhe|default:"-" }}</div>
-                </div>
-                {% empty %}
-                <p style="text-align: center; color: #666; width: 100%; margin-top: 20px;">Chưa có hành khách nào đặt vé.</p>
-                {% endfor %}
-            </div>
-        </main>
-    </div>
-
-    <form id="statusForm" method="POST" action="{% url 'taixe_chitietchuyenxe' %}">
-        {% csrf_token %}
-        <input type="hidden" name="id" value="{{ chuyen.ChuyenXeID }}">
-        <input type="hidden" name="status" id="newStatusInput">
-    </form>
-
-    <!-- Status Change Confirmation Popup -->
-    <div id="statusPopup" class="status-popup-overlay" style="opacity: 0; pointer-events: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 4000; display: flex; justify-content: center; align-items: center; transition: opacity 0.3s;">
-        <div class="status-popup-box" style="background: #fff; padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            <i class="fa-solid fa-circle-question" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 20px;"></i>
-            <div class="status-popup-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 10px;">Xác nhận thay đổi</div>
-            <div class="status-popup-msg" style="color: #666; margin-bottom: 25px;">Bạn có chắc chắn muốn thay đổi trạng thái của chuyến xe này?</div>
-            <div class="status-popup-buttons" style="display: flex; gap: 15px; justify-content: center;">
-                <button onclick="closeStatusPopup()" style="padding: 10px 25px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer;">Hủy</button>
-                <button onclick="confirmStatusChange()" style="padding: 10px 25px; border-radius: 8px; border: none; background: #0ea5e9; color: #fff; cursor: pointer; font-weight: 600;">Xác nhận</button>
+            <div id="statusMenu" class="status-menu" style="display: none; position: absolute; top: 110%; right: 0; z-index: 100; min-width: 180px;">
+                {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai == 'completed' %}
+                    <div class="status-option" style="background: #FEF08A; color: #713F12;" onclick="selectStatus('Chưa hoàn thành')">Chưa hoàn thành</div>
+                {% else %}
+                    <div class="status-option" style="background: #E8F5E9; color: #1B5E20;" onclick="selectStatus('Hoàn thành')">Hoàn thành</div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+    <div class="action-row" style="margin: 20px 0;">
+        <button class="btn-assign" onclick="window.location.href='{% url 'taixe_lotrinh' %}?id={{ chuyen.ChuyenXeID }}'" style="background: #06A0E2; padding: 12px 30px; font-weight: 700;">Hiển thị lộ trình</button>
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
+    <h2 class="section-title">Danh sách hành khách</h2>
+    <div class="passenger-list">
+        {% for ve in ve_list %}
+        <div class="passenger-card">
+            <i class="fa-regular fa-user passenger-icon"></i>
+            <div class="passenger-name">{{ ve.HoTen|default:"Khách hàng" }}</div>
+            <div class="passenger-contact">
+                <p>SĐT: {{ ve.SoDienThoai|default:"Chưa có" }}</p>
+                <p>Điểm đón: {{ ve.DiemDon|default:"N/A" }}</p>
+                <p>Điểm trả: {{ ve.DiemTra|default:"N/A" }}</p>
+            </div>
+            <div class="passenger-seat">{{ ve.Ghe.soGhe|default:"-" }}</div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: #666; width: 100%; padding: 40px; background: white; border-radius: 15px;">
+            <i class="fa-solid fa-users-slash" style="font-size: 3rem; color: #eee; margin-bottom: 10px;"></i>
+            <p>Chưa có hành khách nào đặt vé.</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
 
-            if (userBtn && userMenu) {
-                userBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('show');
-                });
+<form id="statusForm" method="POST" action="{% url 'taixe_chitietchuyenxe' %}">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ chuyen.ChuyenXeID }}">
+    <input type="hidden" name="status" id="newStatusInput">
+</form>
 
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('show');
-                });
-            }
-        });
+<!-- Confirmation Popup -->
+<div id="statusPopup" class="global-popup-overlay">
+    <div class="global-popup-box">
+        <i class="fa-solid fa-circle-question" style="font-size: 3rem; color: #06A0E2; margin-bottom: 20px;"></i>
+        <div style="font-size: 1.25rem; font-weight: 700; margin-bottom: 10px;">Xác nhận thay đổi</div>
+        <div style="color: #666; margin-bottom: 25px;">Bạn có chắc chắn muốn thay đổi trạng thái của chuyến xe này?</div>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button onclick="closeStatusPopup()" style="padding: 10px 25px; border-radius: 10px; border: 1px solid #ddd; background: #fff; cursor: pointer;">Hủy</button>
+            <button onclick="confirmStatusChange()" style="padding: 10px 25px; border-radius: 10px; border: none; background: #06A0E2; color: #fff; cursor: pointer; font-weight: 700;">Xác nhận</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-        let pendingStatusChange = null;
+{% block extra_js %}
+<script>
+    let pendingStatusChange = null;
 
-        function toggleStatusMenu() {
-            const menu = document.getElementById('statusMenu');
-            menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+    function toggleStatusMenu() {
+        const menu = document.getElementById('statusMenu');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function selectStatus(newStatus) {
+        document.getElementById('statusMenu').style.display = 'none';
+        pendingStatusChange = newStatus;
+        document.getElementById('statusPopup').classList.add('show');
+    }
+
+    function closeStatusPopup() {
+        document.getElementById('statusPopup').classList.remove('show');
+        pendingStatusChange = null;
+    }
+
+    function confirmStatusChange() {
+        if (pendingStatusChange) {
+            document.getElementById('newStatusInput').value = pendingStatusChange;
+            document.getElementById('statusForm').submit();
         }
-
-        function selectStatus(newStatus) {
-            document.getElementById('statusMenu').style.display = 'none';
-            pendingStatusChange = newStatus;
-            document.getElementById('statusPopup').style.opacity = '1';
-            document.getElementById('statusPopup').style.pointerEvents = 'auto';
+    }
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.querySelector('.status-dropdown');
+        const menu = document.getElementById('statusMenu');
+        if (dropdown && !dropdown.contains(e.target)) {
+            menu.style.display = 'none';
         }
-
-        function closeStatusPopup() {
-            document.getElementById('statusPopup').style.opacity = '0';
-            document.getElementById('statusPopup').style.pointerEvents = 'none';
-            pendingStatusChange = null;
-        }
-
-        function confirmStatusChange() {
-            if (pendingStatusChange) {
-                document.getElementById('newStatusInput').value = pendingStatusChange;
-                document.getElementById('statusForm').submit();
-            }
-            closeStatusPopup();
-        }
-    </script>
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
-
-</html>
+    });
+</script>
+{% endblock %}

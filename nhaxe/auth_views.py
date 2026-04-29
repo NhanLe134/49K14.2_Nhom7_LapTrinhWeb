@@ -16,9 +16,9 @@ def index(request):
 
 def dangnhap(request):
     """
-    View xử lý đăng nhập (Cả GET và POST):
-    - GET: Hiển thị trang đăng nhập.
-    - POST: Xác thực người dùng qua Database Supabase.
+    View xử lý đăng nhập:
+    - Kiểm tra trống trường.
+    - Đếm số lần sai để khóa tài khoản (5 lần).
     """
     if request.method == 'GET':
         if request.session.get('user_id'):
@@ -26,48 +26,88 @@ def dangnhap(request):
             return _redirect_by_role(role)
         return render(request, 'home/index.html')
 
-    # Xử lý đăng nhập trực tiếp qua Supabase (ORM)
+    # Xử lý POST
     username = request.POST.get('username', '').strip()
     password = request.POST.get('password', '')
     
-    if not username or not password:
-        messages.error(request, 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.')
-        return render(request, 'home/index.html', {'username_value': username})
+    # 1. Kiểm tra khóa tài khoản
+    failed_count = request.session.get('failed_login_count', 0)
+    if failed_count >= 5:
+        return render(request, 'home/index.html', {
+            'username_value': username,
+            'is_locked': True,
+            'error_general': 'Bạn đã nhập sai mật khẩu trên 5 lần. Tài khoản của bạn đã bị khóa.'
+        })
+
+    # 2. Kiểm tra bỏ trống
+    errors = {}
+    if not username:
+        errors['username'] = 'Vui lòng nhập tên đăng nhập'
+    if not password:
+        errors['password'] = 'Vui lòng nhập mật khẩu'
+    
+    if errors:
+        return render(request, 'home/index.html', {
+            'username_value': username,
+            'field_errors': errors
+        })
 
     try:
-        # Xác thực trực tiếp từ Database Supabase
+        # 3. Xác thực
         matched_user = User_Authentication.objects.filter(
             TenDangNhap=username, 
             MatKhau=password
         ).first()
 
         if matched_user:
+            # Thành công -> Reset số lần sai
+            request.session['failed_login_count'] = 0
+            
             # Thiết lập session
             request.session['user_id']  = matched_user.UserID
             request.session['username'] = matched_user.TenDangNhap
             request.session['role']     = (matched_user.Vaitro or '').lower()
-            request.session['ho_ten']   = matched_user.TenDangNhap
             
-            # Lưu mã nhà xe vào session nếu là nhà xe
+            # Ưu tiên lấy tên thật
+            display_name = matched_user.TenDangNhap
+            if matched_user.Taixe and matched_user.Taixe.HoTen:
+                display_name = matched_user.Taixe.HoTen
+            elif matched_user.Nhaxe and matched_user.Nhaxe.TenNhaXe:
+                display_name = matched_user.Nhaxe.TenNhaXe
+                
+            request.session['ho_ten'] = display_name
+            
             if matched_user.Nhaxe:
                 request.session['ma_nha_xe'] = matched_user.Nhaxe.NhaxeID
+                request.session['ten_nha_xe'] = matched_user.Nhaxe.TenNhaXe
             
             request.session['token']    = 'direct-db-session'
             request.session.set_expiry(0)
-            
-            messages.success(request, f'Chào mừng {username} quay trở lại!')
-
-            # Nếu là nhà xe, luôn điều hướng đến trang nhà xe
-            if matched_user.Nhaxe:
-                return redirect('nhaxe')
-
             return _redirect_by_role(request.session['role'])
         else:
-            messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
+            # Sai -> Tăng số lần sai
+            failed_count += 1
+            request.session['failed_login_count'] = failed_count
+            
+            error_msg = 'Tên đăng nhập hoặc mật khẩu không đúng'
+            if failed_count >= 5:
+                return render(request, 'home/index.html', {
+                    'username_value': username,
+                    'is_locked': True,
+                    'error_general': 'Bạn đã nhập sai mật khẩu trên 5 lần. Tài khoản của bạn đã bị khóa.'
+                })
+                
+            return render(request, 'home/index.html', {
+                'username_value': username,
+                'field_errors': {
+                    'username': 'Tên đăng nhập sai. Vui lòng nhập lại',
+                    'password': 'Mật khẩu sai. Vui lòng nhập lại'
+                }
+            })
+            
     except Exception as e:
-        messages.error(request, f'Lỗi kết nối database: {str(e)}')
-
-    return render(request, 'home/index.html', {'username_value': username})
+        messages.error(request, f'Lỗi hệ thống: {str(e)}')
+        return render(request, 'home/index.html', {'username_value': username})
 
 
 def dangxuat(request):

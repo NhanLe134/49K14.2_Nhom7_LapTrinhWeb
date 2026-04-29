@@ -5,8 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameError = document.getElementById('username-error');
     const passwordError = document.getElementById('password-error');
 
+    if (!loginForm || !usernameInput || !passwordInput) return;
+
     // Handle custom placeholder visibility
     const togglePlaceholder = (input, placeholder) => {
+        if (!placeholder) return;
         if (input.value.length > 0) {
             placeholder.style.opacity = '0';
         } else {
@@ -18,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const passPlaceholder = document.getElementById('pass-placeholder');
 
     const clearInputError = (input, errorElement) => {
-        input.parentElement.classList.remove('error');
-        errorElement.style.display = 'none';
+        if (input.parentElement) input.parentElement.classList.remove('error');
+        if (errorElement) errorElement.style.display = 'none';
     };
 
     usernameInput.addEventListener('input', () => {
@@ -32,20 +35,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const showError = (input, errorElement, message) => {
-        input.parentElement.classList.add('error');
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
+        if (input.parentElement) input.parentElement.classList.add('error');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        } else {
+            // Fallback if error element is missing
+            input.setCustomValidity(message);
+            input.reportValidity();
+        }
     };
 
     const clearErrors = () => {
         clearInputError(usernameInput, usernameError);
         clearInputError(passwordInput, passwordError);
+        usernameInput.setCustomValidity('');
+        passwordInput.setCustomValidity('');
     };
 
     // Login Submission
     loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
+        // Only prevent default if we have errors to show
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
 
@@ -61,9 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
             hasError = true;
         }
         
-        if (!hasError) {
-            // Form is valid, submit to Django backend
-            loginForm.submit();
+        if (hasError) {
+            e.preventDefault();
         }
     });
 

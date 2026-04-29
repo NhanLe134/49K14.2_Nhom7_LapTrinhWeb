@@ -1,109 +1,120 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve, CHITIETTAIXE
+from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve, GheNgoi
 from datetime import datetime
 import random
+
+
 
 # ==================== NHÀ XE (nx) ====================
 
 def quanlychuyenxe(request):
-    """
-    Hiển thị danh sách chuyến xe thuộc nhà xe đang đăng nhập.
-    """
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
         return redirect('index')
 
     try:
-        # Lấy bản ghi chuyến xe và tối ưu JOIN với Tuyến và Xe
-        # Lọc chuyến xe thuộc nhà xe này (Chuyến xe -> Tuyến xe -> Nhà xe)
+        from django.db.models import Count
+        nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
+        
+        # Thông báo chuyến trễ
+        today = datetime.now().date()
+        overdue_trips = ChuyenXe.objects.filter(
+            TuyenXe__nhaXe_id=nha_xe_id,
+            NgayKhoiHanh__lt=today,
+            TrangThai='Chưa hoàn thành'
+        ).select_related('TuyenXe')
+        overdue_trips_count = overdue_trips.count()
+
+        # Lọc chuyến xe thuộc nhà xe này
         trips = ChuyenXe.objects.filter(TuyenXe__nhaXe_id=nha_xe_id)\
                                 .select_related('TuyenXe', 'Xe', 'Taixe')\
+                                .annotate(ticket_count=Count('ve'))\
                                 .order_by('-NgayKhoiHanh', '-GioDi')
         
         chuyen_xe_list = []
         for cx in trips:
-            # Map dữ liệu để tương thích với template
-            data = {
+            total_seats = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 0
+            chuyen_xe_list.append({
                 'ChuyenXeID':   cx.ChuyenXeID,
                 'route_name':   cx.TuyenXe.tenTuyen if cx.TuyenXe else '-',
                 'gio_di_fmt':   cx.GioDi.strftime('%H:%M') if cx.GioDi else '-',
                 'NgayKhoiHanh': cx.NgayKhoiHanh,
-                'TrangThai':    cx.TrangThai or 'Đang chờ',
-                'seat_count':   cx.Xe.SoGhe if cx.Xe else '-',
-                'Xe':           cx.Xe.XeID if cx.Xe else None,
-                'Taixe':        cx.Taixe.TaixeID if cx.Taixe else None,
-                'TuyenXe':      cx.TuyenXe.tuyenXeID if cx.TuyenXe else None,
-            }
-            chuyen_xe_list.append(data)
+                'TrangThai':    cx.TrangThai or 'Chưa hoàn thành',
+                'seat_count':   total_seats,
+                'available_seats': (total_seats - cx.ticket_count) if total_seats > 0 else 0,
+            })
 
-        return render(request, 'home/quanlychuyenxe.html', {'chuyen_xe_list': chuyen_xe_list})
+        return render(request, 'home/quanlychuyenxe.html', {
+            'chuyen_xe_list': chuyen_xe_list,
+            'nha_xe': nha_xe_obj,
+            'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
+            'overdue_trips': overdue_trips,
+            'overdue_trips_count': overdue_trips_count
+        })
     except Exception as e:
         messages.error(request, f'Lỗi lấy danh sách chuyến xe: {str(e)}')
         return render(request, 'home/quanlychuyenxe.html', {'chuyen_xe_list': []})
 
 def themchuyenxe(request):
-    """
-    Thêm chuyến xe mới trực tiếp vào database Supabase (theo mã nhà xe).
-    """
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
         return redirect('index')
+    
+    nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
+    
+    # Thông báo chuyến trễ
+    today = datetime.now().date()
+    overdue_trips = ChuyenXe.objects.filter(TuyenXe__nhaXe_id=nha_xe_id, NgayKhoiHanh__lt=today, TrangThai='Chưa hoàn thành').select_related('TuyenXe')
+    overdue_trips_count = overdue_trips.count()
         
     if request.method == 'POST':
         tuyen_id = request.POST.get('tuyenxe')
         xe_id = request.POST.get('xe')
-        taixe_id = request.POST.get('taixe')
         ngay = request.POST.get('date')
         gio = request.POST.get('time')
         
         try:
-            # 1. Tính ID mới (CX0001)
-            all_ids = ChuyenXe.objects.values_list('ChuyenXeID', flat=True)
-            max_num = 0
-            for cx_id in all_ids:
-                if cx_id and cx_id.startswith('CX') and cx_id[2:].isdigit():
-                    num = int(cx_id[2:])
-                    if num > max_num: max_num = num
-            new_id = f"CX{max_num + 1:04d}"
-
-            # 2. Tạo bản ghi
             ChuyenXe.objects.create(
-                ChuyenXeID=new_id,
                 TuyenXe_id=tuyen_id,
                 Xe_id=xe_id,
-                Taixe_id=taixe_id,
+                Taixe=None,
                 NgayKhoiHanh=ngay,
                 GioDi=gio,
-                TrangThai='Đang chờ'
+                TrangThai='Chưa hoàn thành'
             )
             messages.success(request, 'Thêm chuyến xe thành công.')
             return redirect('quanlychuyenxe')
         except Exception as e:
             messages.error(request, f'Lỗi khi thêm chuyến xe: {str(e)}')
 
-    # Dropdown options lọc theo nhà xe
     tuyen_xe_list = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
     xe_list = Xe.objects.filter(Nhaxe_id=nha_xe_id)
-    # Lấy tài xế thuộc nhà xe này trực tiếp từ bảng CHITIETTAIXE
-    taixe_list = CHITIETTAIXE.objects.filter(Nhaxe_id=nha_xe_id).select_related('Taixe')
+    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id)
     
     return render(request, 'home/themchuyenxe.html', {
         'tuyen_xe_list': tuyen_xe_list,
         'xe_list': xe_list,
-        'taixe_list': taixe_list
+        'taixe_list': taixe_list,
+        'nha_xe': nha_xe_obj,
+        'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
+        'overdue_trips': overdue_trips,
+        'overdue_trips_count': overdue_trips_count
     })
 
-def suachuyenxe(request):
-    """
-    Chỉnh sửa thông tin chuyến xe qua ORM (lọc theo nhà xe).
-    """
+def suachuyenxe(request, pk):
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
         return redirect('index')
 
-    chuyenxe_id = request.POST.get('id') or request.GET.get('id')
-    chuyen = get_object_or_404(ChuyenXe, ChuyenXeID=chuyenxe_id)
+    nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
+    
+    # Thông báo chuyến trễ
+    today = datetime.now().date()
+    overdue_trips = ChuyenXe.objects.filter(TuyenXe__nhaXe_id=nha_xe_id, NgayKhoiHanh__lt=today, TrangThai='Chưa hoàn thành').select_related('TuyenXe')
+    overdue_trips_count = overdue_trips.count()
+
+    chuyen = get_object_or_404(ChuyenXe, ChuyenXeID=pk)
 
     if request.method == 'POST':
         try:
@@ -112,17 +123,36 @@ def suachuyenxe(request):
             chuyen.Taixe_id = request.POST.get('taixe')
             chuyen.NgayKhoiHanh = request.POST.get('date')
             chuyen.GioDi = request.POST.get('time')
+            if request.POST.get('trangthai'):
+                chuyen.TrangThai = request.POST.get('trangthai')
+                if chuyen.TrangThai == 'Hoàn thành':
+                    Ve.objects.filter(ChuyenXe_id=chuyen.ChuyenXeID).update(TrangThai='Đã đi')
             chuyen.save()
             messages.success(request, 'Sửa chuyến xe thành công.')
             return redirect('quanlychuyenxe')
         except Exception as e:
             messages.error(request, f'Lỗi khi cập nhật: {str(e)}')
 
+    tuyen_xe_list = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
+    xe_list = Xe.objects.filter(Nhaxe_id=nha_xe_id)
+    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id)
+    
+    if isinstance(chuyen.NgayKhoiHanh, str): formatted_date = chuyen.NgayKhoiHanh
+    else: formatted_date = chuyen.NgayKhoiHanh.strftime('%Y-%m-%d') if chuyen.NgayKhoiHanh else ''
+        
+    if isinstance(chuyen.GioDi, str): formatted_time = chuyen.GioDi
+    else: formatted_time = chuyen.GioDi.strftime('%H:%M') if chuyen.GioDi else ''
+
     return render(request, 'home/suachuyenxe.html', {
         'chuyen': chuyen,
-        'tuyen_xe_list': TuyenXe.objects.filter(nhaXe_id=nha_xe_id),
-        'xe_list': Xe.objects.filter(Nhaxe_id=nha_xe_id),
-        'taixe_list': CHITIETTAIXE.objects.filter(Nhaxe_id=nha_xe_id).select_related('Taixe')
+        'formatted_date': formatted_date,
+        'formatted_time': formatted_time,
+        'tuyen_xe_list': tuyen_xe_list,
+        'xe_list': xe_list,
+        'taixe_list': taixe_list,
+        'nha_xe': nha_xe_obj,
+        'overdue_trips': overdue_trips,
+        'overdue_trips_count': overdue_trips_count
     })
 
 def hoanthanh_chuyenxe(request, pk):
@@ -130,6 +160,7 @@ def hoanthanh_chuyenxe(request, pk):
     if request.method == 'POST':
         try:
             ChuyenXe.objects.filter(pk=pk).update(TrangThai='Hoàn thành')
+            Ve.objects.filter(ChuyenXe_id=pk).update(TrangThai='Đã đi')
             messages.success(request, 'Đã cập nhật trạng thái: Hoàn thành.')
         except Exception as e:
             messages.error(request, f'Lỗi: {str(e)}')
@@ -138,17 +169,49 @@ def hoanthanh_chuyenxe(request, pk):
 # ==================== TÀI XẾ (tx) ====================
 
 def taixe_quanlychuyenxe(request):
-    """Danh sách chuyến xe của riêng tài xế đang đăng nhập."""
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('index')
 
     try:
-        # Chuyến xe của chính tài xế này
-        chuyen_xe_list = ChuyenXe.objects.filter(Taixe_id=user_id).select_related('TuyenXe', 'Xe').order_by('-NgayKhoiHanh', '-GioDi')
-        return render(request, 'home/taixe_quanlychuyenxe.html', {'chuyen_xe_list': chuyen_xe_list})
+        from django.db.models import Count
+        user_auth = User_Authentication.objects.filter(UserID=user_id).first()
+        taixe_obj = user_auth.Taixe if user_auth else None
+        
+        nha_xe_obj = None
+        detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()
+        if detail:
+            nha_xe_obj = detail.Nhaxe
+
+        trips = ChuyenXe.objects.filter(Taixe_id=user_id)\
+                                .select_related('TuyenXe', 'Xe')\
+                                .annotate(ticket_count=Count('ve'))\
+                                .order_by('-NgayKhoiHanh', '-GioDi')
+        
+        chuyen_xe_list = []
+        for cx in trips:
+            total_seats = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 0
+            chuyen_xe_list.append({
+                'ChuyenXeID': cx.ChuyenXeID,
+                'TuyenXe': cx.TuyenXe,
+                'GioDi': cx.GioDi,
+                'Xe': cx.Xe,
+                'TrangThai': cx.TrangThai,
+                'seat_count': total_seats,
+                'available_seats': (total_seats - cx.ticket_count) if total_seats > 0 else 0
+            })
+        return render(request, 'home/taixe_quanlychuyenxe.html', {
+            'chuyen_xe_list': chuyen_xe_list,
+            'nha_xe': nha_xe_obj,
+            'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
+            'avatar_url': taixe_obj.HinhAnhURL if taixe_obj else None
+        })
     except Exception:
-        return render(request, 'home/taixe_quanlychuyenxe.html', {'chuyen_xe_list': []})
+        return render(request, 'home/taixe_quanlychuyenxe.html', {
+            'chuyen_xe_list': [],
+            'nha_xe': None,
+            'ten_taixe': request.session.get('username')
+        })
 
 def taixe_chitietchuyenxe(request):
     """Chi tiết chuyến xe cho tài xế."""
@@ -160,7 +223,6 @@ def taixe_chitietchuyenxe(request):
     if not chuyenxe_id:
         return redirect('taixe_quanlychuyenxe')
 
-    # Đảm bảo chuyến xe này thuộc về tài xế đang đăng nhập
     chuyen = get_object_or_404(ChuyenXe, ChuyenXeID=chuyenxe_id, Taixe_id=user_id)
     
     if request.method == 'POST':
@@ -172,10 +234,20 @@ def taixe_chitietchuyenxe(request):
                 messages.success(request, 'Cập nhật trạng thái thành công.')
             except Exception as e:
                 messages.error(request, f'Lỗi cập nhật: {str(e)}')
-    # Lấy danh sách hành khách
     ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
+    
+    user_auth = User_Authentication.objects.filter(UserID=user_id).first()
+    taixe_obj = user_auth.Taixe if user_auth else None
+    
+    nha_xe_obj = None
+    detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()
+    if detail:
+        nha_xe_obj = detail.Nhaxe
             
     return render(request, 'home/taixe_chitietchuyenxe.html', {
         'chuyen': chuyen,
-        've_list': ve_list
+        've_list': ve_list,
+        'nha_xe': nha_xe_obj,
+        'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
+        'avatar_url': taixe_obj.HinhAnhURL if taixe_obj else None
     })

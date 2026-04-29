@@ -1,183 +1,269 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="vi">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chỉnh sửa chuyến xe - Vexeapp</title>
-    <!-- Use FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/themchuyenxe.css' %}">
-</head>
+{% block title %}Chỉnh sửa chuyến xe - Vexeapp{% endblock %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
-        </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#5d6d7e{% endblock %}
+{% block active_chuyenxe %}active{% endblock %}
+{% block color_chuyenxe %}#06A0E2{% endblock %}
 
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-    </header>
+{% block extra_css %}
+<style>
+    .form-container {
+        width: 100%;
+        max-width: 800px;
+        background: white;
+        padding: 50px 60px;
+        border-radius: 0;
+        margin: 40px auto;
+        /* No shadow to match the flat clean design in Figma, but adding slight shadow for depth if needed */
+    }
+    .form-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #111;
+        text-align: center;
+        text-transform: uppercase;
+        margin-bottom: 40px;
+        letter-spacing: 0.5px;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 40px;
+        row-gap: 30px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #666;
+        font-size: 0.95rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        color: #333;
+        background-color: #fff;
+        appearance: none;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        border-color: #06a0e2;
+    }
+    select.form-control {
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23111%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 10px auto;
+        padding-right: 40px;
+    }
+    
+    .form-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 50px;
+    }
+    .btn-cancel, .btn-submit {
+        width: 160px;
+        padding: 10px 0;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        text-align: center;
+        transition: opacity 0.2s;
+    }
+    .btn-cancel:hover, .btn-submit:hover {
+        opacity: 0.9;
+    }
+    .btn-cancel {
+        background-color: #a3a3a3;
+        color: white;
+    }
+    .btn-submit {
+        background-color: #06a0e2;
+        color: white;
+    }
 
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-        </aside>
+    /* Popup confirmation */
+    .popup-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    .popup-overlay.active {
+        display: flex;
+    }
+    .popup-box {
+        background: white;
+        padding: 40px 60px;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid #eee;
+        text-align: center;
+        min-width: 450px;
+    }
+    .popup-title {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #111;
+        margin-bottom: 15px;
+    }
+    .popup-message {
+        font-size: 1.05rem;
+        color: #444;
+        margin-bottom: 35px;
+        font-weight: 500;
+    }
+    .popup-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+    }
+    .btn-popup {
+        width: 100px;
+        padding: 6px 0;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    .btn-popup-confirm {
+        background-color: #06a0e2;
+        color: white;
+        border: none;
+    }
+    .btn-popup-cancel {
+        background-color: transparent;
+        color: #06a0e2;
+        border: 1px solid #06a0e2;
+    }
 
-        <!-- Main Content -->
-        <main class="main-content-form">
-            <div class="form-container">
-                <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
+    /* Keep single column for mobile */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        .form-container {
+            padding: 30px 20px;
+        }
+    }
+</style>
+{% endblock %}
 
-                <div
-                    style="display: flex; justify-content: flex-end; font-weight: bold; font-size: 1.1em; color: #111; margin-bottom: 5px; flex-direction: column; align-items: flex-end; line-height: 1.4;">
-                    <div>Số ghế: <span id="seatCount"></span></div>
-                    <div id="topPriceDisplay" style="display: none;">Giá vé: <span id="priceVal"></span></div>
-                </div>
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
 
-                {% if messages %}
-                <ul class="django-messages">
-                    {% for msg in messages %}
-                    <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+    {% if messages %}
+    <ul class="django-messages" style="list-style: none; padding: 0; margin-bottom: 20px;">
+        {% for msg in messages %}
+        <li class="msg-{{ msg.tags }}" style="padding: 12px 20px; border-radius: 4px; margin-bottom: 10px; font-weight: 500; {% if 'success' in msg.tags %}background: #dcfce7; color: #166534;{% else %}background: #fee2e2; color: #dc2626;{% endif %}">{{ msg }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form id="tripForm" method="POST" action="{% url 'suachuyenxe' chuyen.ChuyenXeID %}">
+        {% csrf_token %}
+        <div class="form-grid">
+            <!-- Cột 1 -->
+            <div class="form-group">
+                <label for="route">Tên tuyến xe</label>
+                <select id="route" name="tuyenxe" class="form-control" required>
+                    {% for tuyen in tuyen_xe_list %}
+                    <option value="{{ tuyen.tuyenXeID }}" {% if chuyen.TuyenXe.tuyenXeID == tuyen.tuyenXeID %}selected{% endif %}>
+                        {{ tuyen.tenTuyen|default:tuyen.tuyenXeID }}
+                    </option>
                     {% endfor %}
-                </ul>
-                {% endif %}
-
-                <form id="tripForm" method="POST" action="{% url 'suachuyenxe' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="id" value="{{ chuyen.ChuyenXeID }}">
-                    
-                    <div class="form-group">
-                        <label for="route">Tuyến xe</label>
-                        <select id="route" name="tuyenxe" class="form-control" required>
-                            <option value="">Chọn tuyến xe</option>
-                            {% for tuyen in tuyen_xe_list %}
-                            {% with tid=tuyen.tuyenXeID|stringformat:"s" %}
-                            <option value="{{ tuyen.tuyenXeID }}" {% if chuyen.TuyenXe|stringformat:"s" == tid %}selected{% endif %}>
-                                {{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})
-                            </option>
-                            {% endwith %}
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="date">Ngày chạy</label>
-                        <input type="date" name="date" id="date" class="form-control" value="{{ chuyen.NgayKhoiHanh }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="time">Giờ xuất phát</label>
-                        <input type="time" name="time" id="time" class="form-control" value="{{ chuyen.GioDi|slice:':5' }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="carType">Xe (Biển số - Loại chỗ)</label>
-                        <select id="carType" name="xe" class="form-control" required>
-                            <option value="">Chọn xe</option>
-                            {% for xe in xe_list %}
-                            {% with xid=xe.XeID|stringformat:"s" %}
-                            <option value="{{ xe.XeID }}" {% if chuyen.Xe|stringformat:"s" == xid %}selected{% endif %}>
-                                {{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ
-                            </option>
-                            {% endwith %}
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Tài xế -->
-                    <div class="form-group">
-                        <label for="taixe">Tài xế</label>
-                        <select id="taixe" name="taixe" class="form-control" required>
-                            <option value="">Chọn tài xế</option>
-                            {% for ct in taixe_list %}
-                            {% with txid=ct.Taixe.TaixeID|stringformat:"s" %}
-                            <option value="{{ ct.Taixe.TaixeID }}" {% if chuyen.Taixe|stringformat:"s" == txid %}selected{% endif %}>
-                                {{ ct.HoTen }} ({{ ct.Taixe.TaixeID }})
-                            </option>
-                            {% endwith %}
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-buttons">
-                        <button type="button" class="btn-cancel"
-                            onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Hủy</button>
-                        <button type="submit" class="btn-submit">Xác nhận</button>
-                    </div>
-                </form>
+                </select>
             </div>
-        </main>
-    </div>
 
-    <!-- Popup -->
-    <div class="popup-overlay" id="popupOverlay">
-        <div class="popup-box">
-            <i class="fa-regular fa-circle-check popup-icon"></i>
-            <div class="popup-message">Sửa chuyến xe thành công</div>
+            <!-- Cột 2 -->
+            <div class="form-group">
+                <label for="date">Ngày chạy</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ formatted_date }}" required>
+            </div>
+
+            <!-- Cột 1 -->
+            <div class="form-group">
+                <label for="time">Giờ xuất phát</label>
+                <!-- To match the "6h00" style with a dropdown in Figma, we can use a select if time slots are fixed, 
+                     but standard input type="time" is better for validation. 
+                     We keep type="time" but style it consistently. -->
+                <input type="time" name="time" id="time" class="form-control" value="{{ formatted_time }}" required>
+            </div>
+
+            <!-- Cột 2 -->
+            <div class="form-group">
+                <label for="carType">Loại xe</label>
+                <select id="carType" name="xe" class="form-control" required>
+                    {% for xe in xe_list %}
+                    <option value="{{ xe.XeID }}" {% if chuyen.Xe.XeID == xe.XeID %}selected{% endif %}>
+                        Xe {{ xe.Loaixe.SoCho }} chỗ ({{ xe.BienSoXe }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Tài xế (Ẩn đi để khớp với Figma, nhưng vẫn giữ value để không bị lỗi backend) -->
+            <input type="hidden" name="taixe" value="{{ chuyen.Taixe.TaixeID }}">
+        </div>
+
+        <div class="form-buttons">
+            <button type="button" class="btn-cancel" id="btnCancel">Hủy</button>
+            <button type="submit" class="btn-submit">Lưu</button>
+        </div>
+    </form>
+</div>
+
+<!-- Popup Xác nhận hủy -->
+<div class="popup-overlay" id="cancelPopup">
+    <div class="popup-box">
+        <h3 class="popup-title">Thông báo</h3>
+        <p class="popup-message">Bạn chắc chắn muốn huỷ<br>chỉnh sửa chuyến xe?</p>
+        <div class="popup-buttons">
+            <button class="btn-popup btn-popup-confirm" id="btnConfirmCancel">Đồng ý</button>
+            <button class="btn-popup btn-popup-cancel" id="btnStay">Không</button>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+{% endblock %}
 
-    <script src="{% static 'js/common.js' %}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnCancel = document.getElementById('btnCancel');
+        const cancelPopup = document.getElementById('cancelPopup');
+        const btnConfirmCancel = document.getElementById('btnConfirmCancel');
+        const btnStay = document.getElementById('btnStay');
 
-            if (userBtn && userMenu) {
-                userBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('show');
-                });
-
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('show');
-                });
-            }
+        // Mở popup hủy
+        btnCancel.addEventListener('click', () => {
+            cancelPopup.classList.add('active');
         });
-    </script>
-</body>
 
-</html>
+        // Đóng popup
+        btnStay.addEventListener('click', () => {
+            cancelPopup.classList.remove('active');
+        });
+
+        // Xác nhận hủy -> quay về trang quản lý
+        btnConfirmCancel.addEventListener('click', () => {
+            window.location.href = "{% url 'quanlychuyenxe' %}";
+        });
+    });
+</script>
+{% endblock %}

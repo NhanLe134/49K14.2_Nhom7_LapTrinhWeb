@@ -1,0 +1,611 @@
+from datetime import datetime
+import random
+import json
+import time
+import re
+from django.core.files.storage import default_storage
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.http import JsonResponse
+from django.conf import settings
+from django.db import transaction
+from .models import ChuyenXe, Taixe, TuyenXe, Nhaxe, Xe, Loaixe, CHITIETLOAIXE, KhachHang, User_Authentication
+
+# ==================== TRANG CHUNG ====================
+
+def timkiem(request):
+    return render(request, 'home/timkiem.html')
+
+def quen_mat_khau(request):
+    return render(request, 'home/quen_mat_khau.html')
+
+def dangky_khachhang(request):
+    return render(request, 'home/dangky_khachhang.html')
+
+def send_registration_otp(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        phone = data.get('phone')
+        ho_va_ten = data.get('hoVaTen')
+
+        # Server-side validation
+        if not all([username, password, phone, ho_va_ten]):
+            return JsonResponse({'status': 'error', 'message': 'Dá»¯ liá»‡u khĂ´ng Ä‘áº§y Ä‘á»§.'}, status=400)
+        
+        if len(password) < 8:
+            return JsonResponse({'status': 'error', 'message': 'Máº­t kháº©u pháº£i cĂ³ Ă­t nháº¥t 8 kĂ½ tá»±.'}, status=400)
+        
+        if re.search(r'[!@#$%^&*(),.?":{}|<>]', ho_va_ten):
+            return JsonResponse({'status': 'error', 'message': 'Há» tĂªn khĂ´ng Ä‘Æ°á»£c chá»©a kĂ½ tá»± Ä‘áº·c biá»‡t.'}, status=400)
+
+        if User_Authentication.objects.filter(TenDangNhap=username).exists():
+            return JsonResponse({'status': 'error', 'message': 'TĂªn Ä‘Äƒng nháº­p Ä‘Ă£ tá»“n táº¡i.'}, status=400)
+        
+        if User_Authentication.objects.filter(SoDienThoai=phone).exists():
+            return JsonResponse({'status': 'error', 'message': 'Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ă£ Ä‘Æ°á»£c sá»­ dá»¥ng.'}, status=400)
+
+        otp = str(random.randint(100000, 999999))
+        request.session['registration_data'] = data
+        request.session['registration_otp'] = otp
+        request.session['otp_timestamp'] = time.time() # LÆ°u thá»i Ä‘iá»ƒm táº¡o OTP
+        
+        print(f"SIMULATION: OTP for {phone} is {otp}")
+
+        return JsonResponse({'status': 'success', 'message': 'OTP has been sent (simulation).'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Lá»—i há»‡ thá»‘ng. Vui lĂ²ng thá»­ láº¡i sau!'}, status=500)
+
+def verify_and_register(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        otp_entered = data.get('otp')
+        
+        registration_data = request.session.get('registration_data')
+        registration_otp = request.session.get('registration_otp')
+        otp_timestamp = request.session.get('otp_timestamp')
+
+        if not all([registration_data, registration_otp, otp_timestamp]):
+            return JsonResponse({'status': 'error', 'message': 'PhiĂªn Ä‘Äƒng kĂ½ Ä‘Ă£ háº¿t háº¡n. Vui lĂ²ng thá»­ láº¡i.'}, status=400)
+
+        # Kiá»ƒm tra OTP háº¿t háº¡n (180 giĂ¢y)
+        if time.time() - otp_timestamp > 180:
+            # XĂ³a session cÅ© Ä‘á»ƒ báº£o máº­t
+            del request.session['registration_data']
+            del request.session['registration_otp']
+            del request.session['otp_timestamp']
+            return JsonResponse({'status': 'error', 'message': 'MĂ£ OTP Ä‘Ă£ háº¿t háº¡n. Vui lĂ²ng gá»­i láº¡i mĂ£.'}, status=400)
+
+        if not otp_entered:
+            return JsonResponse({'status': 'error', 'message': 'Vui lĂ²ng nháº­p mĂ£ OTP.'}, status=400)
+
+        if otp_entered != registration_otp:
+            return JsonResponse({'status': 'error', 'message': 'MĂ£ xĂ¡c thá»±c khĂ´ng Ä‘Ăºng.'}, status=400)
+
+        with transaction.atomic():
+            last_kh = KhachHang.objects.order_by('KhachHangID').last()
+            new_kh_id = "KH00001"
+            if last_kh:
+                last_id_num = int(last_kh.KhachHangID[2:])
+                new_id_num = last_id_num + 1
+                new_kh_id = f"KH{new_id_num:05d}"
+
+            KhachHang.objects.create(
+                KhachHangID=new_kh_id,
+                HovaTen=registration_data.get('hoVaTen'),
+                NgaySinh=registration_data.get('ngaySinh'),
+                Email=registration_data.get('email')
+            )
+
+            User_Authentication.objects.create(
+                UserID=new_kh_id,
+                TenDangNhap=registration_data.get('username'),
+                MatKhau=registration_data.get('password'), # Cáº§n mĂ£ hĂ³a máº­t kháº©u á»Ÿ Ä‘Ă¢y
+                Vaitro='KhĂ¡ch hĂ ng',
+                SoDienThoai=registration_data.get('phone'),
+                KhachHang_id=new_kh_id
+            )
+        
+        del request.session['registration_data']
+        del request.session['registration_otp']
+        del request.session['otp_timestamp']
+
+        return JsonResponse({'status': 'success', 'message': 'Táº¡o tĂ i khoáº£n thĂ nh cĂ´ng!'})
+
+    except Exception as e:
+        # Ghi láº¡i lá»—i ra log Ä‘á»ƒ debug
+        print(f"Error during registration: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Lá»—i há»‡ thá»‘ng. Vui lĂ²ng thá»­ láº¡i sau!'}, status=500)
+
+
+def send_registration_otp_nhaxe(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        phone = data.get('phone')
+        tenNhaXe = data.get('tenNhaXe')
+        hotenDaiDien = data.get('hotenDaiDien')
+        diaChiTruSo = data.get('diaChiTruSo')
+
+        # Server-side validation
+        if not all([username, password, phone, tenNhaXe, hotenDaiDien, diaChiTruSo]):
+            return JsonResponse({'status': 'error', 'message': 'Dá»¯ liá»‡u khĂ´ng Ä‘áº§y Ä‘á»§.'}, status=400)
+        
+        if len(password) < 8:
+            return JsonResponse({'status': 'error', 'message': 'Máº­t kháº©u pháº£i cĂ³ Ă­t nháº¥t 8 kĂ½ tá»±.'}, status=400)
+        
+        if User_Authentication.objects.filter(TenDangNhap=username).exists():
+            return JsonResponse({'status': 'error', 'message': 'TĂªn Ä‘Äƒng nháº­p Ä‘Ă£ tá»“n táº¡i.'}, status=400)
+        
+        if User_Authentication.objects.filter(SoDienThoai=phone).exists():
+            return JsonResponse({'status': 'error', 'message': 'Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ă£ Ä‘Æ°á»£c sá»­ dá»¥ng.'}, status=400)
+            
+        if Nhaxe.objects.filter(SoDienThoai=phone).exists():
+             return JsonResponse({'status': 'error', 'message': 'Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ă£ Ä‘Æ°á»£c sá»­ dá»¥ng.'}, status=400)
+
+        otp = str(random.randint(100000, 999999))
+        request.session['registration_data_nhaxe'] = data
+        request.session['registration_otp_nhaxe'] = otp
+        request.session['otp_timestamp_nhaxe'] = time.time()
+        
+        print(f"SIMULATION: OTP for Nha Xe {phone} is {otp}")
+
+        return JsonResponse({'status': 'success', 'message': 'OTP has been sent (simulation).'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Lá»—i há»‡ thá»‘ng. Vui lĂ²ng thá»­ láº¡i sau!'}, status=500)
+
+
+def verify_and_register_nhaxe(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        otp_entered = data.get('otp')
+        
+        registration_data = request.session.get('registration_data_nhaxe')
+        registration_otp = request.session.get('registration_otp_nhaxe')
+        otp_timestamp = request.session.get('otp_timestamp_nhaxe')
+
+        if not all([registration_data, registration_otp, otp_timestamp]):
+            return JsonResponse({'status': 'error', 'message': 'PhiĂªn Ä‘Äƒng kĂ½ Ä‘Ă£ háº¿t háº¡n. Vui lĂ²ng thá»­ láº¡i.'}, status=400)
+
+        if time.time() - otp_timestamp > 180:
+            del request.session['registration_data_nhaxe']
+            del request.session['registration_otp_nhaxe']
+            del request.session['otp_timestamp_nhaxe']
+            return JsonResponse({'status': 'error', 'message': 'MĂ£ OTP Ä‘Ă£ háº¿t háº¡n. Vui lĂ²ng gá»­i láº¡i mĂ£.'}, status=400)
+
+        if not otp_entered:
+            return JsonResponse({'status': 'error', 'message': 'Vui lĂ²ng nháº­p mĂ£ OTP.'}, status=400)
+
+        if otp_entered != registration_otp:
+            return JsonResponse({'status': 'error', 'message': 'MĂ£ xĂ¡c thá»±c khĂ´ng Ä‘Ăºng.'}, status=400)
+
+        with transaction.atomic():
+            last_nx = Nhaxe.objects.order_by('NhaxeID').last()
+            new_nx_id = "NX00001"
+            if last_nx:
+                last_id_num = int(last_nx.NhaxeID[2:])
+                new_id_num = last_id_num + 1
+                new_nx_id = f"NX{new_id_num:05d}"
+
+            Nhaxe.objects.create(
+                NhaxeID=new_nx_id,
+                TenNhaXe=registration_data.get('tenNhaXe'),
+                DiaChiTruSo=registration_data.get('diaChiTruSo'),
+                SoDienThoai=registration_data.get('phone'),
+                Email=registration_data.get('email', f"{registration_data.get('username')}@example.com") # Temp email if none
+            )
+
+            User_Authentication.objects.create(
+                UserID=new_nx_id,
+                TenDangNhap=registration_data.get('username'),
+                MatKhau=registration_data.get('password'), 
+                Vaitro='NhĂ  xe',
+                SoDienThoai=registration_data.get('phone'),
+                Nhaxe_id=new_nx_id
+            )
+        
+        del request.session['registration_data_nhaxe']
+        del request.session['registration_otp_nhaxe']
+        del request.session['otp_timestamp_nhaxe']
+
+        return JsonResponse({'status': 'success', 'message': 'Táº¡o tĂ i khoáº£n nhĂ  xe thĂ nh cĂ´ng!'})
+
+    except Exception as e:
+        print(f"Error during nha xe registration: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Lá»—i há»‡ thá»‘ng. Vui lĂ²ng thá»­ láº¡i sau!'}, status=500)
+
+
+def dangky_nhaxe(request):
+    return render(request, 'home/dangky_nhaxe.html')
+
+# ... (CĂ¡c view khĂ¡c giá»¯ nguyĂªn)
+def khachhang(request):
+    return render(request, 'home/khachhang.html')
+
+def thongtin_khachhang(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('dangnhap')
+
+    try:
+        user_auth = User_Authentication.objects.get(UserID=user_id)
+        khach_hang_data = {
+            'KhachHangID': user_id,
+            'HovaTen': user_auth.TenDangNhap,
+            'SoDienThoai': user_auth.SoDienThoai,
+            'Email': None,
+            'NgaySinh': None,
+            'AnhDaiDienURL': None,
+        }
+        try:
+            kh = KhachHang.objects.get(KhachHangID=user_id)
+            khach_hang_data.update({
+                'HovaTen': kh.HovaTen or user_auth.TenDangNhap,
+                'Email': kh.Email,
+                'NgaySinh': kh.NgaySinh,
+                'AnhDaiDienURL': kh.AnhDaiDienURL,
+            })
+        except KhachHang.DoesNotExist:
+            pass
+
+    except User_Authentication.DoesNotExist:
+        messages.error(request, "Lá»—i nghiĂªm trá»ng: KhĂ´ng tĂ¬m tháº¥y thĂ´ng tin xĂ¡c thá»±c ngÆ°á»i dĂ¹ng.")
+        return redirect('dangnhap')
+    except Exception as e:
+        messages.error(request, f"ÄĂ£ xáº£y ra lá»—i khĂ´ng mong muá»‘n khi láº¥y dá»¯ liá»‡u: {e}")
+        khach_hang_data = {
+            'KhachHangID': user_id,
+            'HovaTen': 'Lá»—i dá»¯ liá»‡u',
+            'SoDienThoai': 'N/A',
+            'Email': None,
+            'NgaySinh': None,
+            'AnhDaiDienURL': None,
+        }
+
+    return render(request, 'home/thongtin_khachhang.html', {'khach_hang': khach_hang_data})
+
+def capnhat_thongtin_khachhang(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'PhÆ°Æ¡ng thá»©c khĂ´ng há»£p lá»‡'}, status=405)
+
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({'status': 'error', 'message': 'NgÆ°á»i dĂ¹ng chÆ°a Ä‘Äƒng nháº­p'}, status=401)
+
+    try:
+        hoten = request.POST.get('hoten')
+        ngaysinh = request.POST.get('ngaysinh')
+        avatar_file = request.FILES.get('avatar')
+
+        kh, created = KhachHang.objects.get_or_create(KhachHangID=user_id)
+
+        kh.HovaTen = hoten
+        if ngaysinh:
+            kh.NgaySinh = ngaysinh
+
+        avatar_url = None
+        if avatar_file:
+            file_name = default_storage.save(f"avatars/{avatar_file.name}", avatar_file)
+            avatar_url = default_storage.url(file_name)
+            kh.AnhDaiDienURL = avatar_url
+
+        kh.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Cáº­p nháº­t thĂ´ng tin thĂ nh cĂ´ng!',
+            'avatar_url': avatar_url
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Lá»—i phĂ­a server: {str(e)}'}, status=500)
+
+
+def lotrinh(request):
+    trip_id = request.GET.get('id', '')
+    if not trip_id:
+        return redirect('nhaxe')
+
+    try:
+        chuyen = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe'), pk=trip_id)
+        ve_list = Ve.objects.filter(ChuyenXe_id=trip_id).select_related('Ghe')
+    except Exception as e:
+        messages.error(request, f"Lá»—i: {e}")
+        return redirect('nhaxe')
+
+    return render(request, 'home/lotrinh.html', {
+        'trip_id': trip_id,
+        'chuyen': chuyen,
+        've_list': ve_list
+    })
+
+
+def chitietchuyenxe(request):
+    chuyenxe_id = request.GET.get('id')
+
+    if not chuyenxe_id:
+        return redirect('index')
+
+    if request.method == 'POST':
+        post_id = request.POST.get('id')
+        new_status = request.POST.get('status')
+        if post_id and new_status:
+            try:
+                ChuyenXe.objects.filter(pk=post_id).update(TrangThai=new_status)
+                messages.success(request, f'ÄĂ£ cáº­p nháº­t tráº¡ng thĂ¡i thĂ nh "{new_status}".')
+            except Exception as e:
+                messages.error(request, f"Lá»—i: {e}")
+            return redirect(f"/chitietchuyenxe?id={post_id}")
+
+    try:
+        cx = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe', 'Taixe'), pk=chuyenxe_id)
+        route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "ChÆ°a rĂµ"
+        if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
+            route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+
+        trip_data = {
+            'id': cx.ChuyenXeID,
+            'route': route_name,
+            'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
+            'carType': str(cx.Xe.SoGhe) if cx.Xe else '4',
+            'status': cx.TrangThai or 'pending',
+            'driver': cx.Taixe.HoTen if cx.Taixe else 'ChÆ°a phĂ¢n cĂ´ng'
+        }
+    except Exception:
+        messages.error(request, "KhĂ´ng tĂ¬m tháº¥y thĂ´ng tin chuyáº¿n xe.")
+        return redirect('index')
+
+    ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
+
+    return render(request, 'home/chitietchuyenxe.html', {
+        'trip_json': json.dumps(trip_data),
+        'chuyenxe_id': chuyenxe_id,
+        'trip_status': cx.TrangThai or '',
+        've_list': ve_list
+    })
+
+
+def vecuatoi(request):
+    return render(request, 'home/vecuatoi.html')
+
+def vietdanhgia(request):
+    return render(request, 'home/vietdanhgia.html')
+
+def dadanhgia(request):
+    return render(request, 'home/dadanhgia.html')
+
+def danhgiachuyenxe(request):
+    return render(request, 'home/danhgiachuyenxe.html')
+
+def nhaxe(request):
+    try:
+        trips_queryset = ChuyenXe.objects.select_related('TuyenXe', 'Taixe').all()
+        formatted_trips = []
+        for cx in trips_queryset:
+            route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "ChÆ°a rĂµ"
+            if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
+                route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+            formatted_trips.append({
+                'driver': cx.Taixe.HoTen if cx.Taixe else 'ChÆ°a phĂ¢n cĂ´ng',
+                'date': cx.NgayKhoiHanh.strftime('%Y-%m-%d') if cx.NgayKhoiHanh else '',
+                'time': cx.GioDi.strftime('%H:%M:%S') if cx.GioDi else '',
+                'route': route_name
+            })
+        taixe_names = list(Taixe.objects.exclude(HoTen__isnull=True).values_list('HoTen', flat=True).distinct())
+        unique_drivers = taixe_names if taixe_names else ['ChÆ°a cĂ³ tĂ i xáº¿']
+    except Exception as e:
+        print(f"Error in ORM nhaxe view: {e}")
+        formatted_trips = []
+        unique_drivers = ['Lá»—i káº¿t ná»‘i database']
+
+    context = {
+        'drivers_json': json.dumps(unique_drivers),
+        'trips_json': json.dumps(formatted_trips)
+    }
+    return render(request, 'home/nhaxe.html', context)
+
+def thong_tin_nha_xe(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('dangnhap')
+
+    try:
+        nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=user_id)
+        if request.method == 'POST':
+            action = request.POST.get('action')
+            if action == 'send_otp':
+                otp = str(random.randint(100000, 999999))
+                request.session['update_otp'] = otp
+                messages.info(request, f"[SIMULATION] MĂ£ xĂ¡c thá»±c cá»§a báº¡n lĂ : {otp}")
+                return JsonResponse({'status': 'sent'})
+            elif action == 'save':
+                phone = request.POST.get('phone')
+                address = request.POST.get('address')
+                if phone and phone != nha_xe_obj.SoDienThoai:
+                    user_otp = request.POST.get('otp')
+                    if user_otp != request.session.get('update_otp'):
+                        return JsonResponse({'status': 'error', 'message': 'MĂ£ xĂ¡c thá»±c khĂ´ng chĂ­nh xĂ¡c.'})
+                nha_xe_obj.SoDienThoai = phone if phone else nha_xe_obj.SoDienThoai
+                nha_xe_obj.DiaChiTruSo = address if address else nha_xe_obj.DiaChiTruSo
+                nha_xe_obj.save()
+                return JsonResponse({'status': 'success', 'message': 'Cáº­p nháº­t thĂ´ng tin thĂ nh cĂ´ng!'})
+        return render(request, 'home/thong_tin_nha_xe.html', {'nha_xe': nha_xe_obj})
+    except Exception as e:
+        messages.error(request, f'Lá»—i há»‡ thá»‘ng: {str(e)}')
+        return redirect('nhaxe')
+
+
+def quanly_loaixe(request):
+    loaixe_list = [
+        {'LoaiXeId': 'LX00001', 'TenLoaiXe': 'Loáº¡i xe A', 'SoGhe': '4', 'GiaVe': None, 'NgayCapNhat': None},
+        {'LoaiXeId': 'LX00002', 'TenLoaiXe': 'Loáº¡i xe B', 'SoGhe': '7', 'GiaVe': None, 'NgayCapNhat': None},
+        {'LoaiXeId': 'LX00003', 'TenLoaiXe': 'Loáº¡i xe C', 'SoGhe': '9', 'GiaVe': None, 'NgayCapNhat': None}
+    ]
+    try:
+        api_data = Loaixe.objects.all()
+        for xe_api in api_data:
+            for xe_macdinh in loaixe_list:
+                if str(xe_api.SoCho) == str(xe_macdinh['SoGhe']):
+                    xe_macdinh['LoaiXeId'] = xe_api.LoaixeID
+                    xe_macdinh['GiaVe'] = xe_api.GiaVe
+                    xe_macdinh['NgayCapNhat'] = xe_api.NgayCapNhatGia.strftime('%Y-%m-%d') if xe_api.NgayCapNhatGia else None
+    except Exception as e:
+        print(f"Lá»—i láº¥y dá»¯ liá»‡u tá»« database: {e}")
+    return render(request, 'home/quanly_loaixe.html', {'loaixe_list': loaixe_list})
+
+
+def capnhat_gia_loaixe(request, pk):
+    if request.method == 'POST':
+        gia_moi = request.POST.get('gia_ve')
+        try:
+            xe, created = Loaixe.objects.get_or_create(LoaixeID=pk)
+            xe.GiaVe = gia_moi
+            xe.NgayCapNhatGia = datetime.now().date()
+            if created:
+                so_cho = 4
+                if pk == 'LX00002': so_cho = 7
+                if pk == 'LX00003': so_cho = 9
+                xe.SoCho = so_cho
+            xe.save()
+            messages.success(request, "Cáº­p nháº­t giĂ¡ vĂ© thĂ nh cĂ´ng!")
+        except Exception as e:
+            messages.error(request, f"Lá»—i cáº­p nháº­t CSDL: {e}")
+    return redirect('quanly_loaixe')
+
+def quan_ly_xe(request):
+    nha_xe_id = request.session.get('user_id')
+    if not nha_xe_id:
+        return redirect('dangnhap')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'delete':
+            xe_id = request.POST.get('xe_id')
+            try:
+                Xe.objects.filter(XeID=xe_id, Nhaxe_id=nha_xe_id).delete()
+                messages.success(request, "ÄĂ£ xĂ³a xe thĂ nh cĂ´ng.")
+            except Exception as e:
+                messages.error(request, f"Lá»—i: {str(e)}")
+            return redirect('quan_ly_xe')
+
+        # ThĂªm/Sá»­a
+        bien_so = request.POST.get('bien_so')
+        trang_thai = request.POST.get('trang_thai', 'Äang hoáº¡t Ä‘á»™ng')
+        so_ghe = request.POST.get('so_ghe')
+        loaixe_id = request.POST.get('loaixe_id')
+        xe_id = request.POST.get('xe_id')
+        hinh_anh = request.FILES.get('hinh_anh')
+
+        try:
+            if loaixe_id == 'new':
+                new_loai_socho = request.POST.get('new_loai_socho')
+                new_loai_gia = request.POST.get('new_loai_gia')
+                
+                last_loai = Loaixe.objects.order_by('-LoaixeID').first()
+                if last_loai and str(last_loai.LoaixeID).startswith('LX'):
+                    try:
+                        num = int(''.join(filter(str.isdigit, last_loai.LoaixeID))) + 1
+                        loaixe_id = f"LX{num:05d}"
+                    except:
+                        loaixe_id = "LX00001"
+                else:
+                    loaixe_id = "LX00001"
+                
+                Loaixe.objects.create(
+                    LoaixeID=loaixe_id,
+                    SoCho=int(new_loai_socho) if new_loai_socho else 4,
+                    GiaVe=new_loai_gia if new_loai_gia else 0,
+                    NgayCapNhatGia=datetime.now().date()
+                )
+                
+                CHITIETLOAIXE.objects.create(
+                    Nhaxe_id=nha_xe_id,
+                    Loaixe_id=loaixe_id,
+                    TenLoaiXe=f"Loáº¡i xe {new_loai_socho} chá»—"
+                )
+
+            if xe_id: # Sá»­a
+                xe = Xe.objects.filter(XeID=xe_id).first()
+                if xe:
+                    xe.BienSoXe = bien_so
+                    xe.TrangThai = trang_thai
+                    xe.SoGhe = so_ghe
+                    xe.Loaixe_id = loaixe_id
+                    if hinh_anh:
+                        xe.HinhAnhXe = hinh_anh
+                    xe.save()
+                messages.success(request, "Cáº­p nháº­t xe thĂ nh cĂ´ng.")
+            else: # ThĂªm má»›i
+                last_xe = Xe.objects.order_by('-XeID').first()
+                if last_xe:
+                    try:
+                        num = int(''.join(filter(str.isdigit, str(last_xe.XeID)))) + 1
+                        new_xe_id = f"X{num:05d}"
+                    except:
+                        new_xe_id = "X00001"
+                else:
+                    new_xe_id = "X00001"
+
+                xe = Xe(
+                    XeID=new_xe_id,
+                    Nhaxe_id=nha_xe_id,
+                    BienSoXe=bien_so,
+                    TrangThai=trang_thai,
+                    SoGhe=so_ghe,
+                    Loaixe_id=loaixe_id
+                )
+                if hinh_anh:
+                    xe.HinhAnhXe = hinh_anh
+                xe.save()
+                messages.success(request, "ThĂªm xe má»›i thĂ nh cĂ´ng.")
+        except Exception as e:
+            messages.error(request, f"Lá»—i: {str(e)}")
+
+        return redirect('quan_ly_xe')
+
+    vehicles = Xe.objects.filter(Nhaxe_id=nha_xe_id).select_related('Loaixe')
+    vehicle_types = Loaixe.objects.all()
+    return render(request, 'home/quan_ly_xe.html', {'vehicles': vehicles, 'vehicle_types': vehicle_types})
+
+def quanly_khachhang(request):
+    user_id = request.session.get('user_id')
+    try:
+        khach_hang_data = User_Authentication.objects.filter(UserID=user_id).first()
+        return render(request, 'home/quanly_khachhang.html', {'khach_hang': khach_hang_data})
+    except:
+        return render(request, 'home/quanly_khachhang.html', {'khach_hang': None})
+
+def quanlyve(request):
+    user_id = request.session.get('user_id')
+    try:
+        ve_list = Ve.objects.filter(KhachHang_id=user_id).order_by('-NgayDat')
+        return render(request, 'home/quanlyve.html', {'ve_list': ve_list})
+    except Exception as e:
+        messages.error(request, f"Lá»—i láº¥y danh sĂ¡ch vĂ©: {str(e)}")
+        return render(request, 'home/quanlyve.html', {'ve_list': []})
+
+def taixe(request):
+    return render(request, 'home/taixe.html')
+
+def thongtin_taixe(request):
+    return render(request, 'home/thongtin_taixe.html')
+
+def taixe_lotrinh(request):
+    return render(request, 'home/taixe_lotrinh.html')
+
+def phancongtaixe(request):
+    return render(request, 'home/phancongtaixe.html')

@@ -1,138 +1,311 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="vi">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ Tài xế - Vexeapp</title>
-    <!-- FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/taixe.css' %}">
-</head>
+{% block title %}Trang chủ Tài xế - Vexeapp{% endblock %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+{% block active_trangchu_tx %}active{% endblock %}
+{% block color_trangchu_tx %}#06A0E2{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --card-pink: #fdf2f2;
+        --card-green: #ecfdf5;
+        --card-beige: #fefce8;
+        --text-muted: #6b7280;
+        --primary-blue: #06A0E2;
+    }
+
+    .main-content {
+        background-color: #f8fafc;
+        padding: 30px;
+    }
+
+    /* Stats Cards Styling */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+
+    .premium-stat-card {
+        border-radius: 20px;
+        padding: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.02);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+    }
+
+    .stat-value {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: #1f2937;
+    }
+
+    .stat-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .stat-icon-wrapper {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    /* Schedule Card Styling */
+    .schedule-container {
+        background: white;
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+
+    .schedule-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .schedule-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #1e293b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-outline {
+        border: 1px solid #e2e8f0;
+        background: white;
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #64748b;
+        cursor: pointer;
+    }
+
+    .btn-active {
+        background: #7dd3fc;
+        color: #0369a1;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    /* Schedule Table */
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .schedule-table th {
+        padding: 15px 10px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: #0369a1;
+        text-transform: uppercase;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: center;
+    }
+
+    .schedule-table td {
+        padding: 20px 10px;
+        border-bottom: 1px solid #f8fafc;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .ca-lam {
+        font-weight: 800;
+        font-size: 0.9rem;
+        color: #1e293b;
+        text-transform: uppercase;
+        width: 80px;
+    }
+
+    .trip-box {
+        background: #f0f9ff;
+        border-radius: 12px;
+        padding: 12px;
+        text-align: left;
+        min-height: 70px;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .trip-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(6, 160, 226, 0.1);
+        border-color: #bae6fd;
+    }
+
+    .trip-time {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #f59e0b;
+        margin-bottom: 4px;
+    }
+
+    .trip-route {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #334155;
+        line-height: 1.3;
+    }
+
+    .off-day {
+        color: #cbd5e1;
+        font-style: italic;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    /* Footer Customization to match screenshot */
+    .footer {
+        background: var(--primary-blue) !important;
+        color: white !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stats-row">
+    <!-- Tổng chuyến tuần -->
+    <div class="premium-stat-card" style="background-color: var(--card-pink);">
+        <div>
+            <div class="stat-label" style="color: #991b1b;">Tổng chuyến tuần</div>
+            <div class="stat-value">{{ stats.tong_tuan }}</div>
+            <div class="stat-badge" style="background: white; color: #991b1b;">Ổn định</div>
         </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
-            
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thongtin_taixe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
+        <div class="stat-icon-wrapper" style="color: #ef4444;">
+            <i class="fa-regular fa-calendar-days"></i>
         </div>
-    </header>
-
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'taixe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'taixe_quanlychuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-map" style="color: #444;"></i> Quản lý chuyến xe
-            </a>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <h2 class="page-title">Lịch trình tuần</h2>
-
-            <div class="schedule-row" id="scheduleRow">
-                {% for day in schedule_data %}
-                <div class="day-card {% if day.is_today %}today{% elif not day.trips %}empty{% endif %}">
-                    <div class="day-header">
-                        <span class="dow">{{ day.dow }}</span>
-                        <span class="date">{{ day.date_str }}</span>
-                        {% if day.is_today %}<span class="today-badge">Hôm nay</span>{% endif %}
-                    </div>
-                    
-                    {% if not day.trips %}
-                        <div class="empty-text">Không có chuyến</div>
-                    {% else %}
-                        {% for trip in day.trips %}
-                        <div class="trip-card" onclick="window.location.href='{% url 'taixe_chitietchuyenxe' %}?id={{ trip.ChuyenXeID }}'" style="cursor: pointer;">
-                            <i class="fa-regular fa-clock"></i>
-                            <div class="trip-info">
-                                <div class="time">{{ trip.GioDi|time:"H:i" }}</div>
-                                <div class="route">{{ trip.TuyenXe.tenTuyen }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon icon-blue">
-                        <i class="fa-regular fa-calendar"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-label">Tổng chuyến tuần</div>
-                        <div class="stat-value">{{ tong_tuan }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon icon-green">
-                        <i class="fa-regular fa-user"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-label">Tổng chuyến hôm nay</div>
-                        <div class="stat-value">{{ tong_hom_nay }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon icon-purple">
-                        <i class="fa-regular fa-clock"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-label">Số chuyến đã chạy</div>
-                        <div class="stat-value">{{ da_hoan_thanh }}</div>
-                    </div>
-                </div>
-            </div>
-        </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+    <!-- Tổng chuyến hôm nay -->
+    <div class="premium-stat-card" style="background-color: var(--card-green);">
+        <div>
+            <div class="stat-label" style="color: #065f46;">Tổng chuyến hôm nay</div>
+            <div class="stat-value">{{ stats.tong_hom_nay }}</div>
+            <div class="stat-badge" style="background: white; color: #065f46;">Đã xong {{ stats.da_hoan_thanh_hom_nay }}</div>
+        </div>
+        <div class="stat-icon-wrapper" style="color: #10b981;">
+            <i class="fa-regular fa-clock"></i>
+        </div>
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
+    <!-- Số chuyến đã chạy -->
+    <div class="premium-stat-card" style="background-color: var(--card-beige);">
+        <div>
+            <div class="stat-label" style="color: #854d0e;">Số chuyến đã chạy</div>
+            <div class="stat-value">{{ stats.da_hoan_thanh }}</div>
+            <div class="stat-badge" style="background: white; color: #854d0e;">Tích lũy tốt</div>
+        </div>
+        <div class="stat-icon-wrapper" style="color: #eab308;">
+            <i class="fa-solid fa-circle"></i>
+        </div>
+    </div>
+</div>
 
-            if (userBtn && userMenu) {
-                userBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('show');
-                });
+<div class="schedule-container">
+    <div class="schedule-header">
+        <h2 class="schedule-title">Lịch trình</h2>
+        <div class="btn-group">
+            <button class="btn-outline">Tuần trước</button>
+            <button class="btn-active">Tuần này</button>
+        </div>
+    </div>
 
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('show');
-                });
-            }
-        });
-    </script>
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
-
-</html>
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th style="border-bottom: 2px solid #bae6fd;">Ca làm</th>
+                {% for day in schedule_data %}
+                <th>{{ day.dow }} ({{ day.date_str|slice:":5" }})</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Ca Sáng -->
+            <tr>
+                <td class="ca-lam">Sáng</td>
+                {% for day in schedule_data %}
+                <td>
+                    {% if day.has_morning_trip %}
+                        {% for trip in day.trips %}
+                            {% if trip.GioDi.hour < 12 %}
+                            <div class="trip-box" onclick="window.location.href='{% url 'taixe_chitietchuyenxe' %}?id={{ trip.ChuyenXeID }}'" style="margin-bottom: 5px;">
+                                <span class="trip-time">{{ trip.GioDi|time:"H:i" }}</span>
+                                <div class="trip-route">{{ trip.TuyenXe.diemDi }} &rarr; {{ trip.TuyenXe.diemDen }}</div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                    <span class="off-day">Nghỉ</span>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            <!-- Ca Chiều -->
+            <tr>
+                <td class="ca-lam">Chiều</td>
+                {% for day in schedule_data %}
+                <td>
+                    {% if day.has_afternoon_trip %}
+                        {% for trip in day.trips %}
+                            {% if trip.GioDi.hour >= 12 %}
+                            <div class="trip-box" onclick="window.location.href='{% url 'taixe_chitietchuyenxe' %}?id={{ trip.ChuyenXeID }}'" style="margin-bottom: 5px;">
+                                <span class="trip-time">{{ trip.GioDi|time:"H:i" }}</span>
+                                <div class="trip-route">{{ trip.TuyenXe.diemDi }} &rarr; {{ trip.TuyenXe.diemDen }}</div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="off-day">Nghỉ</span>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,177 +1,184 @@
-<!DOCTYPE html>
-<html lang="vi">
+{% extends 'home/nhaxe.html' %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm chuyến xe - Vexeapp</title>
-    <!-- Use FontAwesome for icons -->
-    {% load static %}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/themchuyenxe.css' %}">
-</head>
+{% block title %}Thêm chuyến xe - Vexeapp{% endblock %}
 
-<body>
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
-        </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#5d6d7e{% endblock %}
+{% block active_chuyenxe %}active{% endblock %}
+{% block color_chuyenxe %}#06A0E2{% endblock %}
 
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-    </header>
+{% block extra_css %}
+<style>
+    .form-container {
+        width: 100%;
+        max-width: 650px;
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin: 20px auto;
+    }
+    .form-title {
+        margin-top: 0;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #2c3e50;
+        text-align: center;
+        border-bottom: 2px solid #f0f2f5;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #475569;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+    .form-control:focus {
+        border-color: #06A0E2;
+        box-shadow: 0 0 0 3px rgba(6, 160, 226, 0.1);
+        outline: none;
+    }
+    .form-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 35px;
+    }
+    .btn-cancel,
+    .btn-submit {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    .btn-cancel:hover {
+        background: #e2e8f0;
+    }
+    .btn-submit {
+        background: #06A0E2;
+        color: white;
+    }
+    .btn-submit:hover {
+        background: #0284c7;
+        box-shadow: 0 4px 12px rgba(6, 160, 226, 0.2);
+    }
+</style>
+{% endblock %}
 
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-        </aside>
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">THÊM CHUYẾN XE MỚI</h2>
 
-        <!-- Main Content -->
-        <main class="main-content-form">
-            <div class="form-container">
-                <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
+    {% if messages %}
+    <ul class="django-messages" style="list-style: none; padding: 0; margin-bottom: 20px;">
+        {% for msg in messages %}
+        <li class="msg-{{ msg.tags }}" style="padding: 12px 20px; border-radius: 10px; margin-bottom: 10px; font-weight: 500; {% if 'success' in msg.tags %}background: #dcfce7; color: #166534;{% else %}background: #fee2e2; color: #dc2626;{% endif %}">{{ msg }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 
-                {% if messages %}
-                <ul class="django-messages">
-                    {% for msg in messages %}
-                    <li class="msg-{{ msg.tags }}">{{ msg }}</li>
+    <form id="tripForm" method="POST" action="{% url 'themchuyenxe' %}">
+        {% csrf_token %}
+        <div class="form-grid">
+            <!-- Tên tuyến xe -->
+            <div class="form-group">
+                <label for="route">Tuyến xe</label>
+                <select id="route" name="tuyenxe" class="form-control" required>
+                    <option value="" disabled selected>Chọn tuyến xe</option>
+                    {% for tuyen in tuyen_xe_list %}
+                    <option value="{{ tuyen.tuyenXeID }}">
+                        {{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})
+                    </option>
                     {% endfor %}
-                </ul>
-                {% endif %}
-
-                <form id="tripForm" method="POST" action="{% url 'themchuyenxe' %}">
-                    {% csrf_token %}
-                    <!-- Tên tuyến xe -->
-                    <div class="form-group">
-                        <label for="route">Tuyến xe</label>
-                        <select id="route" name="tuyenxe" class="form-control" required>
-                            <option value="" disabled selected>Chọn tuyến xe</option>
-                            {% for tuyen in tuyen_xe_list %}
-                            <option value="{{ tuyen.tuyenXeID }}">{{ tuyen.tenTuyen|default:tuyen.tuyenXeID }} ({{ tuyen.diemDi }} - {{ tuyen.diemDen }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Ngày chạy -->
-                    <div class="form-group">
-                        <label for="date">Ngày chạy</label>
-                        <input type="date" name="date" id="date" class="form-control" required>
-                    </div>
-
-                    <!-- Giờ xuất phát -->
-                    <div class="form-group">
-                        <label for="time">Giờ xuất phát</label>
-                        <input type="time" name="time" id="time" class="form-control" required>
-                    </div>
-
-                    <!-- Xe -->
-                    <div class="form-group">
-                        <label for="carType">Xe (Biển số - Loại chỗ)</label>
-                        <select id="carType" name="xe" class="form-control" required>
-                            <option value="" disabled selected>Chọn xe</option>
-                            {% for xe in xe_list %}
-                            <option value="{{ xe.XeID }}">{{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Tài xế -->
-                    <div class="form-group">
-                        <label for="taixe">Tài xế</label>
-                        <select id="taixe" name="taixe" class="form-control" required>
-                            <option value="" disabled selected>Chọn tài xế</option>
-                            {% for ct in taixe_list %}
-                            <option value="{{ ct.Taixe.TaixeID }}">{{ ct.HoTen }} ({{ ct.Taixe.TaixeID }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Nút bấm -->
-                    <div class="form-buttons">
-                        <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Hủy</button>
-                        <button type="submit" class="btn-submit">Xác nhận</button>
-                    </div>
-                </form>
+                </select>
             </div>
-        </main>
-    </div>
 
-    <!-- Popup -->
-    <div class="popup-overlay" id="popupOverlay">
-        <div class="popup-box">
-            <i class="fa-regular fa-circle-check popup-icon"></i>
-            <div class="popup-message">Tạo chuyến xe thành công</div>
+            <!-- Ngày chạy -->
+            <div class="form-group">
+                <label for="date">Ngày chạy</label>
+                <input type="date" name="date" id="date" class="form-control" required>
+            </div>
+
+            <!-- Giờ xuất phát -->
+            <div class="form-group">
+                <label for="time">Giờ xuất phát</label>
+                <select id="time" name="time" class="form-control" required>
+                    <option value="" disabled selected>Chọn giờ xuất phát</option>
+                    <option value="04:00">04:00</option>
+                    <option value="05:00">05:00</option>
+                    <option value="06:00">06:00</option>
+                    <option value="07:00">07:00</option>
+                    <option value="08:00">08:00</option>
+                    <option value="09:00">09:00</option>
+                    <option value="10:00">10:00</option>
+                    <option value="11:00">11:00</option>
+                    <option value="12:00">12:00</option>
+                    <option value="13:00">13:00</option>
+                    <option value="14:00">14:00</option>
+                    <option value="15:00">15:00</option>
+                    <option value="16:00">16:00</option>
+                    <option value="17:00">17:00</option>
+                    <option value="18:00">18:00</option>
+                    <option value="19:00">19:00</option>
+                    <option value="20:00">20:00</option>
+                    <option value="21:00">21:00</option>
+                    <option value="22:00">22:00</option>
+                </select>
+            </div>
+
+            <!-- Loại xe -->
+            <div class="form-group">
+                <label for="carType">Phương tiện</label>
+                <select id="carType" name="xe" class="form-control" required>
+                    <option value="" disabled selected>Chọn xe (Biển số - Loại chỗ)</option>
+                    {% for xe in xe_list %}
+                    <option value="{{ xe.XeID }}">{{ xe.BienSoXe }} - {{ xe.Loaixe.SoCho }} chỗ</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-    </div>
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+        <!-- Nút bấm -->
+        <div class="form-buttons">
+            <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Hủy</button>
+            <button type="submit" class="btn-submit">Lưu thông tin</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Dropdown menu logic
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
-
-            if (userBtn && userMenu) {
-                userBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('show');
-                });
-
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('show');
-                });
-            }
-            
-            // Set min date to today for "Ngày chạy"
-            const dateInput = document.getElementById('date');
-            if (dateInput) {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                dateInput.min = `${year}-${month}-${day}`;
-            }
-        });
-    </script>
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
-
-</html>
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cài đặt ngày tối thiểu là ngày hôm nay
+        const dateInput = document.getElementById('date');
+        if (dateInput) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            dateInput.min = `${year}-${month}-${day}`;
+        }
+    });
+</script>
+{% endblock %}

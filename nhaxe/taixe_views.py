@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import Taixe, User_Authentication, CHITIETTAIXE, Nhaxe, ChuyenXe, Ve
 from datetime import datetime, timedelta
 import re
@@ -11,15 +12,25 @@ def quanlytaixe(request):
     if not user_id:
         return redirect('index')
 
+    nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=user_id)
+    
+    # Thông báo chuyến trễ
+    today = datetime.now().date()
+    overdue_trips = ChuyenXe.objects.filter(
+        TuyenXe__nhaXe_id=user_id,
+        NgayKhoiHanh__lt=today,
+        TrangThai='Chưa hoàn thành'
+    ).select_related('TuyenXe')
+    overdue_trips_count = overdue_trips.count()
+
     taixe_list = []
     
-    # 1. Lấy tất cả tài xế và tài khoản từ Database (Supabase)
+    # 1. Lấy tài xế thuộc nhà xe này (qua CHITIETTAIXE)
+    drivers = Taixe.objects.filter(chitiettaixe__Nhaxe_id=user_id)
     users = {u.UserID: u for u in User_Authentication.objects.all()}
-    drivers = Taixe.objects.all()
 
     # Tính toán mã ID mới
     max_num = 0
-    # Quét qua UserID của mọi tài khoản để tìm số lớn nhất
     for uid in users.keys():
         if uid.startswith('TAI') and uid[3:].isdigit():
             num = int(uid[3:])
@@ -27,7 +38,6 @@ def quanlytaixe(request):
 
     for driver in drivers:
         user_info = users.get(driver.TaixeID)
-        
         taixe_list.append({
             'id':             driver.TaixeID,
             'ten':            driver.HoTen or (user_info.TenDangNhap if user_info else 'Chưa đặt tên'),
@@ -43,7 +53,11 @@ def quanlytaixe(request):
 
     return render(request, 'home/quanlytaixe.html', {
         'taixe_list': taixe_list,
-        'ma_tai_xe_moi': ma_tai_xe_moi
+        'ma_tai_xe_moi': ma_tai_xe_moi,
+        'nha_xe': nha_xe_obj,
+        'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
+        'overdue_trips': overdue_trips,
+        'overdue_trips_count': overdue_trips_count
     })
 
 # ==================== THAO TÁC CRUD TÀI XẾ ====================
@@ -62,6 +76,9 @@ def them_tai_xe(request):
         license_type = request.POST.get('license_type', 'B1')
         
         # 2. Validation
+        if not all([username, password, full_name, phone, cccd, license_no]):
+            messages.error(request, 'Vui lòng điền đầy đủ thông tin.')
+            return redirect('quanlytaixe')
         if password != confirm_password:
             messages.error(request, 'Mật khẩu xác nhận không khớp.')
             return redirect('quanlytaixe')
@@ -74,46 +91,48 @@ def them_tai_xe(request):
             messages.error(request, f"Lỗi: Số điện thoại '{phone}' đã được đăng ký.")
             return redirect('quanlytaixe')
 
+        from django.db import transaction
         try:
-            # 3. Tính ID mới
-            all_uids = User_Authentication.objects.values_list('UserID', flat=True)
-            max_num = 0
-            for uid in all_uids:
-                if uid.startswith('TAI') and uid[3:].isdigit():
-                    num = int(uid[3:])
-                    if num > max_num: max_num = num
-            new_id = f"TAI{max_num + 1:04d}"
+            with transaction.atomic():
+                # 3. Tính ID mới
+                all_uids = User_Authentication.objects.values_list('UserID', flat=True)
+                max_num = 0
+                for uid in all_uids:
+                    if uid.startswith('TAI') and uid[3:].isdigit():
+                        num = int(uid[3:])
+                        if num > max_num: max_num = num
+                new_id = f"TAI{max_num + 1:04d}"
 
-            # 4. Lưu User
-            new_user = User_Authentication.objects.create(
-                UserID=new_id,
-                TenDangNhap=username,
-                MatKhau=password,
-                SoDienThoai=phone,
-                Vaitro="taixe",
-                Nhaxe_id=request.session.get('ma_nha_xe')
-            )
-
-            # 5. Lưu Taixe
-            new_driver = Taixe.objects.create(
-                TaixeID=new_id,
-                HoTen=full_name,
-                SoBangLai=license_no,
-                soCCCD=cccd,
-                LoaiBangLai=license_type,
-            )
-
-            # 6. Lưu CHITIETTAIXE
-            ma_nha_xe = request.session.get('ma_nha_xe')
-            if ma_nha_xe:
-                Nhaxe_obj = Nhaxe.objects.get(NhaxeID=ma_nha_xe)
-                CHITIETTAIXE.objects.create(
-                    Nhaxe=Nhaxe_obj,
-                    Taixe=new_driver,
-                    HoTen=full_name,
-                    NgayBatDau=datetime.now().date(),
-                    NgayKetThuc=datetime(2099, 12, 31).date()
+                # 4. Lưu User
+                new_user = User_Authentication.objects.create(
+                    UserID=new_id,
+                    TenDangNhap=username,
+                    MatKhau=password,
+                    SoDienThoai=phone,
+                    Vaitro="taixe",
+                    Nhaxe_id=request.session.get('user_id') # Sửa: dùng user_id của nhà xe đang login
                 )
+
+                # 5. Lưu Taixe
+                new_driver = Taixe.objects.create(
+                    TaixeID=new_id,
+                    HoTen=full_name,
+                    SoBangLai=license_no,
+                    soCCCD=cccd,
+                    LoaiBangLai=license_type,
+                )
+
+                # 6. Lưu CHITIETTAIXE
+                ma_nha_xe = request.session.get('user_id')
+                if ma_nha_xe:
+                    Nhaxe_obj = Nhaxe.objects.get(NhaxeID=ma_nha_xe)
+                    CHITIETTAIXE.objects.create(
+                        Nhaxe=Nhaxe_obj,
+                        Taixe=new_driver,
+                        HoTen=full_name,
+                        NgayBatDau=datetime.now().date(),
+                        NgayKetThuc=datetime(2099, 12, 31).date()
+                    )
 
             messages.success(request, f"Thêm tài xế {full_name} thành công.")
         except Exception as e:
@@ -124,9 +143,13 @@ def them_tai_xe(request):
 def sua_tai_xe(request, pk):
     """Cập nhật thông tin tài xế trực tiếp vào Database"""
     if request.method == 'POST':
+        full_name = request.POST.get('full_name')
         phone = request.POST.get('phone')
+        license_no = request.POST.get('license_no')
+        cccd = request.POST.get('cccd')
         license_type = request.POST.get('license_type', 'B1')
         
+        from django.db import transaction
         try:
             full_name = request.POST.get('full_name')
             license_no = request.POST.get('license_no')
@@ -136,7 +159,7 @@ def sua_tai_xe(request, pk):
             User_Authentication.objects.filter(UserID=pk).update(
                 SoDienThoai=phone
             )
-            
+
             # 2. Cập nhật Taixe
             Taixe.objects.filter(TaixeID=pk).update(
                 HoTen=full_name,
@@ -177,7 +200,15 @@ def taixe(request):
         return redirect('index')
 
     # 1. Lấy thông tin tài xế
-    driver = get_object_or_404(Taixe, pk=user_id)
+    user_auth = User_Authentication.objects.filter(UserID=user_id).first()
+    driver = user_auth.Taixe if user_auth else None
+    
+    if not driver:
+        if user_auth and user_auth.Vaitro == 'Nhaxe':
+            return redirect('nhaxe')
+
+        messages.error(request, "Không tìm thấy thông tin tài xế. Vui lòng đăng nhập lại.")
+        return redirect('index')
     
     # 2. Tính toán khoảng thời gian trong tuần (Thứ 2 -> Chủ Nhật)
     now = datetime.now()
@@ -203,26 +234,58 @@ def taixe(request):
             'dow': dow_names[i],
             'date_str': day.strftime('%d-%m'),
             'is_today': day == today,
-            'trips': day_trips
+            'trips': day_trips,
+            'has_morning_trip': any(t.GioDi.hour < 12 for t in day_trips),
+            'has_afternoon_trip': any(t.GioDi.hour >= 12 for t in day_trips)
         })
 
-    # 5. Tính toán thống kê
-    # Tổng chuyến tuần
+    # 5. Thống kê & Nhà xe
     tong_tuan = trips_in_week.count()
-    
-    # Tổng chuyến hôm nay
     tong_hom_nay = trips_in_week.filter(NgayKhoiHanh=today).count()
-    
-    # Tổng chuyến đã chạy (Hoàn thành) - tính tất cả thời gian
+    da_hoan_thanh_hom_nay = trips_in_week.filter(NgayKhoiHanh=today, TrangThai='Hoàn thành').count()
     da_hoan_thanh = ChuyenXe.objects.filter(Taixe_id=user_id, TrangThai='Hoàn thành').count()
+
+    # Lấy thông tin tài xế & nhà xe để hiện Header
+    nha_xe_obj = None
+    taixe_obj = driver
+    avatar_url = taixe_obj.HinhAnhURL if taixe_obj else None
+    detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()
+    if detail:
+        nha_xe_obj = detail.Nhaxe
 
     return render(request, 'home/taixe.html', {
         'schedule_data': schedule_data,
-        'tong_tuan': tong_tuan,
-        'tong_hom_nay': tong_hom_nay,
-        'da_hoan_thanh': da_hoan_thanh
+        'stats': {
+            'tong_tuan': tong_tuan,
+            'tong_hom_nay': tong_hom_nay,
+            'da_hoan_thanh_hom_nay': da_hoan_thanh_hom_nay,
+            'da_hoan_thanh': da_hoan_thanh
+        },
+        'nha_xe': nha_xe_obj,
+        'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
+        'avatar_url': avatar_url
     })
-def thongtin_taixe(request): return render(request, 'home/thongtin_taixe.html')
+def thongtin_taixe(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
+
+    user_auth = User_Authentication.objects.filter(UserID=user_id).first()
+    driver = user_auth.Taixe if user_auth else None
+    detail = CHITIETTAIXE.objects.filter(Taixe_id=driver.TaixeID if driver else None).first()
+
+    if not driver or not user_auth:
+        messages.error(request, "Không tìm thấy thông tin tài khoản.")
+        return redirect('taixe')
+
+    return render(request, 'home/thongtin_taixe.html', {
+        'driver': driver,
+        'user_auth': user_auth,
+        'detail': detail,
+        'nha_xe': detail.Nhaxe if detail else None,
+        'ten_taixe': driver.HoTen if driver else None,
+        'avatar_url': driver.HinhAnhURL if driver else None
+    })
 def taixe_lotrinh(request):
     trip_id = request.GET.get('id', '')
     if not trip_id:
@@ -235,9 +298,66 @@ def taixe_lotrinh(request):
         messages.error(request, f"Lỗi: {e}")
         return redirect('taixe')
 
+    user_auth = User_Authentication.objects.filter(UserID=request.session.get('user_id')).first()
+    taixe_obj = user_auth.Taixe if user_auth else None
+    
+    nha_xe_obj = None
+    detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()
+    if detail:
+        nha_xe_obj = detail.Nhaxe
+
     return render(request, 'home/taixe_lotrinh.html', {
         'trip_id': trip_id,
         'chuyen': chuyen,
-        've_list': ve_list
+        've_list': ve_list,
+        'nha_xe': nha_xe_obj,
+        'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
+        'avatar_url': taixe_obj.HinhAnhURL if taixe_obj else None
     })
-def phancongtaixe(request): return render(request, 'home/phancongtaixe.html')
+def phancongtaixe(request):
+    nha_xe_id = request.session.get('user_id')
+    if not nha_xe_id:
+        return redirect('dangnhap')
+
+    nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
+    
+    # Thông báo chuyến trễ
+    today = datetime.now().date()
+    overdue_trips = ChuyenXe.objects.filter(
+        TuyenXe__nhaXe_id=nha_xe_id,
+        NgayKhoiHanh__lt=today,
+        TrangThai='Chưa hoàn thành'
+    ).select_related('TuyenXe')
+    overdue_trips_count = overdue_trips.count()
+
+    trip_id = request.GET.get('id')
+    if not trip_id:
+        return redirect('quanlychuyenxe')
+
+    # Xử lý khi phân công tài xế qua POST
+    if request.method == 'POST':
+        import traceback
+        taixe_id = request.POST.get('taixe_id')
+        try:
+            if not trip_id:
+                return JsonResponse({'status': 'error', 'message': 'Thiếu mã chuyến xe (trip_id).'})
+            
+            chuyen = ChuyenXe.objects.get(ChuyenXeID=trip_id)
+            chuyen.Taixe_id = taixe_id
+            chuyen.save()
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            error_trace = traceback.format_exc()
+            print(f"Lỗi phân công tài xế:\n{error_trace}") 
+            return JsonResponse({'status': 'error', 'message': f"{str(e)}\n\n{error_trace}"})
+
+    # Lấy danh sách tài xế của nhà xe này
+    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
+    
+    return render(request, 'home/phancongtaixe.html', {
+        'trip_id': trip_id,
+        'taixe_list': taixe_list,
+        'nha_xe': nha_xe_obj,
+        'overdue_trips': overdue_trips,
+        'overdue_trips_count': overdue_trips_count
+    })

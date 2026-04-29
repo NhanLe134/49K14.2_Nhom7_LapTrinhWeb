@@ -1,194 +1,116 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="vi">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách tài xế - Phân công</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/phancongtaixe.css' %}">
-</head>
+{% block title %}Danh sách tài xế - Phân công{% endblock %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
-        </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#5d6d7e{% endblock %}
+{% block active_chuyenxe %}active{% endblock %}
+{% block color_chuyenxe %}#06A0E2{% endblock %}
 
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
+<link rel="stylesheet" href="{% static 'css/phancongtaixe.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content-pctx">
+    <h2 class="section-title">Danh sách tài xế</h2>
+
+    <div class="driver-list">
+        {% for tx in taixe_list %}
+        <div class="driver-card" onclick="openConfirmPopup('{{ tx.TaixeID }}', '{{ tx.HoTen|default:tx.TaixeID }}')">
+            <i class="fa-regular fa-user passenger-icon" style="font-size: 2rem; margin-right: 20px; color: #38bdf8;"></i>
+            <div class="driver-info">{{ tx.HoTen|default:tx.TaixeID }}</div>
+            <div class="driver-contact">
+                <p>SĐT: {{ tx.User_Authentication.SoDienThoai|default:"Chưa có" }}</p>
+                <p>Bằng lái: {{ tx.LoaiBangLai|default:"B2" }}</p>
+                <p>Số CCCD: {{ tx.soCCCD|default:"N/A" }}</p>
             </div>
         </div>
-    </header>
-
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-            <a href="{% url 'quanly_khachhang' %}" class="sidebar-item">
-                <i class="fa-solid fa-user-group" style="color: #444;"></i> Quản lý khách hàng
-            </a>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content-pctx">
-            <h2 class="section-title">Danh sách tài xế</h2>
-
-            <div class="driver-list">
-                <div class="driver-card" onclick="openConfirmPopup('Huy Phong')">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="driver-info">Huy Phong</div>
-                    <div class="driver-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>2 năm</p>
-                        <p>1 Hùng Vương, Đà Nẵng</p>
-                    </div>
-                </div>
-
-                <div class="driver-card" onclick="openConfirmPopup('Thanh Nhã')">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="driver-info">Thanh Nhã</div>
-                    <div class="driver-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>1 năm</p>
-                        <p>1 Tố Hữu, Đà Nẵng</p>
-                    </div>
-                </div>
-
-                <div class="driver-card" onclick="openConfirmPopup('Quang Khôi')">
-                    <i class="fa-regular fa-user passenger-icon"></i>
-                    <div class="driver-info">Quang Khôi</div>
-                    <div class="driver-contact">
-                        <p>SĐT: 0123456789</p>
-                        <p>2 năm</p>
-                        <p>25 Phan Thanh, Đà Nẵng</p>
-                    </div>
-                </div>
-            </div>
-        </main>
+        {% empty %}
+        <p style="text-align: center; color: #666; width: 100%; margin-top: 20px;">Không tìm thấy tài xế nào trong hệ thống.</p>
+        {% endfor %}
     </div>
+</main>
 
-    <!-- Confirm Popup -->
-    <div class="popup-overlay" id="confirmPopup">
-        <div class="popup-box confirm-box">
-            <div class="popup-title">Thông báo</div>
-            <div class="popup-message">Bạn có muốn phân công tài xế <br> <b id="driverNameSpan"></b> không?</div>
-            <div class="popup-actions">
-                <button class="btn-no" onclick="closeConfirm()">Không</button>
-                <button class="btn-yes" onclick="processAssign()">Đồng ý</button>
-            </div>
+<!-- Confirm Popup -->
+<div class="popup-overlay" id="confirmPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000;">
+    <div class="popup-box confirm-box" style="background: white; padding: 40px 60px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); text-align: center; min-width: 400px;">
+        <div class="popup-title" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #111;">Thông báo</div>
+        <div class="popup-message" style="font-size: 1.1rem; color: #222; margin-bottom: 30px; font-weight: bold;">Bạn có muốn phân công tài xế <br> <b id="driverNameSpan"></b> cho chuyến xe này không?</div>
+        <div class="popup-actions" style="display: flex; justify-content: center; gap: 60px;">
+            <button class="btn-no" style="padding: 10px 40px; border: none; background: #d1d5db; color: #fff; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="closeConfirm()">Không</button>
+            <button class="btn-yes" style="padding: 10px 40px; border: none; background: #06A0E2; color: white; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="processAssign()">Đồng ý</button>
         </div>
     </div>
+</div>
 
-    <!-- Success Popup -->
-    <div class="popup-overlay" id="successPopup">
-        <div class="popup-box">
-            <div class="popup-title" style="margin-bottom: 20px;">Thông báo</div>
-            <div class="popup-message" style="margin-bottom: 10px;">Bạn đã phân công tài xế</div>
-            <button class="btn-yes" style="margin-top: 10px;" onclick="finishAssign()">Đồng ý</button>
-        </div>
+<!-- Success Popup -->
+<div class="popup-overlay" id="successPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000;">
+    <div class="popup-box" style="background: white; padding: 40px 50px; border-radius: 16px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); text-align: center; min-width: 350px;">
+        <i class="fa-regular fa-circle-check popup-icon" style="font-size: 3.5rem; color: #22c55e; margin-bottom: 20px;"></i>
+        <div class="popup-message" style="font-size: 1.3rem; margin-bottom: 10px; font-weight: bold;">Phân công tài xế thành công</div>
+        <button class="btn-yes" style="padding: 10px 40px; border: none; background: #06A0E2; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px;" onclick="finishAssign()">Đồng ý</button>
     </div>
+</div>
+{% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+{% block extra_js %}
+<script>
+    const URL_CHITIETCHUYENXE = "{% url 'chitietchuyenxe' %}";
+    const urlParams = new URLSearchParams(window.location.search);
+    const tripId = urlParams.get('id');
+    let selectedDriverId = '';
+    let selectedDriverName = '';
 
-    <script>
-        const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
+    const confirmPopupElem = document.getElementById('confirmPopup');
+    const successPopupElem = document.getElementById('successPopup');
+    const driverNameSpan = document.getElementById('driverNameSpan');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
+    function openConfirmPopup(id, name) {
+        selectedDriverId = id;
+        selectedDriverName = name;
+        driverNameSpan.textContent = name;
+        confirmPopupElem.style.display = 'flex';
+    }
 
-            userBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                userMenu.classList.toggle('show');
-            });
+    function closeConfirm() {
+        confirmPopupElem.style.display = 'none';
+    }
 
-            document.addEventListener('click', () => {
-                userMenu.classList.remove('show');
-            });
-        });
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const tripId = urlParams.get('id');
-        let selectedDriver = '';
-
-        const confirmPopupElem = document.getElementById('confirmPopup');
-        const successPopupElem = document.getElementById('successPopup');
-        const driverNameSpan = document.getElementById('driverNameSpan');
-
-        function openConfirmPopup(driverName) {
-            selectedDriver = driverName;
-            driverNameSpan.textContent = driverName;
-            confirmPopupElem.classList.add('active');
-        }
-
-        function closeConfirm() {
-            confirmPopupElem.classList.remove('active');
-        }
-
-        function processAssign() {
-            closeConfirm();
-
-            if (tripId) {
-                let trips = JSON.parse(localStorage.getItem('app_trips') || '[]');
-                const idx = trips.findIndex(t => t.id === tripId);
-                if (idx !== -1) {
-                    trips[idx].driver = selectedDriver;
-                    localStorage.setItem('app_trips', JSON.stringify(trips));
-                }
+    function processAssign() {
+        if (!tripId || !selectedDriverId) return;
+        const csrftoken = '{{ csrf_token }}';
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken
+            },
+            body: `taixe_id=${selectedDriverId}`
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) throw new Error(data?.message || 'Lỗi hệ thống');
+            return data;
+        })
+        .then(data => {
+            if (data && data.status === 'success') {
+                closeConfirm();
+                successPopupElem.style.display = 'flex';
+            } else {
+                alert('Lỗi: ' + (data?.message || 'Không xác định'));
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Lỗi: ' + error.message);
+        });
+    }
 
-            successPopupElem.innerHTML = `
-                <div class="popup-box">
-                    <i class="fa-regular fa-circle-check popup-icon"></i>
-                    <div class="popup-message">Phân công tài xế thành công</div>
-                </div>
-            `;
-            successPopupElem.classList.add('active');
-
-            setTimeout(() => {
-                window.location.href = URL_QUANLYCHUYENXE;
-            }, 1500);
-        }
-    </script>
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
-
-</html>
+    function finishAssign() {
+        window.location.href = URL_CHITIETCHUYENXE + '?id=' + tripId;
+    }
+</script>
+{% endblock %}

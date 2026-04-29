@@ -1,131 +1,180 @@
 /* Styles for Thêm chuyến xe form */
 .main-content-form {
     flex: 1;
-    padding: 40px 60px;
+    padding: 60px 80px;
     background-color: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow-y: auto; /* 🔥 CHO PHÉP CUỘN */
 }
 
 .form-container {
     width: 100%;
-    max-width: 650px;
-    margin-top: 10px;
+    max-width: 900px;
 }
 
 .form-title {
     text-align: center;
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: 800;
     text-transform: uppercase;
     color: #000;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Django Messages Styling */
+.django-messages {
+    width: 100%;
+    list-style: none;
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.msg-error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
+    font-size: 1rem;
+}
+
+/* Grid Layout for Form */
+.form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    column-gap: 80px !important;
+    row-gap: 40px !important;
+    width: 100% !important;
 }
 
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 0;
+}
+
+/* Make Taixe field span 2 columns if it's the 5th item */
+.form-group:nth-child(5) {
+    grid-column: span 2;
 }
 
 .form-group label {
     display: block;
-    font-size: 1.15rem;
-    color: #555;
-    margin-bottom: 8px;
-    font-weight: 500;
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 12px;
+    font-weight: 400;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 15px;
-    font-size: 1.1rem;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 14px 20px;
+    font-size: 1.2rem;
+    color: #888;
+    border: 1.5px solid #dcdcdc;
+    border-radius: 10px;
     background-color: #fff;
     outline: none;
-    transition: border-color 0.2s;
-    appearance: auto;
+    transition: all 0.2s;
+    appearance: none; /* Hide default arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
+}
+
+/* Remove arrow for date input */
+input[type="date"].form-control {
+    background-image: none;
 }
 
 .form-control:focus {
-    border-color: #06A0E2;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
 }
 
 .form-control::placeholder {
-    color: #aaa;
-}
-
-select.form-control {
-    cursor: pointer;
-}
-
-input[type="date"].form-control {
-    color: #777;
-}
-
-input[type="date"].form-control:valid {
-    color: #333;
-}
-
-/* Price Display Area */
-.price-display {
-    margin-top: 10px;
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #d9534f;
-    display: none; /* Hidden by default */
-}
-
-.price-display.visible {
-    display: block;
+    color: #ccc;
 }
 
 /* Form Buttons */
 .form-buttons {
     display: flex;
     justify-content: center;
-    gap: 150px;
-    margin-top: 40px;
+    gap: 80px;
+    margin-top: 80px;
+    margin-bottom: 40px;
 }
 
 .btn-cancel {
-    background-color: #f4f4f4;
-    color: #888;
+    background-color: #b0b0b0;
+    color: white;
     border: none;
-    padding: 12px 35px;
-    border-radius: 6px;
-    font-size: 1rem;
+    padding: 14px 60px;
+    border-radius: 8px;
+    font-size: 1.3rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
+    min-width: 200px;
 }
 
 .btn-cancel:hover {
-    background-color: #e0e0e0;
+    background-color: #999;
 }
 
 .btn-submit {
-    background-color: #38bdf8;
+    background-color: #0ea5e9;
     color: white;
     border: none;
-    padding: 12px 35px;
-    border-radius: 6px;
-    font-size: 1rem;
+    padding: 14px 60px;
+    border-radius: 8px;
+    font-size: 1.3rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
+    min-width: 200px;
 }
 
 .btn-submit:hover {
+    background-color: #0284c7;
+}
+
+/* Footer Styling matching Figma */
+.footer-banner {
     background-color: #0ea5e9;
+    color: white;
+    padding: 20px 0;
+    width: 100%;
+    margin-top: auto;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.footer-info-item i {
+    font-size: 1.2rem;
 }
 
 /* Popup overlay */
 .popup-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -142,34 +191,20 @@ input[type="date"].form-control:valid {
 
 .popup-box {
     background: white;
-    padding: 40px 50px;
-    border-radius: 16px;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+    padding: 40px 60px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
     text-align: center;
-    min-width: 350px;
 }
 
 .popup-icon {
     color: #22c55e;
-    font-size: 3rem;
+    font-size: 4rem;
     margin-bottom: 20px;
 }
 
 .popup-message {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #111;
-}
-
-/* Footer override to perfectly match image */
-.page-footer {
-    background-color: #06A0E2;
-    color: white;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    letter-spacing: 1px;
-    width: 100%;
-    margin-top: auto;
+    color: #111;
 }

@@ -5,10 +5,16 @@
     font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden !important;
+}
+
 body {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
     background-color: #f7fbff;
 }
 
@@ -112,6 +118,7 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
+    min-height: 0;
 }
 
 /* Sidebar */
@@ -160,6 +167,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0;
 }
 
 .content-section {
@@ -242,6 +250,7 @@ body {
     line-height: 1.6 !important;
     width: 100% !important;
     margin-top: auto !important;
+    flex-shrink: 0;
 }
 
 /* Ticket Management Styles */

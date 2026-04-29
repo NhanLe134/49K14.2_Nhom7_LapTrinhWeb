@@ -1,209 +1,170 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
-<html lang="vi">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý chuyến xe - Vexeapp</title>
+{% block title %}Quản lý chuyến xe - Vexeapp{% endblock %}
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}">
-    <style>
-        /* Popup overlay */
-        .popup-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#5d6d7e{% endblock %}
+{% block active_chuyenxe %}active{% endblock %}
+{% block color_chuyenxe %}#15baf6{% endblock %}
 
-        .popup-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}?v={% now 'U' %}">
+<style>
+    /* Popup overlay */
+    .popup-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
 
-        .popup-box {
-            background: white;
-            padding: 40px 50px;
-            border-radius: 16px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
-            text-align: center;
-            min-width: 350px;
-        }
+    .popup-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
 
-        .popup-icon {
-            color: #22c55e;
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
+    .popup-box {
+        background: white;
+        padding: 40px 50px;
+        border-radius: 16px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+        text-align: center;
+        min-width: 350px;
+    }
 
-        .popup-message {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #111;
-        }
-    </style>
-</head>
+    .popup-icon {
+        color: #22c55e;
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+    .popup-message {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #111;
+    }
+
+    /* Status Badge Overrides */
+    .status-badge {
+        padding: 6px 10px !important;
+        border-radius: 20px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        display: inline-block !important;
+        text-align: center !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        white-space: nowrap !important;
+    }
+
+    .status-chua-hoan-thanh {
+        background-color: #fefce8 !important; 
+        color: #eab308 !important;            
+    }
+
+    .status-hoan-thanh {
+        background-color: #dcfce7 !important; 
+        color: #166534 !important;            
+    }
+    
+    .trip-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<ul class="django-messages" style="margin: 0 0 20px 0; max-width: 1000px; list-style: none; padding: 0;">
+    {% for msg in messages %}
+    <li class="msg-{{ msg.tags }}" style="padding: 10px; border-radius: 5px; {% if msg.tags == 'success' %}background-color: #dcfce7; color: #166534;{% endif %}">{{ msg }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<div class="top-actions">
+    <button class="btn-add-trip" onclick="window.location.href='{% url 'themchuyenxe' %}'">Thêm chuyến xe</button>
+</div>
+
+<div class="trip-list">
+    {% for chuyen in chuyen_xe_list %}
+    <div class="trip-card" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'">
+        <img class="trip-image" src="{% if chuyen.seat_count == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.seat_count == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
+        
+        <div class="trip-title">
+            <div class="trip-id">{{ chuyen.ChuyenXeID }}</div>
+            <div class="trip-route">{{ chuyen.route_name }}</div>
         </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
-
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
+        
+        <div class="trip-details">
+            <div class="trip-time">Giờ xuất phát: {{ chuyen.gio_di_fmt }}</div>
+            <div class="trip-type">Loại xe: xe {{ chuyen.seat_count }} chỗ</div>
         </div>
-    </header>
-
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content-qlcx">
-            {% if messages %}
-            <ul class="django-messages" style="margin: 0 0 20px 0; max-width: 1000px;">
-                {% for msg in messages %}
-                <li class="msg-{{ msg.tags }}">{{ msg }}</li>
-                {% endfor %}
-            </ul>
+        
+        <!-- Actions area -->
+        <div class="trip-actions" onclick="event.stopPropagation();">
+            {% if chuyen.TrangThai == 'Hoàn thành' %}
+                <div class="status-badge status-hoan-thanh">Hoàn thành</div>
+            {% else %}
+                <div class="status-badge status-chua-hoan-thanh">Chưa hoàn thành</div>
             {% endif %}
-            <div class="top-actions">
-                <button class="btn-add-trip" onclick="window.location.href='{% url 'themchuyenxe' %}'">Thêm chuyến
-                    xe</button>
-            </div>
-
-            <div class="trip-list">
-                {% for chuyen in chuyen_xe_list %}
-                <div class="trip-card" onclick="window.location.href='{% url 'chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'" style="cursor: pointer;">
-                    <img class="trip-image" src="{% static 'img/xe1.jpg' %}" alt="xe">
-                    <div class="trip-info-main">
-                        <div class="trip-title">
-                            <strong>{{ chuyen.ChuyenXeID }}</strong>
-                            <p>{{ chuyen.route_name }}</p>
-                        </div>
-                        <div class="trip-details">
-                            <p>Giờ xuất phát: {{ chuyen.gio_di_fmt }}</p>
-                            <p>Loại xe: {{ chuyen.seat_count }} chỗ</p>
-                        </div>
-                    </div>
-                    <div class="trip-actions">
-                        {% with status=chuyen.TrangThai|lower|cut:" " %}
-                        {% if 'hoan' in status and 'thanh' in status or status == 'completed' %}
-                            <span class="status-badge" style="background-color: #E8F5E9; color: #1B5E20; padding: 6px 15px; border-radius: 20px;">Hoàn thành</span>
-                        {% else %}
-                            <span class="status-badge" style="background-color: #FEF9C3; color: #854d0e;">{{ chuyen.TrangThai|default:'Chưa hoàn thành' }}</span>
-                        {% endif %}
-                        {% endwith %}
-                        <button class="btn-edit" onclick="event.stopPropagation(); window.location.href='{% url 'suachuyenxe' %}?id={{ chuyen.ChuyenXeID }}'">Chỉnh sửa</button>
-                    </div>
-                </div>
-                {% empty %}
-                <p style="text-align:center; padding: 20px; color: #666;">Chưa có chuyến xe nào.</p>
-                {% endfor %}
-            </div>
-        </main>
-    </div>
-
-    <!-- Popup -->
-    <div class="popup-overlay" id="successPopup">
-        <div class="popup-box">
-            <i class="fa-regular fa-circle-check popup-icon"></i>
-            <div class="popup-message" id="popupMsgText">Thành công!</div>
+            <button class="btn-edit" onclick="window.location.href='{% url 'suachuyenxe' chuyen.ChuyenXeID %}'">Chỉnh sửa</button>
         </div>
     </div>
+    {% empty %}
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+    <p style="text-align:center; padding: 20px; color: #666;">Chưa có chuyến xe nào.</p>
+    {% endfor %}
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
+<!-- Popup -->
+<div class="popup-overlay" id="successPopup">
+    <div class="popup-box">
+        <i class="fa-regular fa-circle-check popup-icon"></i>
+        <div class="popup-message" id="popupMsgText">Thành công!</div>
+    </div>
+</div>
+{% endblock %}
 
-            userBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                userMenu.classList.toggle('show');
-            });
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Logic Popup thành công
+        const popup = document.getElementById('successPopup');
+        const popupText = document.getElementById('popupMsgText');
 
-            document.addEventListener('click', () => {
-                userMenu.classList.remove('show');
-            });
+        // Tìm tất cả message success từ Django
+        const successMsgs = document.querySelectorAll('.msg-success');
+        if (successMsgs.length > 0) {
+            // Lấy nội dung message đầu tiên
+            const msgContent = successMsgs[0].innerText;
+            popupText.innerText = msgContent;
 
-            // Logic Popup thành công
-            const popup = document.getElementById('successPopup');
-            const popupText = document.getElementById('popupMsgText');
-            
-            // Tìm tất cả message success từ Django
-            const successMsgs = document.querySelectorAll('.msg-success');
-            if (successMsgs.length > 0) {
-                // Lấy nội dung message đầu tiên
-                const msgContent = successMsgs[0].innerText;
-                popupText.innerText = msgContent;
-                
-                // Hiển thị popup
-                popup.classList.add('active');
-                
-                // Ẩn alert mặc định nếu là success để không bị lặp
-                successMsgs.forEach(m => m.style.display = 'none');
-                
-                // Tự động đóng sau 2 giây
-                setTimeout(() => {
-                    popup.classList.remove('active');
-                }, 2000);
-            }
-            
-            // Click ra ngoài popup để đóng
-            popup.addEventListener('click', () => {
+            // Hiển thị popup
+            popup.classList.add('active');
+
+            // Ẩn alert mặc định nếu là success để không bị lặp
+            successMsgs.forEach(m => m.style.display = 'none');
+
+            // Tự động đóng sau 2 giây
+            setTimeout(() => {
                 popup.classList.remove('active');
-            });
-        });
-    </script>
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
+            }, 2000);
+        }
 
-</html>
+        // Click ra ngoài popup để đóng
+        popup.addEventListener('click', () => {
+            popup.classList.remove('active');
+        });
+    });
+</script>
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
