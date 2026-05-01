@@ -305,7 +305,7 @@
         <!-- Payment Methods -->
         <div class="pmt-section-title">Chọn phương thức thanh toán</div>
 
-        <form action="{% url 'xac_nhan_thanh_toan' ve.VeID %}" method="POST" id="formThanhToan">
+        <form action="{% url 'confirm_payment' ve.VeID %}" method="POST" id="formThanhToan">
             {% csrf_token %}
             <input type="hidden" name="phuong_thuc" id="phuongThucDaChon" value="Chuyển khoản">
 

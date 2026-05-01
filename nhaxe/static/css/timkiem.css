@@ -5,12 +5,13 @@
 }
 
 .search-card {
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 35px 40px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    background-color: #F6FCFF;
+    border-radius: 14px;
+    padding: 25px 40px;
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
     margin-bottom: 40px;
     width: 100%;
+    min-height: 320px;
 }
 
 .search-form {
@@ -40,20 +41,23 @@
 }
 
 .form-group label {
-    font-size: 0.95rem;
-    color: #555;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.8);
     margin-bottom: 12px;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .form-control {
     width: 100%;
     padding: 12px 18px;
     border: none;
-    border-radius: 6px;
-    background-color: #f4f6f8;
-    font-size: 1rem;
-    color: #333;
+    border-radius: 8px;
+    background-color: #F6F6F6;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #000;
     outline: none;
     transition: all 0.2s;
     appearance: none;
@@ -227,8 +231,6 @@
 /* Search Results View */
 #results-view {
     width: 100%;
-    max-height: calc(100vh - 250px);
-    overflow: auto;
     padding-bottom: 20px;
 }
 
@@ -247,170 +249,199 @@
 
 .tickets-grid {
     display: grid;
-    grid-template-columns: repeat(3, 432px);
-    gap: 20px;
-    width: max-content;
+    grid-template-columns: repeat(auto-fill, minmax(432px, 1fr));
+    gap: 30px;
+    width: 100%;
 }
 
 .ticket-card {
     background-color: #fff;
-    border-radius: 12px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border-radius: 20px;
+    padding: 20px 24px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     width: 432px;
     min-height: 208px;
     box-sizing: border-box;
+    position: relative;
 }
 
 .ticket-top {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 12px;
+    align-items: flex-start;
+    margin-bottom: 8px;
 }
 
 .route-line-vertical {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 12px;
+    padding-left: 20px;
 }
 
 .route-point {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 10px;
     position: relative;
     z-index: 2;
 }
 
 .dot-green {
-    width: 10px;
-    height: 10px;
+    position: absolute;
+    left: -18px;
+    width: 8px;
+    height: 8px;
     background-color: #4CAF50;
-    border-radius: 50%;
-    margin-top: 5px;
+    border-radius: 4px;
 }
 
 .dot-red {
-    width: 10px;
-    height: 10px;
-    background-color: #FF1046;
-    border-radius: 50%;
-    margin-top: 5px;
+    position: absolute;
+    left: -18px;
+    width: 8px;
+    height: 8px;
+    background-color: #F44336;
+    border-radius: 4px;
 }
 
 .line-dotted-vertical {
     position: absolute;
-    left: 4px;
-    top: 15px;
-    bottom: 25px;
-    width: 2px;
-    border-left: 2px dashed #ccc;
+    left: 5px;
+    top: 10px;
+    bottom: 10px;
+    width: 1px;
+    border-left: 1px dashed #ccc;
     z-index: 1;
 }
 
 .point-info {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .point-info .time {
-    font-weight: 800;
-    color: #111;
-    font-size: 1.15rem;
-    line-height: 1.1;
-    margin-bottom: 2px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: #000;
+    font-size: 14px;
+    line-height: 17px;
+    margin-bottom: 0px;
 }
 
 .point-info .place {
-    color: #888;
-    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.2;
 }
 
 .ticket-price-info {
     text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .ticket-price-info .price {
-    font-weight: 800;
-    font-size: 1.35rem;
-    color: #111;
-    margin-bottom: 2px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: #000;
+    line-height: 1;
 }
 
 .ticket-price-info .seats {
     color: #4CAF50;
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .ticket-middle {
     display: flex;
     gap: 15px;
-    align-items: center;
-    margin-bottom: 12px;
+    align-items: flex-start;
+    margin-top: 0px;
 }
 
 .car-img {
-    width: 90px;
-    height: 65px;
-    border-radius: 8px;
+    width: 80px;
+    height: 60px;
+    border-radius: 10px;
     object-fit: cover;
-    border: 1px solid #f0f0f0;
+    background-color: #A5A3A3;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 }
 
 .car-details {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .car-name {
-    font-weight: 800;
-    color: #111;
-    font-size: 1.05rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: #000;
+    font-size: 16px;
+    line-height: 20px;
 }
 
 .car-type {
-    color: #888;
-    font-size: 0.9rem;
+    color: #666;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 .car-rating {
-    font-size: 0.95rem;
+    font-size: 14px;
     color: #06A0E2;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .ticket-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid #f4f4f4;
-    padding-top: 15px;
+    padding-top: 10px;
     margin-top: auto;
 }
 
 .instant-confirm {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
     color: #4CAF50;
-    font-size: 0.95rem;
+    font-size: 13px;
+    line-height: 16px;
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 500;
 }
 
 .btn-choose-seat {
-    background-color: #FFC107;
-    color: #111;
+    background-color: #FFCC00;
+    color: #000;
     border: none;
-    padding: 10px 24px;
-    border-radius: 20px;
-    font-size: 0.95rem;
+    width: 110px;
+    height: 42px;
+    border-radius: 30px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-choose-seat:hover {
@@ -497,19 +528,22 @@
 .seat-right-panel {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    width: 320px;
+    gap: 30px;
+    width: 460px; /* Matched to legend card width */
 }
 
 .seat-legend-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    background: rgba(217, 217, 217, 0.3);
+    border-radius: 22px;
+    padding: 40px 50px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    border: 1px solid #f0f0f0;
+    justify-content: center;
+    gap: 25px;
+    width: 460px;
+    height: 257px;
+    box-sizing: border-box;
 }
 
 .legend-item {
@@ -519,18 +553,20 @@
 }
 
 .color-box {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
 }
 
 .color-box.yellow { background-color: #FFC107; }
-.color-box.blue { background-color: #1da1f2; }
-.color-box.gray { background-color: #999; }
+.color-box.blue { background-color: #13B5F6; }
+.color-box.gray { background-color: #94A3B8; }
 
 .legend-item span {
-    font-size: 1.05rem;
-    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem; /* Larger font as in screenshot */
+    font-weight: 500;
+    color: #313131;
 }
 
 .seat-booking-summary {
@@ -642,23 +678,28 @@
 
 .form-actions-center {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     margin-top: 10px;
 }
 
 .btn-search {
-    background-color: #06A0E2;
+    background-color: #0098D6;
     color: white;
     border: none;
-    padding: 12px 65px;
-    border-radius: 6px;
-    font-size: 1.1rem;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
     font-weight: 600;
+    letter-spacing: 0.01em;
     cursor: pointer;
     transition: background-color 0.2s;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 5px;
+    width: 144px;
+    height: 38px;
 }
 
 .btn-search:hover {
@@ -722,7 +763,7 @@
 }
 
 .history-item {
-    background-color: #fff;
+    background-color: rgba(198, 226, 255, 0.3);
     border: 1px solid #f4f4f4;
     border-radius: 8px;
     padding: 18px 25px;
@@ -763,18 +804,24 @@
 
 /* Info View Styles */
 .info-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 40px 60px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 60px 80px;
+    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 1034px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .info-title {
-    text-align: center;
-    font-size: 1.5rem;
+    font-family: 'Signika', sans-serif;
     font-weight: 700;
-    color: #222;
+    font-size: 35px;
+    line-height: 43px;
+    color: #313131;
     margin-bottom: 40px;
+    text-align: left;
 }
 
 .info-form {
@@ -785,61 +832,118 @@
 
 .info-row {
     display: flex;
-    gap: 40px;
+    gap: 100px;
 }
 
 .info-group {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 
 .info-group label {
-    font-size: 0.95rem;
-    color: #555;
-    margin-bottom: 10px;
-    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 16px;
+    color: #313131;
+    padding-left: 5px;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748B;
+    font-size: 18px;
+    pointer-events: none;
 }
 
 .info-input {
     width: 100%;
-    padding: 14px 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1.05rem;
-    color: #333;
+    height: 49px;
+    padding: 0 15px 0 45px; /* Added left padding for icon */
+    background: #FFFFFF;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 20px;
+    color: #000000;
     outline: none;
+    box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
 .info-input::placeholder {
-    color: #aaa;
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .info-input:focus {
-    border-color: #06A0E2;
+    border-color: #13B5F6;
+    box-shadow: 0 0 0 2px rgba(19, 181, 246, 0.2);
 }
 
 .info-action {
     display: flex;
     justify-content: flex-end;
-    margin-top: 10px;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn-info-back {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 7px;
+    border: none;
+    padding: 7px 20px;
+    height: 38px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 24px;
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-info-back:hover {
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .btn-info-continue {
-    background-color: #1da1f2;
-    color: white;
+    background: #13B5F6;
+    border-radius: 7px;
     border: none;
-    padding: 12px 70px;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    font-weight: 500;
+    padding: 7px 25px;
+    height: 38px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 24px;
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
     cursor: pointer;
     transition: background-color 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .btn-info-continue:hover {
-    background-color: #06A0E2;
+    background-color: #0ea5e9;
 }
 
 /* Validation Style Adjustments */

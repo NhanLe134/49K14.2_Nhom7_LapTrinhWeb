@@ -6,6 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tìm kiếm vé - Vexeapp</title>
+    <!-- Google Fonts - Montserrat, Inter, Signika -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;700&family=Signika:wght@700&display=swap"
+        rel="stylesheet">
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
@@ -58,461 +62,480 @@
         <main class="main-content search-page-content">
             <!-- Hiển thị thông báo (Messages) -->
             {% if messages %}
-                <div class="messages-container" style="margin: 10px 20px;">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; {% if message.tags == 'error' %}color: #a94442; background-color: #f2dede; border-color: #ebccd1;{% elif message.tags == 'success' %}color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6;{% else %}color: #31708f; background-color: #d9edf7; border-color: #bce8f1;{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+            <div class="messages-container" style="margin: 10px 20px;">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}"
+                    style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; {% if message.tags == 'error' %}color: #a94442; background-color: #f2dede; border-color: #ebccd1;{% elif message.tags == 'success' %}color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6;{% else %}color: #31708f; background-color: #d9edf7; border-color: #bce8f1;{% endif %}">
+                    {{ message }}
                 </div>
+                {% endfor %}
+            </div>
             {% endif %}
 
-            <div id="search-view" {% if chuyen_xe_list %}style="display: none;"{% endif %}>
+            <div id="search-view" {% if chuyen_xe_list %}style="display: none;" {% endif %}>
                 <div class="search-card">
                     <form method="GET" action="{% url 'timkiem' %}">
                         <input type="hidden" name="search_submitted" value="1">
                         <div class="search-form">
-                        <div class="form-row locations-row">
-                            <div class="form-group">
-                                <label>Nơi xuất phát</label>
-                                <div class="custom-dropdown" id="dropdown-origin">
-                                    <div class="dropdown-header form-control">
-                                        <span class="dropdown-selected">Chọn Nơi xuất phát</span>
-                                        <i class="fa-solid fa-angle-down"></i>
-                                    </div>
-                                    <ul class="dropdown-list">
-                                        {% for diem in cac_diem_di %}
+                            <div class="form-row locations-row">
+                                <div class="form-group">
+                                    <label>Nơi xuất phát</label>
+                                    <div class="custom-dropdown" id="dropdown-origin">
+                                        <div class="dropdown-header form-control">
+                                            <span class="dropdown-selected">Chọn Nơi xuất phát</span>
+                                            <i class="fa-solid fa-angle-down"></i>
+                                        </div>
+                                        <ul class="dropdown-list">
+                                            {% for diem in cac_diem_di %}
                                             <li class="dropdown-option">{{ diem }}</li>
-                                        {% empty %}
+                                            {% empty %}
                                             <li class="dropdown-option">Đà Nẵng</li>
-                                        {% endfor %}
-                                    </ul>
-                                    <input type="hidden" name="origin" value="">
-                                </div>
-                            </div>
-
-                            <div class="exchange-icon-wrapper">
-                                <i class="fa-solid fa-right-left" style="color: #06A0E2; cursor: pointer;"></i>
-                                <div class="dots-line">
-                                    <span class="dot-green"></span>
-                                    <span class="line-dashed"></span>
-                                    <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Nơi đến</label>
-                                <div class="custom-dropdown" id="dropdown-dest">
-                                    <div class="dropdown-header form-control">
-                                        <span class="dropdown-selected">Chọn Nơi đến</span>
-                                        <i class="fa-solid fa-angle-down"></i>
+                                            {% endfor %}
+                                        </ul>
+                                        <input type="hidden" name="origin" value="">
                                     </div>
-                                    <ul class="dropdown-list">
-                                        {% for diem in cac_diem_den %}
+                                </div>
+
+                                <div class="exchange-icon-wrapper">
+                                    <i class="fa-solid fa-right-left" style="color: #13B5F6; cursor: pointer;"></i>
+                                    <div class="dots-line">
+                                        <span class="dot-green" style="background-color: #2ECC71;"></span>
+                                        <span class="line-dashed" style="border-top: 2px dashed #13B5F6;"></span>
+                                        <i class="fa-solid fa-location-dot" style="color: #E74C3C;"></i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Nơi đến</label>
+                                    <div class="custom-dropdown" id="dropdown-dest">
+                                        <div class="dropdown-header form-control">
+                                            <span class="dropdown-selected">Chọn Nơi đến</span>
+                                            <i class="fa-solid fa-angle-down"></i>
+                                        </div>
+                                        <ul class="dropdown-list">
+                                            {% for diem in cac_diem_den %}
                                             <li class="dropdown-option">{{ diem }}</li>
-                                        {% empty %}
+                                            {% empty %}
                                             <li class="dropdown-option">Huế</li>
-                                        {% endfor %}
-                                    </ul>
-                                    <input type="hidden" name="destination" value="">
+                                            {% endfor %}
+                                        </ul>
+                                        <input type="hidden" name="destination" value="">
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="form-row times-row">
-                            <div class="form-group">
-                                <label>Ngày đi</label>
-                                <div class="custom-datepicker" id="datepicker-depart">
-                                    <div class="dropdown-header form-control">
-                                        <span class="dropdown-selected date-selected">mm/dd/yyyy</span>
-                                        <i class="fa-regular fa-calendar"></i>
-                                    </div>
-                                    <div class="calendar-dropdown">
-                                        <div class="calendar-header">
-                                            <span class="month-year">February 2026</span>
-                                            <div class="calendar-nav">
-                                                <i class="fa-solid fa-chevron-left"></i>
-                                                <i class="fa-solid fa-chevron-right"></i>
+                            <div class="form-row times-row">
+                                <div class="form-group">
+                                    <label>Ngày đi</label>
+                                    <div class="custom-datepicker" id="datepicker-depart">
+                                        <div class="dropdown-header form-control">
+                                            <span class="dropdown-selected date-selected">mm/dd/yyyy</span>
+                                            <i class="fa-regular fa-calendar"></i>
+                                        </div>
+                                        <div class="calendar-dropdown">
+                                            <div class="calendar-header">
+                                                <span class="month-year">February 2026</span>
+                                                <div class="calendar-nav">
+                                                    <i class="fa-solid fa-chevron-left"></i>
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                </div>
+                                            </div>
+                                            <div class="calendar-grid">
+                                                <!-- JS renders grid here -->
                                             </div>
                                         </div>
-                                        <div class="calendar-grid">
-                                            <!-- JS renders grid here -->
+                                        <input type="hidden" name="depart_date" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Giờ đi</label>
+                                    <div class="custom-dropdown" id="dropdown-time">
+                                        <div class="dropdown-header form-control">
+                                            <span class="dropdown-selected">--:-- --</span>
+                                            <i class="fa-regular fa-clock"></i>
                                         </div>
+                                        <ul class="dropdown-list time-list">
+                                            <li class="dropdown-option">04:00</li>
+                                            <li class="dropdown-option">05:00</li>
+                                            <li class="dropdown-option">06:00</li>
+                                            <li class="dropdown-option">07:00</li>
+                                            <li class="dropdown-option">08:00</li>
+                                            <li class="dropdown-option">09:00</li>
+                                            <li class="dropdown-option">10:00</li>
+                                            <li class="dropdown-option">11:00</li>
+                                            <li class="dropdown-option">12:00</li>
+                                            <li class="dropdown-option">13:00</li>
+                                            <li class="dropdown-option">14:00</li>
+                                            <li class="dropdown-option">15:00</li>
+                                            <li class="dropdown-option">16:00</li>
+                                            <li class="dropdown-option">17:00</li>
+                                            <li class="dropdown-option">18:00</li>
+                                            <li class="dropdown-option">19:00</li>
+                                            <li class="dropdown-option">20:00</li>
+                                            <li class="dropdown-option">21:00</li>
+                                            <li class="dropdown-option">22:00</li>
+                                        </ul>
+                                        <input type="hidden" name="depart_time" value="">
                                     </div>
-                                    <input type="hidden" name="depart_date" value="">
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>Giờ đi</label>
-                                <div class="custom-dropdown" id="dropdown-time">
-                                    <div class="dropdown-header form-control">
-                                        <span class="dropdown-selected">--:-- --</span>
-                                        <i class="fa-regular fa-clock"></i>
-                                    </div>
-                                    <ul class="dropdown-list time-list">
-                                        <li class="dropdown-option">04:00</li>
-                                        <li class="dropdown-option">05:00</li>
-                                        <li class="dropdown-option">06:00</li>
-                                        <li class="dropdown-option">07:00</li>
-                                        <li class="dropdown-option">08:00</li>
-                                        <li class="dropdown-option">09:00</li>
-                                        <li class="dropdown-option">10:00</li>
-                                        <li class="dropdown-option">11:00</li>
-                                        <li class="dropdown-option">12:00</li>
-                                        <li class="dropdown-option">13:00</li>
-                                        <li class="dropdown-option">14:00</li>
-                                        <li class="dropdown-option">15:00</li>
-                                        <li class="dropdown-option">16:00</li>
-                                        <li class="dropdown-option">17:00</li>
-                                        <li class="dropdown-option">18:00</li>
-                                        <li class="dropdown-option">19:00</li>
-                                        <li class="dropdown-option">20:00</li>
-                                        <li class="dropdown-option">21:00</li>
-                                        <li class="dropdown-option">22:00</li>
-                                    </ul>
-                                    <input type="hidden" name="depart_time" value="">
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="form-actions-center">
-                            <button type="submit" class="btn-search">
-                                <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
-                            </button>
-                        </div>
+                            <div class="form-actions-center">
+                                <button type="submit" class="btn-search">
+                                    <i class="fa-solid fa-magnifying-glass" style="color: #FFFFFF;"></i> Tìm kiếm
+                                </button>
+                            </div>
                     </form>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <div class="history-header">
+                    <h2>Lịch sử tìm kiếm</h2>
+                    <a href="#" class="btn-clear-all">Xóa tất cả</a>
+                </div>
+
+                <div class="history-list">
+                    <div class="history-item">
+                        <div class="route-name">Đà Nẵng <i class="fa-solid fa-arrow-right"></i> Huế</div>
+                        <div class="route-time">25/02/2026 - 08:00</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="route-name">Huế <i class="fa-solid fa-arrow-right"></i> Đà Nẵng</div>
+                        <div class="route-time">20/02/2026 - 07:30</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="route-name">Huế <i class="fa-solid fa-arrow-right"></i> Đà Nẵng</div>
+                        <div class="route-time">12/02/2026 - 10:30</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="route-name">Hội An <i class="fa-solid fa-arrow-right"></i> Huế</div>
+                        <div class="route-time">01/12/2025 - 09:00</div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <div id="results-view" {% if chuyen_xe_list %}style="display: block;" {% else %}style="display: none;" {% endif %}>
+        <div class="tickets-grid">
+            {% for cx in chuyen_xe_list %}
+            <div class="ticket-card">
+                <div class="ticket-top">
+                    <div class="route-line-vertical">
+                        <div class="route-point">
+                            <span class="dot-green"></span>
+                            <div class="point-info">
+                                <span class="time">{{ cx.GioDi|time:"H:i" }}</span>
+                                <span class="place">{{ origin }}</span>
+                            </div>
+                        </div>
+                        <div class="route-point">
+                            <span class="dot-red"></span>
+                            <div class="point-info">
+                                <span class="time">{{ cx.GioDen|time:"H:i" }}</span>
+                                <span class="place">{{ destination }}</span>
+                            </div>
+                        </div>
+                        <div class="line-dotted-vertical"></div>
+                    </div>
+                    <div class="ticket-price-info">
+                        <div class="price">{{ cx.GiaVe|floatformat:0 }}đ</div>
+                        <div class="seats">{{ cx.SoChoTrong }} chỗ trống</div>
                     </div>
                 </div>
 
-                <div class="history-section">
-                    <div class="history-header">
-                        <h2>Lịch sử tìm kiếm</h2>
-                        <a href="#" class="btn-clear-all">Xóa tất cả</a>
+                <div class="ticket-middle">
+                    <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=150&h=100&fit=crop"
+                        alt="Xe khách" class="car-img">
+                    <div class="car-details">
+                        <div class="car-name">{{ cx.TenNhaXe }}</div>
+                        <div class="car-type">{{ cx.LoaiXe }}</div>
+                        <div class="car-rating">
+                            <i class="fa-solid fa-star" style="color: #FFC107;"></i>
+                            <span>{{ cx.DanhGiaTB }} ({{ cx.SoLuotDanhGia }} đánh giá)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ticket-bottom">
+                    <div class="instant-confirm">
+                        <i class="fa-solid fa-check"></i> Xác nhận chỗ ngay
+                    </div>
+                    <button class="btn-choose-seat" data-trip-id="{{ cx.ChuyenXeID }}">Chọn chỗ</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="seat-view" style="display: none;">
+        <div class="search-card">
+            <div class="search-form">
+                <div class="form-row locations-row">
+                    <div class="form-group">
+                        <label>Nơi xuất phát</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-origin">{{ origin }}</span> <i class="fa-solid fa-caret-down"></i>
+                        </div>
                     </div>
 
-                    <div class="history-list">
-                        <div class="history-item">
-                            <div class="route-name">Đà Nẵng <i class="fa-solid fa-arrow-right"></i> Huế</div>
-                            <div class="route-time">25/02/2026 - 08:00</div>
+                    <div class="exchange-icon-wrapper">
+                        <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
+                        <div class="dots-line">
+                            <span class="dot-green"></span>
+                            <span class="line-dashed"></span>
+                            <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
                         </div>
-                        <div class="history-item">
-                            <div class="route-name">Huế <i class="fa-solid fa-arrow-right"></i> Đà Nẵng</div>
-                            <div class="route-time">20/02/2026 - 07:30</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nơi đến</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-destination">{{ destination }}</span> <i
+                                class="fa-solid fa-caret-down"></i>
                         </div>
-                        <div class="history-item">
-                            <div class="route-name">Huế <i class="fa-solid fa-arrow-right"></i> Đà Nẵng</div>
-                            <div class="route-time">12/02/2026 - 10:30</div>
+                    </div>
+                </div>
+
+                <div class="form-row times-row" style="margin-bottom: 0;">
+                    <div class="form-group">
+                        <label>Ngày đi</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
                         </div>
-                        <div class="history-item">
-                            <div class="route-name">Hội An <i class="fa-solid fa-arrow-right"></i> Huế</div>
-                            <div class="route-time">01/12/2025 - 09:00</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Giờ đi</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-time">07:00 - 09:30</span> <i class="fa-regular fa-clock"></i>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="results-view" {% if chuyen_xe_list %}style="display: block;"{% else %}style="display: none;"{% endif %}>
-                <div class="tickets-grid">
-                    {% for cx in chuyen_xe_list %}
-                    <div class="ticket-card">
-                        <div class="ticket-top">
-                            <div class="route-line-vertical">
-                                <div class="route-point">
-                                    <span class="dot-green"></span>
-                                    <div class="point-info">
-                                        <span class="time">{{ cx.GioDi|time:"H:i" }}</span>
-                                        <span class="place">{{ origin }}</span>
-                                    </div>
-                                </div>
-                                <div class="route-point">
-                                    <span class="dot-red"></span>
-                                    <div class="point-info">
-                                        <span class="time">--:--</span>
-                                        <span class="place">{{ destination }}</span>
-                                    </div>
-                                </div>
-                                <div class="line-dotted-vertical"></div>
-                            </div>
-                            <div class="ticket-price-info">
-                                <div class="price" style="font-size:20px; color:#13B5F6; font-weight:bold;">{{ cx.GiaVe|floatformat:0 }}đ</div>
-                                <div class="seats">{{ cx.SoChoTrong }} chỗ trống</div>
-                            </div>
-                        </div>
-                        
-                        <div class="ticket-middle">
-                            <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=150&h=100&fit=crop" alt="Xe khách" class="car-img">
-                            <div class="car-details">
-                                <div class="car-name">{{ cx.TenNhaXe }}</div>
-                                <div class="car-type">{{ cx.LoaiXe }} | {{ cx.BienSoXe }}</div>
-                                <div class="car-rating">
-                                    <i class="fa-solid fa-star" style="color: #FFC107;"></i> 
-                                    <span>Tài xế: {{ cx.TenTaiXe }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="ticket-bottom">
-                            <div class="instant-confirm">
-                                <i class="fa-solid fa-check"></i> Xác nhận chỗ ngay
-                            </div>
-                            <button class="btn-choose-seat" data-trip-id="{{ cx.ChuyenXeID }}">Chọn chỗ</button>
-                        </div>
+        <div class="seat-selection-container">
+            <div class="seat-map-card">
+                <div class="seat-row">
+                    <div class="seat-item available">
+                        <svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            class="seat-svg">
+                            <path
+                                d="M8.75 19.6875C8.75 16.7867 9.90234 14.0047 11.9535 11.9535C14.0047 9.90234 16.7867 8.75 19.6875 8.75H50.3125C53.2133 8.75 55.9953 9.90234 58.0465 11.9535C60.0977 14.0047 61.25 16.7867 61.25 19.6875V32.8125C60.0387 31.9036 58.6518 31.2561 57.1772 30.9112C55.7026 30.5662 54.1724 30.5312 52.6836 30.8084C51.1948 31.0856 49.7797 31.6689 48.5281 32.5215C47.2765 33.3741 46.2155 34.4773 45.4125 35.7612C44.1871 34.1639 42.6106 32.8698 40.8051 31.9792C38.9995 31.0885 37.0133 30.6252 35 30.625C30.7562 30.625 26.985 32.6375 24.5875 35.7612C23.7845 34.4773 22.7235 33.3741 21.4719 32.5215C20.2203 31.6689 18.8052 31.0856 17.3164 30.8084C15.8276 30.5312 14.2974 30.5662 12.8228 30.9112C11.3482 31.2561 9.96133 31.9036 8.75 32.8125V19.6875ZM43.75 43.75C43.75 41.4294 42.8281 39.2038 41.1872 37.5628C39.5462 35.9219 37.3206 35 35 35C32.6794 35 30.4538 35.9219 28.8128 37.5628C27.1719 39.2038 26.25 41.4294 26.25 43.75V61.25H43.75V43.75ZM48.125 61.25H53.5938C55.6243 61.25 57.5717 60.4434 59.0075 59.0075C60.4434 57.5717 61.25 55.6243 61.25 53.5938V41.5625C61.25 39.822 60.5586 38.1528 59.3279 36.9221C58.0972 35.6914 56.428 35 54.6875 35C52.947 35 51.2778 35.6914 50.0471 36.9221C48.8164 38.1528 48.125 39.822 48.125 41.5625V61.25ZM21.875 61.25H16.4062C14.3757 61.25 12.4283 60.4434 10.9925 59.0075C9.55664 57.5717 8.75 55.6243 8.75 53.5938V41.5625C8.75 40.7007 8.91974 39.8473 9.24954 39.0511C9.57934 38.2549 10.0627 37.5315 10.6721 36.9221C11.2815 36.3127 12.0049 35.8293 12.8011 35.4995C13.5973 35.1697 14.4507 35 15.3125 35C16.1743 35 17.0277 35.1697 17.8239 35.4995C18.6201 35.8293 19.3435 36.3127 19.9529 36.9221C20.5623 37.5315 21.0457 38.2549 21.3755 39.0511C21.7053 39.8473 21.875 40.7007 21.875 41.5625V61.25Z"
+                                fill="currentColor" />
+                        </svg>
+                        <span>B7</span>
                     </div>
-                    {% endfor %}
-                </div>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="location.href='{% url 'timkiem' %}'" class="btn-info-continue" style="display: inline-block; padding: 10px 30px; border-radius: 30px; cursor: pointer;">Tìm kiếm khác</button>
-                </div>
-            </div>
-
-            <div id="seat-view" style="display: none;">
-                <div class="search-card">
-                    <div class="search-form">
-                        <div class="form-row locations-row">
-                            <div class="form-group">
-                                <label>Nơi xuất phát</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-origin">{{ origin }}</span> <i class="fa-solid fa-caret-down"></i>
-                                </div>
-                            </div>
-
-                            <div class="exchange-icon-wrapper">
-                                <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
-                                <div class="dots-line">
-                                    <span class="dot-green"></span>
-                                    <span class="line-dashed"></span>
-                                    <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Nơi đến</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-destination">{{ destination }}</span> <i class="fa-solid fa-caret-down"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-row times-row" style="margin-bottom: 0;">
-                            <div class="form-group">
-                                <label>Ngày đi</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Giờ đi</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-time">07:00 - 09:30</span> <i class="fa-regular fa-clock"></i>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="seat-item sold" title="Đã bán">
+                        <svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            class="seat-svg">
+                            <path
+                                d="M8.75 19.6875C8.75 16.7867 9.90234 14.0047 11.9535 11.9535C14.0047 9.90234 16.7867 8.75 19.6875 8.75H50.3125C53.2133 8.75 55.9953 9.90234 58.0465 11.9535C60.0977 14.0047 61.25 16.7867 61.25 19.6875V32.8125C60.0387 31.9036 58.6518 31.2561 57.1772 30.9112C55.7026 30.5662 54.1724 30.5312 52.6836 30.8084C51.1948 31.0856 49.7797 31.6689 48.5281 32.5215C47.2765 33.3741 46.2155 34.4773 45.4125 35.7612C44.1871 34.1639 42.6106 32.8698 40.8051 31.9792C38.9995 31.0885 37.0133 30.6252 35 30.625C30.7562 30.625 26.985 32.6375 24.5875 35.7612C23.7845 34.4773 22.7235 33.3741 21.4719 32.5215C20.2203 31.6689 18.8052 31.0856 17.3164 30.8084C15.8276 30.5312 14.2974 30.5662 12.8228 30.9112C11.3482 31.2561 9.96133 31.9036 8.75 32.8125V19.6875ZM43.75 43.75C43.75 41.4294 42.8281 39.2038 41.1872 37.5628C39.5462 35.9219 37.3206 35 35 35C32.6794 35 30.4538 35.9219 28.8128 37.5628C27.1719 39.2038 26.25 41.4294 26.25 43.75V61.25H43.75V43.75ZM48.125 61.25H53.5938C55.6243 61.25 57.5717 60.4434 59.0075 59.0075C60.4434 57.5717 61.25 55.6243 61.25 53.5938V41.5625C61.25 39.822 60.5586 38.1528 59.3279 36.9221C58.0972 35.6914 56.428 35 54.6875 35C52.947 35 51.2778 35.6914 50.0471 36.9221C48.8164 38.1528 48.125 39.822 48.125 41.5625V61.25ZM21.875 61.25H16.4062C14.3757 61.25 12.4283 60.4434 10.9925 59.0075C9.55664 57.5717 8.75 55.6243 8.75 53.5938V41.5625C8.75 40.7007 8.91974 39.8473 9.24954 39.0511C9.57934 38.2549 10.0627 37.5315 10.6721 36.9221C11.2815 36.3127 12.0049 35.8293 12.8011 35.4995C13.5973 35.1697 14.4507 35 15.3125 35C16.1743 35 17.0277 35.1697 17.8239 35.4995C18.6201 35.8293 19.3435 36.3127 19.9529 36.9221C20.5623 37.5315 21.0457 38.2549 21.3755 39.0511C21.7053 39.8473 21.875 40.7007 21.875 41.5625V61.25Z"
+                                fill="currentColor" />
+                        </svg>
+                        <span>B6</span>
+                    </div>
+                    <div class="seat-item sold" title="Đã bán">
+                        <svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            class="seat-svg">
+                            <path
+                                d="M8.75 19.6875C8.75 16.7867 9.90234 14.0047 11.9535 11.9535C14.0047 9.90234 16.7867 8.75 19.6875 8.75H50.3125C53.2133 8.75 55.9953 9.90234 58.0465 11.9535C60.0977 14.0047 61.25 16.7867 61.25 19.6875V32.8125C60.0387 31.9036 58.6518 31.2561 57.1772 30.9112C55.7026 30.5662 54.1724 30.5312 52.6836 30.8084C51.1948 31.0856 49.7797 31.6689 48.5281 32.5215C47.2765 33.3741 46.2155 34.4773 45.4125 35.7612C44.1871 34.1639 42.6106 32.8698 40.8051 31.9792C38.9995 31.0885 37.0133 30.6252 35 30.625C30.7562 30.625 26.985 32.6375 24.5875 35.7612C23.7845 34.4773 22.7235 33.3741 21.4719 32.5215C20.2203 31.6689 18.8052 31.0856 17.3164 30.8084C15.8276 30.5312 14.2974 30.5662 12.8228 30.9112C11.3482 31.2561 9.96133 31.9036 8.75 32.8125V19.6875ZM43.75 43.75C43.75 41.4294 42.8281 39.2038 41.1872 37.5628C39.5462 35.9219 37.3206 35 35 35C32.6794 35 30.4538 35.9219 28.8128 37.5628C27.1719 39.2038 26.25 41.4294 26.25 43.75V61.25H43.75V43.75ZM48.125 61.25H53.5938C55.6243 61.25 57.5717 60.4434 59.0075 59.0075C60.4434 57.5717 61.25 55.6243 61.25 53.5938V41.5625C61.25 39.822 60.5586 38.1528 59.3279 36.9221C58.0972 35.6914 56.428 35 54.6875 35C52.947 35 51.2778 35.6914 50.0471 36.9221C48.8164 38.1528 48.125 39.822 48.125 41.5625V61.25ZM21.875 61.25H16.4062C14.3757 61.25 12.4283 60.4434 10.9925 59.0075C9.55664 57.5717 8.75 55.6243 8.75 53.5938V41.5625C8.75 40.7007 8.91974 39.8473 9.24954 39.0511C9.57934 38.2549 10.0627 37.5315 10.6721 36.9221C11.2815 36.3127 12.0049 35.8293 12.8011 35.4995C13.5973 35.1697 14.4507 35 15.3125 35C16.1743 35 17.0277 35.1697 17.8239 35.4995C18.6201 35.8293 19.3435 36.3127 19.9529 36.9221C20.5623 37.5315 21.0457 38.2549 21.3755 39.0511C21.7053 39.8473 21.875 40.7007 21.875 41.5625V61.25Z"
+                                fill="currentColor" />
+                        </svg>
+                        <span>B5</span>
                     </div>
                 </div>
-
-                <div class="seat-selection-container">
-                    <div class="seat-map-card">
-                        <div class="seat-row">
-                            <div class="seat-item available">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                    <path
-                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
-                                        fill="currentColor" />
-                                </svg>
-                                <span>B7</span>
-                            </div>
-                            <div class="seat-item sold" title="Đã bán">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                    <path
-                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
-                                        fill="currentColor" />
-                                </svg>
-                                <span>B6</span>
-                            </div>
-                            <div class="seat-item sold" title="Đã bán">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                    <path
-                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
-                                        fill="currentColor" />
-                                </svg>
-                                <span>B5</span>
-                            </div>
-                        </div>
-                        <div class="seat-row">
-                            <div class="seat-item sold" title="Đã bán">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                    <path
-                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
-                                        fill="currentColor" />
-                                </svg>
-                                <span>B2</span>
-                            </div>
-                            <div class="seat-item sold" title="Đã bán">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                    <path
-                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
-                                        fill="currentColor" />
-                                </svg>
-                                <span>B3</span>
-                            </div>
-                            <div class="seat-item sold" title="Đã bán">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                    <path
-                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
-                                        fill="currentColor" />
-                                </svg>
-                                <span>B4</span>
-                            </div>
-                        </div>
-                        <div class="seat-row">
-                            <div class="seat-item available">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                    <path
-                                        d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
-                                        fill="currentColor" />
-                                </svg>
-                                <span>B1</span>
-                            </div>
-                            <div style="width: 50px; visibility: hidden;"></div>
-                            <div class="steering-wheel">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="steering-svg"
-                                    style="width: 50px; height: 50px; fill: currentColor;">
-                                    <circle cx="50" cy="50" r="36" stroke="currentColor" stroke-width="12"
-                                        fill="none" />
-                                    <path
-                                        d="M 14 46 Q 32 40 50 45 Q 68 40 86 46 L 86 54 L 60 54 L 56 86 L 44 86 L 40 54 L 14 54 Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                    <circle cx="50" cy="50" r="16" />
-                                    <circle cx="50" cy="50" r="6" fill="white" />
-                                    <circle cx="50" cy="50" r="2.5" fill="currentColor" />
-                                </svg>
-                            </div>
-                        </div>
+                <div class="seat-row">
+                    <div class="seat-item sold" title="Đã bán">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                            <path
+                                d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                fill="currentColor" />
+                        </svg>
+                        <span>B2</span>
                     </div>
-
-                    <div class="seat-right-panel">
-                        <div class="seat-legend-card">
-                            <div class="legend-item">
-                                <div class="color-box yellow"></div>
-                                <span>Ghế đang chọn</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="color-box blue"></div>
-                                <span>Ghế đã bán</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="color-box gray"></div>
-                                <span>Ghế còn trống</span>
-                            </div>
-                        </div>
-
-                        <div class="seat-booking-summary">
-                            <div class="summary-top">
-                                <div class="seat-count" id="seatCount">0</div>
-                                <div class="seat-label">Ghế đã chọn</div>
-                            </div>
-                            <div class="summary-bottom">
-                                <div class="total-price" id="totalPrice">0.000 vnđ</div>
-                                <button class="btn-continue" id="btnSeatContinue">Tiếp tục</button>
-                            </div>
-                        </div>
+                    <div class="seat-item sold" title="Đã bán">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                            <path
+                                d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                fill="currentColor" />
+                        </svg>
+                        <span>B3</span>
+                    </div>
+                    <div class="seat-item sold" title="Đã bán">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                            <path
+                                d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                fill="currentColor" />
+                        </svg>
+                        <span>B4</span>
+                    </div>
+                </div>
+                <div class="seat-row">
+                    <div class="seat-item available">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
+                            <path
+                                d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z"
+                                fill="currentColor" />
+                        </svg>
+                        <span>B1</span>
+                    </div>
+                    <div style="width: 50px; visibility: hidden;"></div>
+                    <div class="steering-wheel">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="steering-svg"
+                            style="width: 50px; height: 50px; fill: currentColor;">
+                            <circle cx="50" cy="50" r="36" stroke="currentColor" stroke-width="12" fill="none" />
+                            <path
+                                d="M 14 46 Q 32 40 50 45 Q 68 40 86 46 L 86 54 L 60 54 L 56 86 L 44 86 L 40 54 L 14 54 Z"
+                                stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                            <circle cx="50" cy="50" r="16" />
+                            <circle cx="50" cy="50" r="6" fill="white" />
+                            <circle cx="50" cy="50" r="2.5" fill="currentColor" />
+                        </svg>
                     </div>
                 </div>
             </div>
 
-            <div id="info-view" style="display: none;">
-                <div class="search-card">
-                    <div class="search-form">
-                        <div class="form-row locations-row">
-                            <div class="form-group">
-                                <label>Nơi xuất phát</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-origin">{{ origin }}</span> <i class="fa-solid fa-caret-down"></i>
-                                </div>
-                            </div>
+            <div class="seat-right-panel">
+                <div class="seat-legend-card">
+                    <div class="legend-item">
+                        <div class="color-box yellow"></div>
+                        <span>Ghế đang chọn</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box blue"></div>
+                        <span>Ghế đã bán</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box gray"></div>
+                        <span>Ghế còn trống</span>
+                    </div>
+                </div>
 
-                            <div class="exchange-icon-wrapper">
-                                <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
-                                <div class="dots-line">
-                                    <span class="dot-green"></span>
-                                    <span class="line-dashed"></span>
-                                    <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
-                                </div>
-                            </div>
+                <div class="seat-booking-summary">
+                    <div class="summary-top">
+                        <div class="seat-count" id="seatCount">0</div>
+                        <div class="seat-label">Ghế đã chọn</div>
+                    </div>
+                    <div class="summary-bottom">
+                        <div class="total-price" id="totalPrice">0.000 vnđ</div>
+                        <button class="btn-continue" id="btnSeatContinue">Tiếp tục</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                            <div class="form-group">
-                                <label>Nơi đến</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-destination">{{ destination }}</span> <i class="fa-solid fa-caret-down"></i>
-                                </div>
-                            </div>
+    <div id="info-view" style="display: none;">
+        <div class="search-card">
+            <div class="search-form">
+                <div class="form-row locations-row">
+                    <div class="form-group">
+                        <label>Nơi xuất phát</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-origin">{{ origin }}</span> <i class="fa-solid fa-caret-down"></i>
                         </div>
+                    </div>
 
-                        <div class="form-row times-row" style="margin-bottom: 0;">
-                            <div class="form-group">
-                                <label>Ngày đi</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Giờ đi</label>
-                                <div class="form-control"
-                                    style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
-                                    <span class="dynamic-time">07:00 - 09:30</span> <i class="fa-regular fa-clock"></i>
-                                </div>
-                            </div>
+                    <div class="exchange-icon-wrapper">
+                        <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
+                        <div class="dots-line">
+                            <span class="dot-green"></span>
+                            <span class="line-dashed"></span>
+                            <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nơi đến</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-destination">{{ destination }}</span> <i
+                                class="fa-solid fa-caret-down"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="info-card">
-                    <h3 class="info-title">Hãy điền thông tin cụ thể</h3>
-                        <form action="{% url 'xac_nhan_dat_ve' %}" method="POST" id="finalBookingForm">
-                            {% csrf_token %}
-                            <input type="hidden" name="chuyen_id" id="postChuyenID">
-                            <div id="selectedSeatsInputs"></div>
-
-                            <div class="info-row">
-                                <div class="info-group">
-                                    <label>Điểm đón của bạn</label>
-                                    <input type="text" class="info-input" name="diem_don" id="pickupInput"
-                                        placeholder="Vd: 123 Nguyễn Văn Linh, Hải Châu, Đà Nẵng" required>
-                                    <span class="error-msg" id="pickupError"></span>
-                                </div>
-                                <div class="info-group">
-                                    <label>Điểm trả của bạn</label>
-                                    <input type="text" class="info-input" name="diem_tra" id="dropoffInput"
-                                        placeholder="Vd: 38 Trần Phú, Huế" required>
-                                    <span class="error-msg" id="dropoffError"></span>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-group">
-                                    <label>Họ và tên khách hàng</label>
-                                    <input type="text" class="info-input" name="ho_ten" id="nameInput" placeholder="Vd: Nguyễn Văn A" required
-                                           value="{{ khach_hang.HovaTen|default:'' }}">
-                                    <span class="error-msg" id="nameError"></span>
-                                </div>
-                                <div class="info-group">
-                                    <label>Số điện thoại</label>
-                                    <input type="tel" class="info-input" name="sdt" id="phoneInput" placeholder="Vd: 0373945787" required
-                                           value="{{ sdt_mac_dinh|default:'' }}">
-                                    <span class="error-msg" id="phoneError"></span>
-                                </div>
-                            </div>
-                            <div class="info-action">
-                                <button type="submit" class="btn-info-continue" id="btnInfoContinue">Xác nhận đặt vé</button>
-                            </div>
-                        </form>
+                <div class="form-row times-row" style="margin-bottom: 0;">
+                    <div class="form-group">
+                        <label>Ngày đi</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Giờ đi</label>
+                        <div class="form-control"
+                            style="background-color: #f4f6f8; display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                            <span class="dynamic-time">07:00 - 09:30</span> <i class="fa-regular fa-clock"></i>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3 class="info-title">Thông tin liên hệ</h3>
+            <form action="{% url 'xac_nhan_dat_ve' %}" method="POST" id="finalBookingForm" class="info-form">
+                {% csrf_token %}
+                <!-- Hidden inputs for data persistence -->
+                <input type="hidden" name="chuyen_id" id="postChuyenID">
+                <div id="selectedSeatsInputs"></div>
+
+                <div class="info-row">
+                    <div class="info-group">
+                        <label>Điểm đón của bạn</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-location-dot input-icon"></i>
+                            <input type="text" name="diem_don" id="pickupInput" class="info-input"
+                                placeholder="Vd: 123 Nguyễn Văn Linh, Hải Châu, Đà Nẵng" required>
+                        </div>
+                        <div class="error-msg" id="pickupError">Vui lòng nhập điểm đón</div>
+                    </div>
+                    <div class="info-group">
+                        <label>Điểm trả của bạn</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-location-arrow input-icon"></i>
+                            <input type="text" name="diem_tra" id="dropoffInput" class="info-input"
+                                placeholder="Vd: 38 Trần Phú, Huế" required>
+                        </div>
+                        <div class="error-msg" id="dropoffError">Vui lòng nhập điểm trả</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-group">
+                        <label>Họ và tên khách hàng</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" name="ho_ten" id="nameInput" class="info-input"
+                                placeholder="Vd: Nguyễn Văn A" required value="{{ khach_hang.HovaTen|default:'' }}">
+                        </div>
+                        <div class="error-msg" id="nameError">Vui lòng nhập họ tên</div>
+                    </div>
+                    <div class="info-group">
+                        <label>Số điện thoại</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-phone input-icon"></i>
+                            <input type="tel" name="sdt" id="phoneInput" class="info-input" placeholder="Vd: 0379945787"
+                                required value="{{ sdt_mac_dinh|default:'' }}">
+                        </div>
+                        <div class="error-msg" id="phoneError">Số điện thoại không hợp lệ</div>
+                    </div>
+                </div>
+
+                <div class="info-action">
+                    <button type="button" class="btn-info-back" id="btnInfoBack">Quay lại</button>
+                    <button type="submit" class="btn-info-continue" id="btnInfoContinue">Xác nhận đặt vé</button>
+                </div>
+            </form>
+        </div>
         </main>
 
         <!-- OTP Modal Overlay -->
@@ -762,7 +785,7 @@
                                     if (seatMapCard) {
                                         const seatsData = res.data;
                                         const seatCount = seatsData.length;
-                                        
+
                                         // Quy tắc sắp xếp theo loại xe
                                         let layout = [];
                                         if (seatCount <= 3) { // Xe 4 chỗ
@@ -770,7 +793,7 @@
                                         } else if (seatCount <= 7) { // Xe 7 chỗ
                                             layout = [['B7', 'B6', 'B5'], ['B2', 'B3', 'B4'], ['B1', null, 'STEERING']];
                                         } else { // Xe 9 chỗ
-                                            layout = [['C8', 'C7', 'C6'], ['C5', 'C4', 'C3'], [null, 'C2', null], ['C1', null, 'STEERING']];
+                                            layout = [['C9', 'C8', 'C7'], ['C6', 'C5', 'C4'], ['C3', 'C2', 'C1'], [null, null, 'STEERING']];
                                         }
 
                                         let seatHtml = '';
@@ -794,8 +817,8 @@
                                                     const statusClass = seatInfo ? seatInfo.trangThai : 'available';
                                                     seatHtml += `
                                                         <div class="seat-item ${statusClass}" data-seat="${cell}">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="seat-svg">
-                                                                <path d="M 8 40 V 22 A 14 14 0 0 1 22 8 H 74 A 14 14 0 0 1 88 22 V 82 A 8 8 0 0 1 72 82 V 60 A 8 8 0 0 0 56 60 V 82 A 8 8 0 0 1 40 82 V 60 A 8 8 0 0 0 24 60 V 82 A 8 8 0 0 1 8 82 Z" fill="currentColor" />
+                                                            <svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg" class="seat-svg">
+                                                                <path d="M8.75 19.6875C8.75 16.7867 9.90234 14.0047 11.9535 11.9535C14.0047 9.90234 16.7867 8.75 19.6875 8.75H50.3125C53.2133 8.75 55.9953 9.90234 58.0465 11.9535C60.0977 14.0047 61.25 16.7867 61.25 19.6875V32.8125C60.0387 31.9036 58.6518 31.2561 57.1772 30.9112C55.7026 30.5662 54.1724 30.5312 52.6836 30.8084C51.1948 31.0856 49.7797 31.6689 48.5281 32.5215C47.2765 33.3741 46.2155 34.4773 45.4125 35.7612C44.1871 34.1639 42.6106 32.8698 40.8051 31.9792C38.9995 31.0885 37.0133 30.6252 35 30.625C30.7562 30.625 26.985 32.6375 24.5875 35.7612C23.7845 34.4773 22.7235 33.3741 21.4719 32.5215C20.2203 31.6689 18.8052 31.0856 17.3164 30.8084C15.8276 30.5312 14.2974 30.5662 12.8228 30.9112C11.3482 31.2561 9.96133 31.9036 8.75 32.8125V19.6875ZM43.75 43.75C43.75 41.4294 42.8281 39.2038 41.1872 37.5628C39.5462 35.9219 37.3206 35 35 35C32.6794 35 30.4538 35.9219 28.8128 37.5628C27.1719 39.2038 26.25 41.4294 26.25 43.75V61.25H43.75V43.75ZM48.125 61.25H53.5938C55.6243 61.25 57.5717 60.4434 59.0075 59.0075C60.4434 57.5717 61.25 55.6243 61.25 53.5938V41.5625C61.25 39.822 60.5586 38.1528 59.3279 36.9221C58.0972 35.6914 56.428 35 54.6875 35C52.947 35 51.2778 35.6914 50.0471 36.9221C48.8164 38.1528 48.125 39.822 48.125 41.5625V61.25ZM21.875 61.25H16.4062C14.3757 61.25 12.4283 60.4434 10.9925 59.0075C9.55664 57.5717 8.75 55.6243 8.75 53.5938V41.5625C8.75 40.7007 8.91974 39.8473 9.24954 39.0511C9.57934 38.2549 10.0627 37.5315 10.6721 36.9221C11.2815 36.3127 12.0049 35.8293 12.8011 35.4995C13.5973 35.1697 14.4507 35 15.3125 35C16.1743 35 17.0277 35.1697 17.8239 35.4995C18.6201 35.8293 19.3435 36.3127 19.9529 36.9221C20.5623 37.5315 21.0457 38.2549 21.3755 39.0511C21.7053 39.8473 21.875 40.7007 21.875 41.5625V61.25Z" fill="currentColor" />
                                                             </svg>
                                                             <span>${cell}</span>
                                                         </div>`;
@@ -934,6 +957,15 @@
                             if (phoneError) { phoneError.textContent = 'Số điện thoại không hợp lệ, vui lòng nhập lại'; phoneError.style.display = 'block'; }
                         }
                     });
+
+                    const btnInfoBack = document.getElementById('btnInfoBack');
+                    if (btnInfoBack && seatView && infoView) {
+                        btnInfoBack.addEventListener('click', () => {
+                            infoView.style.display = 'none';
+                            seatView.style.display = 'block';
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        });
+                    }
 
                     btnInfoContinue.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -1145,11 +1177,7 @@
         });
     </script>
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+
 </body>
 
 </html>

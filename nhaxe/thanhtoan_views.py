@@ -45,7 +45,7 @@ def xu_ly_thanh_toan(request, ve_id):
         so_tien = 2000 # Dùng 2000đ để test thực tế
         noi_dung = f"THANH TOAN VE {ve.VeID}"
         qr_url = f"https://img.vietqr.io/image/{admin_bank['ma_ngan_hang']}-{admin_bank['so_tai_khoan']}-compact.png?amount={so_tien}&addInfo={noi_dung}&accountName={admin_bank['ten_chu_tai_khoan']}"
-    return render(request, 'khachhang/thanh_toan.html', {
+    return render(request, 'khachhang/thanhtoan.html', {
         've': ve, 
         'qr_url': qr_url, 
         'thanh_toan_online_kha_dung': thanh_toan_online_kha_dung, 

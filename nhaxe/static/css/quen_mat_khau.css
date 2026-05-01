@@ -21,7 +21,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh; /* Fixed height */
+    overflow: hidden; /* No body scroll */
     padding: 20px;
 }
 
@@ -29,12 +30,12 @@ body {
     width: 100%;
     max-width: 1000px;
     height: 85vh;
-    background-color: white; /* Background behind header and footer */
+    background-color: white; 
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     border-radius: 8px;
-    overflow: hidden;
+    overflow: hidden; /* Important for flex child scroll */
 }
 
 /* Header */
@@ -77,7 +78,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: white; /* As it seems white behind the card in the mockup, wait, no, the mockup background inside the app is white */
+    background-color: white;
+    overflow-y: auto; /* Scroll if content overflows */
 }
 
 /* Card */

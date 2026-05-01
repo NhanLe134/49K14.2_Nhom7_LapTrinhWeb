@@ -103,13 +103,14 @@ class CHITIETTAIXE(models.Model):
 # 6. Bảng Loaixe (Loại xe)
 class Loaixe(models.Model):
     LoaixeID = models.CharField(max_length=10, primary_key=True)
-    # TenLoaiXe = models.CharField(max_length=50, null=True, blank=True) # Thêm trường này
+    # TenLoaiXe = models.CharField(max_length=50, null=True, blank=True)
     SoCho = models.IntegerField(validators=[MinValueValidator(1)])
     SoDoGheNgoiURL = models.CharField(max_length=255, null=True, blank=True)
-    # GiaVe và NgayCapNhatGia đã được di chuyển sang CHITIETLOAIXE
+    GiaVe = models.DecimalField(max_digits=12, decimal_places=0, default=0)
+    NgayCapNhatGia = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return self.TenLoaiXe or self.LoaixeID
+        return self.LoaixeID
 
 # 7. Bảng CHITIETLOAIXE (Chi tiết loại xe - Liên kết nhà xe)
 class CHITIETLOAIXE(models.Model):

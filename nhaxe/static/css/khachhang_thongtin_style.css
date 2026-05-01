@@ -6,11 +6,11 @@
 }
 
 body {
-    background-color: #f7fbff; /* Màu nền nhẹ nhàng hơn */
+    background-color: #f7fbff;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100vh; /* Fixed height */
+    overflow: hidden; /* No body scroll */
 }
 
 /* Header đã được định nghĩa trong khachhang.css, sử dụng màu #06A0E2 */
@@ -45,13 +45,18 @@ body {
 .dropdown-item { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; }
 .dropdown-item:hover { background-color: #f1f5f9; }
 
-.kh-layout-main { display: flex; flex: 1; }
+.kh-layout-main { 
+    display: flex; 
+    flex: 1; 
+    min-height: 0; /* Important for flex child scroll */
+}
 .kh-sidebar {
-    width: 260px; /* Tăng chiều rộng sidebar */
+    width: 260px;
     background-color: white;
-    padding: 20px 0; /* Giảm padding trên dưới */
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03); /* Shadow nhẹ */
+    padding: 20px 0;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
     flex-shrink: 0;
+    overflow-y: auto; /* Sidebar scroll if needed */
 }
 .kh-menu { list-style: none; display: flex; flex-direction: column; gap: 5px; /* Giảm khoảng cách giữa các item */ }
 .kh-menu-item {
@@ -78,12 +83,12 @@ body {
 
 .kh-content-area {
     flex: 1;
-    padding: 40px 60px; /* Điều chỉnh padding */
+    padding: 40px 60px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: calc(100vh - 120px);
-    background-color: #f7fbff; /* Đồng bộ màu nền */
+    background-color: #f7fbff;
+    overflow-y: auto; /* Content scroll */
 }
 
 .profile-card-full {

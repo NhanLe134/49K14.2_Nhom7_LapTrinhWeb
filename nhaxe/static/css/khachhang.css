@@ -8,7 +8,8 @@
 body {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh; /* Fixed height */
+    overflow: hidden; /* No body scroll */
     background-color: #f7fbff;
 }
 
@@ -117,6 +118,7 @@ a, a:hover, a:focus, a:active {
 .main-wrapper {
     display: flex;
     flex: 1;
+    min-height: 0; /* Important for flex child scroll */
 }
 
 /* Sidebar */
@@ -126,6 +128,7 @@ a, a:hover, a:focus, a:active {
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
     padding: 20px 0;
     flex-shrink: 0;
+    overflow-y: auto; /* Sidebar scroll if needed */
     text-decoration: none !important;
 }
 
@@ -242,15 +245,37 @@ a, a:hover, a:focus, a:active {
 
 /* Footer */
 .footer-banner {
-    background-color: #000;
-    color: #999;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    width: 100%;
+    background-color: #13B5F6;
+    color: #FFFFFF;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 0 40px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    width: calc(100% - 260px);
+    margin-left: 260px;
     margin-top: auto;
+    flex-shrink: 0;
 }
+
+.footer-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.footer-item i {
+    font-size: 18px;
+}
+
+.footer-item.address i { color: #FB7185; }
+.footer-item.hotline i { color: #4ADE80; }
+.footer-item.email i { color: #000000; }
 
 /* ===================== PAYMENT PAGE ===================== */
 .payment-wrapper {

@@ -34,8 +34,12 @@ def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
             else:
                 ten_loai = f"Xe {cx.Xe.Loaixe.SoCho} chỗ"
 
-            # Lấy Giá vé thực tế
-            gia_ve_thuc_te = ct_loaixe.GiaVe if ct_loaixe else 0
+            # Lấy Giá vé thực tế (Ưu tiên giá riêng của nhà xe, fallback về giá chung của loại xe)
+            gia_ve_thuc_te = 0
+            if ct_loaixe and ct_loaixe.GiaVe > 0:
+                gia_ve_thuc_te = ct_loaixe.GiaVe
+            elif cx.Xe.Loaixe and cx.Xe.Loaixe.GiaVe > 0:
+                gia_ve_thuc_te = cx.Xe.Loaixe.GiaVe
 
             # 2. Tính toán số chỗ trống (Dùng model Ve để chính xác tuyệt đối)
             tong_ghe_xe = cx.Xe.Loaixe.SoCho
@@ -45,7 +49,7 @@ def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
             elif tong_ghe_xe == 7:
                 tong_ghe_ban = 7
             elif tong_ghe_xe == 9:
-                tong_ghe_ban = 8
+                tong_ghe_ban = 9
             else:
                 tong_ghe_ban = max(0, tong_ghe_xe - 1)
 
@@ -53,7 +57,12 @@ def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
             ve_da_dat_count = Ve.objects.filter(ChuyenXe=cx).exclude(TrangThai='Đã hủy').count()
             so_cho_trong = max(0, tong_ghe_ban - ve_da_dat_count)
 
-            # 3. Đóng gói dữ liệu
+            # 3. Tính toán đánh giá trung bình
+            danh_gia_tb = 0
+            if cx.Xe.Nhaxe.SoLuotDanhGia > 0:
+                danh_gia_tb = round(cx.Xe.Nhaxe.TongDiemDanhGia / cx.Xe.Nhaxe.SoLuotDanhGia, 1)
+
+            # 4. Đóng gói dữ liệu
             item = {
                 'ChuyenXeID': cx.ChuyenXeID,
                 'GioDi': cx.GioDi,
@@ -69,6 +78,8 @@ def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
                 'TenTaiXe': cx.Taixe.HoTen if cx.Taixe else 'Chưa rõ',
                 'SoChoTrong': so_cho_trong,
                 'TongSoCho': tong_ghe_ban,
+                'DanhGiaTB': danh_gia_tb,
+                'SoLuotDanhGia': cx.Xe.Nhaxe.SoLuotDanhGia,
                 'TrangThai': cx.TrangThai or 'Đang chờ'
             }
             danh_sach_ket_qua.append(item)
@@ -91,7 +102,7 @@ def lay_so_do_ghe(chuyen_xe_id):
         elif tong_cho == 7:
             prefix, count = "B", 7
         elif tong_cho == 9:
-            prefix, count = "C", 8
+            prefix, count = "C", 9
         else:
             prefix, count = "S", tong_cho - 1
 

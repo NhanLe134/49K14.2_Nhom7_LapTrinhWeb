@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Trang chủ Khách hàng - Vexeapp{% endblock %}</title>
     <!-- FontAwesome for icons -->
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome 6 for original icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
@@ -101,10 +103,22 @@
     </div>
 
     <!-- Footer -->
+    {% if request.resolver_match.url_name == 'khachhang' %}
     <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
+        <div class="footer-item address">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>123 Đường 2/9, Hải Châu, Đà Nẵng</span>
+        </div>
+        <div class="footer-item hotline">
+            <i class="fa-solid fa-phone"></i>
+            <span>Hotline: 1900 63 39 63</span>
+        </div>
+        <div class="footer-item email">
+            <i class="fa-solid fa-envelope"></i>
+            <span>Email: hungcuong@nxe.vn</span>
+        </div>
     </footer>
+    {% endif %}
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
