@@ -38,7 +38,7 @@
                     {% if ten_taixe %}
                         {{ ten_taixe }}
                     {% elif nha_xe %}
-                        {{ nha_xe.HoTenNguoiDaiDien|default:nha_xe.TenNhaXe }}
+                        {{ nha_xe.NguoiDaiDien|default:nha_xe.HoTenNguoiDaiDien|default:nha_xe.TenNhaXe }}
                     {% else %}
                         {{ request.session.ho_ten|default:request.session.username }}
                     {% endif %}
@@ -211,6 +211,9 @@
                     </table>
                 </div>
             </div>
+            {% endblock %}
+        </main>
+    </div>
 
 
     <script src="{% static 'js/common.js' %}"></script>

@@ -22,6 +22,7 @@ class Nhaxe(models.Model):
     AnhDaiDienURL = models.TextField(null=True,blank=True)
     DiaChiTruSo = models.CharField(max_length=200, null=True, blank=True)
     TenNhaXe = models.CharField(max_length=200, null=True, blank=True) # Tên nhà xe
+    NguoiDaiDien = models.CharField(max_length=200, null=True, blank=True) # Tên người đại diện (từ DB cũ)
     HoTenNguoiDaiDien = models.CharField(max_length=200, null=True, blank=True) # Họ tên người đại diện
     SoDienThoai = models.CharField(
         max_length=20,  # Nới rộng từ 10 thành 20

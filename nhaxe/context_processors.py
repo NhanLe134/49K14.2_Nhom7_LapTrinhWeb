@@ -48,7 +48,7 @@ def user_info(request):
             if auth_user.KhachHang:
                 user_name = auth_user.KhachHang.HovaTen
             elif auth_user.Nhaxe:
-                user_name = auth_user.Nhaxe.TenNhaXe
+                user_name = auth_user.Nhaxe.NguoiDaiDien or auth_user.Nhaxe.HoTenNguoiDaiDien or auth_user.Nhaxe.TenNhaXe
             elif auth_user.Taixe:
                 user_name = auth_user.Taixe.HoTen
             
