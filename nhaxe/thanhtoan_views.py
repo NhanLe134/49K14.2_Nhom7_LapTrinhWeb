@@ -108,7 +108,7 @@ def nhaxe_bao_cao_doanh_thu(request):
     ti_le = Decimal(str(getattr(nhaxe, 'PhanTramHoaHong', 10.0) or 10.0)) / Decimal('100')
     tong_hoa_hong = Decimal(str(tong_doanh_thu)) * ti_le
     thuc_nhan = Decimal(str(tong_doanh_thu)) - tong_hoa_hong
-    return render(request, 'nhaxe/bao_cao_doanh_thu.html', {'nhaxe': nhaxe, 'danh_sach_cho_duyet': giao_dich_cho_duyet, 'danh_sach_da_xong': giao_dich_da_xong, 'tong_doanh_thu': tong_doanh_thu, 'tong_hoa_hong': tong_hoa_hong, 'thuc_nhan': thuc_nhan})
+    return render(request, 'nhaxe/bao_cao_doanh_thu.html', {'nha_xe': nhaxe, 'danh_sach_cho_duyet': giao_dich_cho_duyet, 'danh_sach_da_xong': giao_dich_da_xong, 'tong_doanh_thu': tong_doanh_thu, 'tong_hoa_hong': tong_hoa_hong, 'thuc_nhan': thuc_nhan})
 
 def nhaxe_cau_hinh_ngan_hang(request):
     user_id = request.session.get('user_id')
@@ -123,7 +123,7 @@ def nhaxe_cau_hinh_ngan_hang(request):
         nhaxe.TenChuTaiKhoan = request.POST.get('ten_chu_tai_khoan', '').upper()
         nhaxe.save()
         messages.success(request, "Cập nhật thành công!")
-    return render(request, 'nhaxe/cau_hinh_ngan_hang.html', {'nhaxe': nhaxe})
+    return render(request, 'nhaxe/cau_hinh_ngan_hang.html', {'nha_xe': nhaxe})
 
 # ==================== PHẦN DÀNH CHO ADMIN TỔNG ====================
 

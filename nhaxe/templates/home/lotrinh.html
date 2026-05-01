@@ -1,263 +1,239 @@
+{% extends 'home/nhaxe.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="vi">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Màn hình quản lý chuyến xe - Lộ trình</title>
-    <!-- Use FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/chitietchuyenxe.css' %}">
-    <link rel="stylesheet" href="{% static 'css/lotrinh.css' %}">
-    <!-- Leaflet.js - Miễn phí, không cần API key -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <meta name="referrer" content="no-referrer-when-downgrade">
-</head>
+{% block title %}Lộ trình chuyến xe - Vexeapp{% endblock %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>NHÀ XE HÙNG CƯỜNG</h1>
+{% block active_chuyenxe %}active{% endblock %}
+{% block color_chuyenxe %}#06A0E2{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .main-content-lotrinh {
+        padding: 20px 0;
+    }
+    .lotrinh-container {
+        display: flex;
+        gap: 30px;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .map-section {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    #map {
+        width: 100%;
+        height: 500px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+    .list-section {
+        flex: 1;
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        max-height: 600px;
+        overflow-y: auto;
+    }
+    .list-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: #222;
+        text-align: center;
+    }
+    .pickup-card {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #f1f5f9;
+    }
+    .pickup-header {
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+    .pickup-details p {
+        margin: 4px 0;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .seat-text {
+        color: #06A0E2;
+        font-weight: 800;
+    }
+    .loc-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 5px;
+    }
+    .loc-up i { color: #22c55e; }
+    .loc-down i { color: #ef4444; }
+    
+    .btn-complete {
+        background: #06A0E2;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(6, 160, 226, 0.2);
+    }
+    .btn-complete:hover {
+        background: #0284c7;
+        transform: translateY(-2px);
+    }
+
+    /* Popups */
+    .popup-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.85);
+        display: flex; justify-content: center; align-items: center;
+        z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .popup-overlay.active { opacity: 1; pointer-events: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content-lotrinh">
+    <div class="lotrinh-container">
+        <div class="map-section">
+            <div id="map"></div>
+            <button class="btn-complete" onclick="openCompletePopup()">Hoàn thành</button>
         </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
 
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thong_tin_nha_xe' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="{% url 'nhaxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
-            </a>
-            <a href="{% url 'quanlytaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-users" style="color: #444;"></i> Quản lý tài xế
-            </a>
-            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-route" style="color: #444;"></i> Quản lý tuyến xe
-            </a>
-            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item">
-                <i class="fa-solid fa-tags" style="color: #444;"></i> Quản lý loại xe
-            </a>
-            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item active">
-                <i class="fa-solid fa-map" style="color: #06A0E2;"></i> Quản lý chuyến xe
-            </a>
-            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item">
-                <i class="fa-solid fa-car" style="color: #444;"></i> Quản lý phương tiện
-            </a>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content-lotrinh">
-            <div class="lotrinh-container">
-                <div class="map-section">
-                    <div id="map" style="width:100%; height:400px; border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1;"></div>
-                    <button class="btn-complete" onclick="openCompletePopup()">Hoàn thành</button>
-                </div>
-
-                <div class="list-section">
-                    <h3 class="list-title">Danh sách điểm đón</h3>
-                    <div class="pickup-list">
-
-                        {% for ve in ve_list %}
-                        <div class="pickup-card">
-                            <div class="pickup-header">
-                                <strong>{{ ve.HoTen|default:"Khách hàng" }}</strong>
-                            </div>
-                            <div class="pickup-details">
-                                <p>Ghế: <span class="seat-text">{{ ve.Ghe.soGhe|default:"-" }}</span></p>
-                                <p>{{ ve.SoDienThoai|default:"Chưa có" }}</p>
-                                <div class="loc-row loc-up">
-                                    <i class="fa-solid fa-location-dot"></i> Lên:
-                                    <span class="loc-text">{{ ve.DiemDon|default:"N/A" }}</span>
-                                </div>
-                                <div class="loc-row loc-down">
-                                    <i class="fa-solid fa-location-dot"></i> Xuống:
-                                    <span class="loc-text">{{ ve.DiemTra|default:"N/A" }}</span>
-                                </div>
-                            </div>
+        <div class="list-section">
+            <h3 class="list-title">Danh sách điểm đón</h3>
+            <div class="pickup-list">
+                {% for ve in ve_list %}
+                <div class="pickup-card">
+                    <div class="pickup-header">{{ ve.HoTen|default:"Khách hàng" }}</div>
+                    <div class="pickup-details">
+                        <p>Ghế: <span class="seat-text">{{ ve.Ghe.soGhe|default:"-" }}</span></p>
+                        <p>SĐT: {{ ve.SoDienThoai|default:"Chưa có" }}</p>
+                        <div class="loc-row loc-up">
+                            <i class="fa-solid fa-location-dot"></i> <b>Lên:</b> 
+                            <span class="loc-text">{{ ve.DiemDon|default:"N/A" }}</span>
                         </div>
-                        {% empty %}
-                        <p style="text-align: center; color: #666; margin-top: 20px;">Chưa có dữ liệu hành khách.</p>
-                        {% endfor %}
-
+                        <div class="loc-row loc-down">
+                            <i class="fa-solid fa-location-dot"></i> <b>Xuống:</b>
+                            <span class="loc-text">{{ ve.DiemTra|default:"N/A" }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Hidden form for status update -->
-    <form id="completeForm" method="POST" action="{% url 'hoanthanh_chuyenxe' pk=trip_id %}">
-        {% csrf_token %}
-    </form>
-
-    <!-- Complete Popup -->
-    <div class="popup-overlay" id="completePopup"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
-        <div class="popup-box"
-            style="background: white; padding: 40px 60px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); text-align: center; min-width: 400px;">
-            <div class="popup-title" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #111;">Xác
-                nhận hoàn thành chuyến</div>
-            <div class="popup-message" style="font-size: 1.1rem; color: #222; margin-bottom: 30px; font-weight: bold;">
-                Bạn có muốn xác nhận hoàn thành chuyến</div>
-            <div class="popup-actions" style="display: flex; justify-content: center; gap: 60px;">
-                <button class="btn-no-comp" onclick="closeCompletePopup()"
-                    style="padding: 10px 40px; border: none; background: #d1d5db; color: #fff; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Không</button>
-                <button class="btn-yes-comp" onclick="confirmComplete()"
-                    style="padding: 10px 40px; border: none; background: #16a34a; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Đồng
-                    ý</button>
+                {% empty %}
+                <p style="text-align: center; color: #64748b; margin-top: 40px;">Chưa có dữ liệu hành khách.</p>
+                {% endfor %}
             </div>
         </div>
     </div>
+</main>
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
+<!-- Hidden form for status update -->
+<form id="completeForm" method="POST" action="{% url 'hoanthanh_chuyenxe' pk=trip_id %}">
+    {% csrf_token %}
+</form>
 
-    <!-- Leaflet.js -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const URL_QUANLYCHUYENXE = "{% url 'quanlychuyenxe' %}";
+<!-- Complete Popup -->
+<div class="popup-overlay" id="completePopup">
+    <div style="background: white; padding: 40px 60px; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); text-align: center; min-width: 400px;">
+        <div style="font-size: 1.3rem; font-weight: 800; margin-bottom: 20px; color: #1e293b;">Xác nhận hoàn thành</div>
+        <div style="font-size: 1.1rem; color: #475569; margin-bottom: 35px; font-weight: 600;">Bạn có muốn xác nhận hoàn thành chuyến xe này không?</div>
+        <div style="display: flex; justify-content: center; gap: 30px;">
+            <button onclick="closeCompletePopup()" style="padding: 12px 35px; border: none; background: #e2e8f0; color: #64748b; border-radius: 10px; font-weight: 700; cursor: pointer;">Hủy</button>
+            <button onclick="confirmComplete()" style="padding: 12px 35px; border: none; background: #06A0E2; color: white; border-radius: 10px; font-weight: 700; cursor: pointer;">Đồng ý</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-        async function geocode(address) {
-            if (!address || address === 'N/A') return null;
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    async function geocode(address) {
+        if (!address || address === 'N/A') return null;
+        try {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            const q = encodeURIComponent(address + ', Việt Nam');
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.2,16.8,108.4,15.9&bounded=1`);
+            const data = await res.json();
+            if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        } catch (e) { console.error(e); }
+        return null;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const map = L.map('map').setView([16.0544, 108.2022], 10);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; CARTO'
+        }).addTo(map);
+
+        const pickupElements = document.querySelectorAll('.loc-up .loc-text');
+        const dropElements = document.querySelectorAll('.loc-down .loc-text');
+        const pickups = [...pickupElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
+        const drops = [...dropElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
+        
+        const startPoint = "{{ chuyen.TuyenXe.diemDi|default:'' }}";
+        const endPoint = "{{ chuyen.TuyenXe.diemDen|default:'' }}";
+
+        // LOGIC CHẶN VẼ: Nếu không có điểm đón/trả nào của hành khách thì dừng lại
+        if (pickups.length === 0 && drops.length === 0) {
+            console.log("Không có hành khách - Không vẽ lộ trình.");
+            // Chỉ zoom tới vị trí điểm đầu nếu có
+            if (startPoint) {
+                const startCoord = await geocode(startPoint);
+                if (startCoord) map.setView(startCoord, 12);
+            }
+            return;
+        }
+
+        let allStops = [];
+        if (startPoint) allStops.push(startPoint);
+        const intermediateStops = [...new Set([...pickups, ...drops])].filter(s => s !== startPoint && s !== endPoint);
+        allStops = [...allStops, ...intermediateStops];
+        if (endPoint && endPoint !== startPoint) allStops.push(endPoint);
+
+        const coords = [];
+        for (let i = 0; i < allStops.length; i++) {
+            const c = await geocode(allStops[i]);
+            if (c) {
+                coords.push(c);
+                const markerColor = i === 0 ? '#16a34a' : (i === allStops.length - 1 ? '#dc2626' : '#06A0E2');
+                L.circleMarker(c, {
+                    radius: 7, fillColor: markerColor, color: "#fff", weight: 2, fillOpacity: 0.9
+                }).addTo(map).bindPopup(allStops[i]);
+            }
+        }
+
+        if (coords.length >= 2) {
+            const coordStr = coords.map(c => c[1] + ',' + c[0]).join(';');
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Thêm ", Việt Nam" để tăng độ chính xác
-                const q = encodeURIComponent(address + ', Việt Nam');
-                // Giới hạn trong vùng từ Bắc Huế đến Nam Đà Nẵng (vbox: west, north, east, south)
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&viewbox=107.2,16.8,108.4,15.9&bounded=1&accept-language=vi`);
-                const data = await res.json();
-                
-                if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-            } catch (e) {
-                console.error("Lỗi Geocode:", e);
-            }
-            return null;
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Dropdown
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
-            userBtn.addEventListener('click', (e) => { e.stopPropagation(); userMenu.classList.toggle('show'); });
-            document.addEventListener('click', () => userMenu.classList.remove('show'));
-
-            // Khởi tạo bản đồ Leaflet
-            const map = L.map('map').setView([16.0544, 108.2022], 10);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                subdomains: 'abcd',
-                maxZoom: 20
-            }).addTo(map);
-
-            // Lấy danh sách điểm dừng từ DOM
-            const pickupElements = document.querySelectorAll('.loc-row.loc-up .loc-text');
-            const dropElements = document.querySelectorAll('.loc-row.loc-down .loc-text');
-            
-            const pickups = [...pickupElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
-            const drops = [...dropElements].map(el => el.textContent.trim()).filter(s => s && s !== 'N/A');
-            
-            // Điểm bắt đầu và kết thúc từ Tuyến xe
-            const startPoint = "{{ chuyen.TuyenXe.diemDi|default:'' }}";
-            const endPoint = "{{ chuyen.TuyenXe.diemDen|default:'' }}";
-
-            // Tạo danh sách điểm: [Điểm đi] + [Các điểm đón/trả] + [Điểm đến]
-            let allStops = [];
-            if (startPoint) allStops.push(startPoint);
-            
-            // Thêm các điểm trung gian (loại bỏ trùng lặp với điểm đầu/cuối)
-            const intermediateStops = [...new Set([...pickups, ...drops])].filter(s => s !== startPoint && s !== endPoint);
-            allStops = [...allStops, ...intermediateStops];
-            
-            if (endPoint && endPoint !== startPoint) allStops.push(endPoint);
-
-            if (allStops.length < 1) return;
-
-
-            // Geocode tất cả điểm dừng
-            const coords = [];
-            for (let i = 0; i < allStops.length; i++) {
-                const c = await geocode(allStops[i]);
-                if (c) {
-                    coords.push(c);
-                    
-                    // Tạo Marker dạng hình tròn (giống Google Maps)
-                    const isStartOrEnd = (i === 0 || i === allStops.length - 1);
-                    const markerColor = i === 0 ? '#16a34a' : (i === allStops.length - 1 ? '#dc2626' : '#06A0E2');
-                    
-                    L.circleMarker(c, {
-                        radius: isStartOrEnd ? 8 : 6,
-                        fillColor: markerColor,
-                        color: "#fff",
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.9
-                    }).addTo(map)
-                      .bindPopup(`<b>${allStops[i]}</b><br>Điểm ${i + 1}/${allStops.length}`);
+                const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`);
+                const routeData = await routeRes.json();
+                if (routeData.code === 'Ok') {
+                    const routeCoords = routeData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    L.polyline(routeCoords, { color: '#06A0E2', weight: 6, opacity: 0.7 }).addTo(map);
                 }
+            } catch(e) {
+                L.polyline(coords, { color: '#06A0E2', weight: 4, dashArray: '10, 10' }).addTo(map);
             }
-
-            if (coords.length >= 2) {
-                // Vẽ đường đi bằng OSRM (miễn phí)
-                const coordStr = coords.map(c => c[1] + ',' + c[0]).join(';');
-                try {
-                    const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`);
-                    const routeData = await routeRes.json();
-                    if (routeData.code === 'Ok' && routeData.routes.length > 0) {
-                        const routeCoords = routeData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                        L.polyline(routeCoords, { 
-                            color: '#06A0E2', 
-                            weight: 6, 
-                            opacity: 0.7,
-                            lineJoin: 'round'
-                        }).addTo(map);
-                    }
-                } catch(e) {
-                    // Nếu OSRM lỗi, vẽ đường thẳng
-                    L.polyline(coords, { color: '#06A0E2', weight: 4, dashArray: '10, 10' }).addTo(map);
-                }
-                // Zoom vừa khít tất cả điểm
-                map.fitBounds(coords, { padding: [30, 30] });
-            }
-        });
-
-        function openCompletePopup() {
-            document.getElementById('completePopup').style.opacity = '1';
-            document.getElementById('completePopup').style.pointerEvents = 'auto';
+            map.fitBounds(coords, { padding: [50, 50] });
         }
+    });
 
-        function closeCompletePopup() {
-            document.getElementById('completePopup').style.opacity = '0';
-            document.getElementById('completePopup').style.pointerEvents = 'none';
-        }
-
-        function confirmComplete() {
-            document.getElementById('completeForm').submit();
-        }
-    </script>
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
-
-</html>
+    function openCompletePopup() { document.getElementById('completePopup').classList.add('active'); }
+    function closeCompletePopup() { document.getElementById('completePopup').classList.remove('active'); }
+    function confirmComplete() { document.getElementById('completeForm').submit(); }
+</script>
+{% endblock %}

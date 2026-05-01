@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome 6 for original icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
+    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}?v={% now 'U' %}">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -20,21 +20,28 @@
     <header class="header">
         <div class="header-logo">
             <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>Nhà xe Đà Nẵng_Huế</h1>
+            <h1>NHÀ XE HÙNG CƯỜNG</h1>
         </div>
-        <div class="header-user" id="userDropdownBtn">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user"></i>
+        <div class="header-user-wrapper">
+            <div class="notification-bell">
+                <i class="fa-solid fa-bell"></i>
+                <span class="bell-badge">3</span>
             </div>
-            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+            <div class="header-user" id="userDropdownBtn">
+                <span class="user-name">Nguyen Khach Hang</span>
+                <div class="user-avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
 
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
+                <div class="dropdown-menu" id="userMenu">
+                    <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
+                        <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                    </a>
+                    <a href="{% url 'dangxuat' %}" class="dropdown-item">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                    </a>
+                </div>
             </div>
         </div>
     </header>
@@ -59,46 +66,81 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            {% block content %}
-            <!-- Nội dung trang chủ khách hàng mặc định -->
-            <section class="content-section">
-                <h2 class="section-title">Thông tin mới</h2>
-                <div class="carousel-container">
-                    <div class="image-card">
-                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&auto=format&fit=crop"
-                            alt="Thông tin 1">
+            <div class="content-wrapper-inner">
+                {% block content %}
+                <!-- Nội dung trang chủ khách hàng theo Figma -->
+                <div class="feature-cards-container">
+                    <div class="feature-card f-red">
+                        <div class="f-info">
+                            <h3>Lái xe an toàn</h3>
+                            <p>Tài xế chuyên nghiệp, giàu kinh nghiệm.</p>
+                        </div>
+                        <div class="f-icon"><i class="fa-solid fa-location-arrow"></i></div>
                     </div>
-                    <div class="image-card">
-                        <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&auto=format&fit=crop"
-                            alt="Thông tin 2">
+                    <div class="feature-card f-green">
+                        <div class="f-info">
+                            <h3>Dịch vụ chu đáo</h3>
+                            <p>Hỗ trợ 24/7, xe đưa đón tận nhà.</p>
+                        </div>
+                        <div class="f-icon"><i class="fa-solid fa-circle-plus"></i></div>
                     </div>
-                    <div class="image-card">
-                        <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=500&auto=format&fit=crop"
-                            alt="Thông tin 3">
+                    <div class="feature-card f-yellow">
+                        <div class="f-info">
+                            <h3>Chất lượng cao</h3>
+                            <p>Xe hiện đại, sạch sẽ, mới mẻ, tiện nghi.</p>
+                        </div>
+                        <div class="f-icon"><i class="fa-solid fa-car-side"></i></div>
+                    </div>
+                    <div class="feature-card f-purple">
+                        <div class="f-info">
+                            <h3>Vì cộng đồng</h3>
+                            <p>An toàn - An tâm - An lành.</p>
+                        </div>
+                        <div class="f-icon"><i class="fa-solid fa-users"></i></div>
                     </div>
                 </div>
-            </section>
 
-            <section class="content-section">
-                <h2 class="section-title">Ưu đãi nổi bật</h2>
-                <div class="carousel-container">
-                    <div class="image-card offer-card">
-                        <span class="discount-badge">-20%</span>
-                        <img src="https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=500&auto=format&fit=crop"
-                            alt="Ưu đãi 1">
-                    </div>
-                    <div class="image-card offer-card">
-                        <span class="discount-badge">-30%</span>
-                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&auto=format&fit=crop"
-                            alt="Ưu đãi 2">
-                    </div>
-                    <div class="image-card offer-card">
-                        <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=500&auto=format&fit=crop"
-                            alt="Ưu đãi 3">
+                <div class="slogan-banner">
+                    <h2>NHÀ XE HÙNG CƯỜNG – AN TOÀN TRÊN MỌI NẺO ĐƯỜNG</h2>
+                    <div class="slogan-line"></div>
+                </div>
+
+                <div class="promo-banner">
+                    <div class="promo-content">
+                        <h2>Hành trình 5 sao<br>Giá cả phải chăng</h2>
+                        <p>Trải nghiệm dịch vụ vận tải cao cấp với đội ngũ tài xế chuyên nghiệp và xe đời mới nhất.</p>
+                        <button class="btn-explore" onclick="window.location.href='{% url 'timkiem' %}'">Khám phá ngay</button>
+                        <div class="slider-dots">
+                            <span class="dot active"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
                     </div>
                 </div>
-            </section>
-            {% endblock %}
+
+                <div class="secondary-banner">
+                    <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&auto=format&fit=crop" alt="Mountain View">
+                </div>
+
+                {% endblock %}
+            </div>
+
+
+            <!-- Footer mới nằm trong main-content -->
+            <footer class="footer-new">
+                <div class="footer-item">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>123 Đường 2/9, Hải Châu, Đà Nẵng</span>
+                </div>
+                <div class="footer-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>Hotline: 1900 63 39 63</span>
+                </div>
+                <div class="footer-item">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>Email: hungcuong@nxe.vn</span>
+                </div>
+            </footer>
         </main>
     </div>
 

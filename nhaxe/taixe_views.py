@@ -373,16 +373,25 @@ def phancongtaixe(request):
             return JsonResponse({'status': 'error', 'message': f"{str(e)}\n\n{error_trace}"})
 
     # Lấy danh sách tài xế của nhà xe này
-    # WORKAROUND cho Nhaxe_id trong CHITIETTAIXE
     taixe_list_raw = Taixe.objects.all().prefetch_related('chitiettaixe_set')
     taixe_list = []
+    
+    # Mapping SDT
+    user_map = {u.UserID: u.SoDienThoai for u in User_Authentication.objects.all()}
+
     for driver in taixe_list_raw:
-        # Lấy tất cả chi tiết tài xế cho driver này
         details = driver.chitiettaixe_set.all()
         for detail in details:
-             if getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None)) == nha_xe_id:
-                  taixe_list.append(driver)
-                  break
+            target_nhaxe = getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None))
+            if target_nhaxe == nha_xe_id:
+                # Tính kinh nghiệm
+                exp = 0
+                if detail.NgayBatDau:
+                    exp = datetime.now().year - detail.NgayBatDau.year
+                driver.experience_years = exp if exp > 0 else 1
+                driver.phone = user_map.get(driver.TaixeID, "Chưa có")
+                taixe_list.append(driver)
+                break
     
     return render(request, 'home/phancongtaixe.html', {
         'trip_id': trip_id,
