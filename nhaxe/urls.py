@@ -6,7 +6,7 @@ from . import taixe_views
 from . import tuyenxe_views
 from . import xuly_timkiem_view
 from . import feedback_views
-from . import payment_views
+from . import thanhtoan_views
 from . import booking_views
 from . import quanlyve_views
 
@@ -29,7 +29,7 @@ urlpatterns = [
     path('huy-ve/<str:ve_id>/', booking_views.huy_ve, name='huy_ve'),
     path('quanlyve/', quanlyve_views.quanlyve, name='quanlyve'),
 
-    # ==================== OTP & ĐĂNG KÝ (ƯU TIÊN FILE 1) ====================
+    # ==================== OTP & ĐĂNG KÝ ====================
     path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
     path('send_registration_otp', views.send_registration_otp, name='send_registration_otp'),
     path('verify_and_register', views.verify_and_register, name='verify_and_register'),
@@ -37,7 +37,7 @@ urlpatterns = [
     path('send_registration_otp_nhaxe', views.send_registration_otp_nhaxe, name='send_registration_otp_nhaxe'),
     path('verify_and_register_nhaxe', views.verify_and_register_nhaxe, name='verify_and_register_nhaxe'),
 
-    # ==================== KHÁCH HÀNG (ƯU TIÊN FILE 1) ====================
+    # ==================== KHÁCH HÀNG ====================
     path('khachhang', views.khachhang, name='khachhang'),
     path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
     path('capnhat_thongtin_khachhang', views.capnhat_thongtin_khachhang, name='capnhat_thongtin_khachhang'),
@@ -45,37 +45,34 @@ urlpatterns = [
     path('lotrinh', views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', views.vecuatoi, name='vecuatoi'),
-    # Bổ sung từ file 2
-    path('khachhang/giao-dich/', payment_views.khachhang_lich_su_giao_dich, name='khachhang_giao_dich'),
+    path('khachhang/giao-dich/', thanhtoan_views.khachhang_lich_su_giao_dich, name='khachhang_giao_dich'),
 
-    # ==================== THANH TOÁN (FILE 2 CÓ NHIỀU API HƠN) ====================
-    path('payment/<str:ve_id>/', payment_views.process_payment, name='process_payment'),  # Cấu trúc file 1
-    path('quanlyve/thanhtoan/<str:ve_id>/', payment_views.process_payment, name='process_payment_alt'),
-    # Cấu trúc file 2
-    path('confirm-payment/<str:ve_id>/', payment_views.confirm_payment, name='confirm_payment'),
-    path('api/check-payment-status/<str:ve_id>/', payment_views.check_payment_status, name='check_payment_status'),
-    path('payment/webhook/sepay/', payment_views.sepay_webhook, name='sepay_webhook'),
+    # ==================== THANH TOÁN ====================
+    path('payment/<str:ve_id>/', thanhtoan_views.xu_ly_thanh_toan, name='process_payment'),
+    path('quanlyve/thanhtoan/<str:ve_id>/', thanhtoan_views.xu_ly_thanh_toan, name='process_payment_alt'),
+    path('confirm-payment/<str:ve_id>/', thanhtoan_views.xac_nhan_thanh_toan, name='confirm_payment'),
+    path('api/check-payment-status/<str:ve_id>/', thanhtoan_views.kiem_tra_trang_thai_thanh_toan, name='check_payment_status'),
+    path('payment/webhook/sepay/', thanhtoan_views.webhook_sepay, name='sepay_webhook'),
 
     # ==================== ĐÁNH GIÁ (FEEDBACK) ====================
     path('danhgiachuyenxe/', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
-    path('danhgiachuyenxe/pending/', feedback_views.danhgiachuyenxe, {'tab': 'pending'},
-         name='danhgiachuyenxe_pending'),
+    path('danhgiachuyenxe/pending/', feedback_views.danhgiachuyenxe, {'tab': 'pending'}, name='danhgiachuyenxe_pending'),
     path('danhgiachuyenxe/dadanhgia/', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
     path('danhgiachuyenxe/themdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='themdanhgia'),
     path('danhgiachuyenxe/suadanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='suadanhgia'),
     path('submit_danhgia/', feedback_views.submit_danhgia, name='submit_danhgia'),
 
-    # ==================== NHÀ XE (ƯU TIÊN FILE 1 CHO LOẠI XE) ====================
+    # ==================== NHÀ XE ====================
     path('nhaxe', views.nhaxe, name='nhaxe'),
     path('thong_tin_nha_xe', views.thong_tin_nha_xe, name='thong_tin_nha_xe'),
     path('quanly_khachhang', views.quanly_khachhang, name='quanly_khachhang'),
     path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
     path('quanly_loaixe', views.quanly_loaixe, name='quanly_loaixe'),
-    path('cap-nhat-gia/<str:pk>/', views.capnhat_gia_loaixe, name='cap_nhat_gia_ve'),  # Cập nhật giá loại xe
-
-    # Bổ sung quản lý tài chính nhà xe từ file 2
-    path('nhaxe/cau-hinh-ngan-hang/', payment_views.nhaxe_cau_hinh_ngan_hang, name='nhaxe_cau_hinh_ngan_hang'),
-    path('nhaxe/bao--cao-doanh-thu/', payment_views.nhaxe_bao_cao_doanh_thu, name='nhaxe_bao_cao_doanh_thu'),
+    path('cap-nhat-gia/<str:pk>/', views.capnhat_gia_loaixe, name='cap_nhat_gia_ve'),
+    
+    # Cấu hình & Báo cáo Nhà xe
+    path('nhaxe/cau-hinh-ngan-hang/', thanhtoan_views.nhaxe_cau_hinh_ngan_hang, name='nhaxe_cau_hinh_ngan_hang'),
+    path('nhaxe/bao--cao-doanh-thu/', thanhtoan_views.nhaxe_bao_cao_doanh_thu, name='nhaxe_bao_cao_doanh_thu'),
 
     # ==================== CHUYẾN XE & TUYẾN XE (NHÀ XE) ====================
     path('quanlychuyenxe', chuyenxe_views.quanlychuyenxe, name='quanlychuyenxe'),
@@ -95,17 +92,16 @@ urlpatterns = [
     path('xoa-tai-xe/<str:pk>/', taixe_views.xoa_tai_xe, name='xoa_tai_xe'),
     path('phancongtaixe', taixe_views.phancongtaixe, name='phancongtaixe'),
 
-    # ==================== TÀI XẾ (GIAO DIỆN RIÊNG CHO TÀI XẾ) ====================
+    # ==================== TÀI XẾ ====================
     path('taixe', taixe_views.taixe, name='taixe'),
     path('thongtin_taixe', taixe_views.thongtin_taixe, name='thongtin_taixe'),
     path('taixe_quanlychuyenxe', chuyenxe_views.taixe_quanlychuyenxe, name='taixe_quanlychuyenxe'),
     path('taixe_chitietchuyenxe', chuyenxe_views.taixe_chitietchuyenxe, name='taixe_chitietchuyenxe'),
     path('taixe_lotrinh', taixe_views.taixe_lotrinh, name='taixe_lotrinh'),
 
-    # ==================== QUẢN TRỊ VIÊN (ADMIN - CHỈ CÓ Ở FILE 2) ====================
-    path('admin/dashboard-quyet-toan/', payment_views.admin_dashboard_quyet_toan, name='admin_dashboard_quyet_toan'),
-    path('admin/xac-nhan-quyet-toan/<str:nhaxe_id>/', payment_views.admin_xac_nhan_quyet_toan,
-         name='admin_xac_nhan_quyet_toan'),
-    path('admin/danh-sach-nhaxe/', payment_views.admin_list_nhaxe, name='admin_list_nhaxe'),
-    path('admin/quan-ly-khachhang/', payment_views.admin_list_khachhang, name='admin_list_khachhang'),
+    # ==================== QUẢN TRỊ VIÊN (ADMIN) ====================
+    path('admin/dashboard-quyet-toan/', thanhtoan_views.admin_bang_dieu_khien_quyet_toan, name='admin_dashboard_quyet_toan'),
+    path('admin/xac-nhan-quyet-toan/<str:nhaxe_id>/', thanhtoan_views.admin_xac_nhan_quyet_toan, name='admin_xac_nhan_quyet_toan'),
+    path('admin/danh-sach-nhaxe/', thanhtoan_views.admin_danh_sach_nhaxe, name='admin_list_nhaxe'),
+    path('admin/quan-ly-khachhang/', thanhtoan_views.admin_danh_sach_khachhang, name='admin_list_khachhang'),
 ]

@@ -8,7 +8,8 @@
     <title>{% block title %}Trang chủ Nhà xe - Vexeapp{% endblock %}</title>
     <!-- Use FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}?v={% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/nhaxe_home.css' %}?v={% now 'U' %}">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -41,30 +42,37 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <a href="{% url 'nhaxe' %}" class="sidebar-item {% block active_trangchu %}active{% endblock %}">
-                <i class="fa-solid fa-house" style="color: {% block color_trangchu %}#06A0E2{% endblock %};"></i> Trang chủ
+                <i class="fa-solid fa-house"></i> Trang
+                chủ
             </a>
             <a href="{% url 'quanlytaixe' %}" class="sidebar-item {% block active_taixe %}{% endblock %}">
-                <i class="fa-solid fa-users" style="color: {% block color_taixe %}#444{% endblock %};"></i> Quản lý tài xế
+                <i class="fa-solid fa-users"></i> Quản lý tài
+                xế
             </a>
             <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item {% block active_tuyenxe %}{% endblock %}">
-                <i class="fa-solid fa-route" style="color: {% block color_tuyenxe %}#444{% endblock %};"></i> Quản lý tuyến xe
+                <i class="fa-solid fa-route"></i> Quản lý
+                tuyến xe
             </a>
             <a href="{% url 'quanly_loaixe' %}" class="sidebar-item {% block active_loaixe %}{% endblock %}">
-                <i class="fa-solid fa-tags" style="color: {% block color_loaixe %}#444{% endblock %};"></i> Quản lý loại xe
+                <i class="fa-solid fa-tags"></i> Quản lý loại
+                xe
             </a>
             <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item {% block active_chuyenxe %}{% endblock %}">
-                <i class="fa-solid fa-map" style="color: {% block color_chuyenxe %}#444{% endblock %};"></i> Quản lý chuyến xe
+                <i class="fa-solid fa-map"></i> Quản lý
+                chuyến xe
             </a>
             <a href="{% url 'quan_ly_xe' %}" class="sidebar-item {% block active_xe %}{% endblock %}">
-                <i class="fa-solid fa-car" style="color: {% block color_xe %}#444{% endblock %};"></i> Quản lý phương tiện
+                <i class="fa-solid fa-car"></i> Quản lý phương
+                tiện
             </a>
-            
-            <!-- THÊM CHỨC NĂNG MỚI VÀO CUỐI SIDEBAR -->
+
             <a href="{% url 'nhaxe_cau_hinh_ngan_hang' %}" class="sidebar-item {% block active_bank %}{% endblock %}">
-                <i class="fa-solid fa-building-columns" style="color: #f59e0b;"></i> Cấu hình ngân hàng
+                <i class="fa-solid fa-building-columns"></i>
+                Cấu hình ngân hàng
             </a>
             <a href="{% url 'nhaxe_bao_cao_doanh_thu' %}" class="sidebar-item {% block active_report %}{% endblock %}">
-                <i class="fa-solid fa-chart-line" style="color: #10b981;"></i> Báo cáo doanh thu
+                <i class="fa-solid fa-chart-line"></i> Báo
+                cáo doanh thu
             </a>
         </aside>
 
@@ -121,14 +129,9 @@
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer-banner">
-        <div>Địa chỉ: Trường Đại học Kinh Tế Đà Nẵng</div>
-        <div>Liên hệ: Nhóm 07 - Lập trình web</div>
-    </footer>
 
     <script src="{% static 'js/common.js' %}"></script>
-    
+
     <!-- Cấu hình Popup Global Dùng Chung Toàn Dự Án -->
     <div id="globalPopup" class="global-popup-overlay">
         <div class="global-popup-box">
@@ -136,7 +139,7 @@
             <div id="globalPopupMessage" class="global-popup-message"></div>
         </div>
     </div>
-    
+
     {% block extra_js %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {

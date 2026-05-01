@@ -269,10 +269,7 @@ class ThanhToan(models.Model):
     ThanhToanID = models.CharField(max_length=10, primary_key=True)
     Ve = models.OneToOneField(Ve, on_delete=models.CASCADE)
     SoTien = models.DecimalField(max_digits=12, decimal_places=0)
-    PhuongThucTT = models.CharField(max_length=20, null=True, blank=True)
     NgayThanhToan = models.DateTimeField(null=True, blank=True)
-    MaGiaoDich = models.CharField(max_length=50, null=True, blank=True)
-
     DaQuyetToan = models.BooleanField(default=False, verbose_name="Đã quyết toán")
 
     def __str__(self):
@@ -291,3 +288,16 @@ class DanhGia(models.Model):
 
     def __str__(self):
         return f"{self.DanhGiaID} - {self.Diemso} sao"
+
+# 15. Bảng NganHangAdmin (Cấu hình ngân hàng hệ thống)
+class NganHangAdmin(models.Model):
+    TenChuTaiKhoan = models.CharField(max_length=200)
+    MaNganHang = models.CharField(max_length=50)
+    SoTaiKhoan = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "Cấu hình Ngân hàng Admin"
+        verbose_name_plural = "Cấu hình Ngân hàng Admin"
+
+    def __str__(self):
+        return f"{self.TenChuTaiKhoan} - {self.MaNganHang}"

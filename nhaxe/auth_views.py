@@ -126,7 +126,7 @@ def _redirect_by_role(role: str):
     ROLE_MAP = {
         'nhaxe':     'nhaxe',
         'nx':        'nhaxe',
-        'admin':     'nhaxe',
+        'admin':     'admin_dashboard_quyet_toan',
         'taixe':     'taixe',
         'tx':        'taixe',
         'driver':    'taixe',

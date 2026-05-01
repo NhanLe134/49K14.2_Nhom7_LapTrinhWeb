@@ -1,8 +1,89 @@
 {% extends 'admin/admin_base.html' %}
+{% load static %}
+{% load bo_loc_dinh_dang %}
 
 {% block title %}Quyết toán Nhà xe - Admin{% endblock %}
 
 {% block admin_content %}
+<style>
+    /* MODAL STYLES THEO MẪU MỚI */
+    .confirm-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .confirm-modal-box {
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px 20px;
+        width: 380px;
+        max-width: 90vw;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        animation: modalFadeIn 0.2s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .confirm-modal-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #000;
+        margin-bottom: 15px;
+    }
+
+    .confirm-modal-msg {
+        font-size: 16px;
+        color: #000;
+        line-height: 1.4;
+        margin-bottom: 25px;
+        font-weight: 400;
+    }
+
+    .confirm-modal-actions {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .btn-modal {
+        width: 100px;
+        height: 38px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.2s;
+    }
+
+    .btn-modal-confirm {
+        background: #1ab7f5;
+        color: white;
+        border: none;
+    }
+
+    .btn-modal-confirm:hover { background: #00a1e6; }
+
+    .btn-modal-cancel {
+        background: white;
+        color: #1ab7f5;
+        border: 2px solid #1ab7f5;
+    }
+
+    .btn-modal-cancel:hover { background: #f0faff; }
+</style>
+
 <h2 class="page-title">Quyết toán doanh thu Nhà xe</h2>
 
 <div class="nhaxe-list">
@@ -26,17 +107,16 @@
         <div style="display: flex; gap: 40px; align-items: center;">
             <div style="text-align: right;">
                 <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Cần quyết toán</div>
-                <div style="font-size: 22px; font-weight: 800; color: #22c55e;">{{ item.thuc_nhan|floatformat:0 }} đ</div>
-                <div style="font-size: 12px; color: #64748b;">(Sau khi trừ phí sàn {{ item.nhaxe.PhanTramHoaHong }}%)</div>
+                <div style="font-size: 22px; font-weight: 800; color: #22c55e;">{{ item.thuc_nhan|vnd }} đ</div>
+                <div style="font-size: 12px; color: #64748b;">(Sau khi trừ phí sàn {{ item.nhaxe.PhanTramHoaHong|floatformat }}%)</div>
             </div>
 
-            <form action="{% url 'admin_xac_nhan_quyet_toan' item.nhaxe.NhaxeID %}" method="POST" onsubmit="return confirm('Xác nhận Admin đã chuyển khoản thành công?')">
-                {% csrf_token %}
-                <button type="submit" style="background: #06A0E2; color: white; border: none; padding: 14px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;" 
-                    {% if not item.nhaxe.SoTaiKhoan %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
-                    Xác nhận đã chuyển
-                </button>
-            </form>
+            <button type="button" 
+                onclick="openConfirmModal('{{ item.nhaxe.NhaxeID }}', '{{ item.nhaxe.TenNhaXe }}', '{{ item.thuc_nhan|vnd }}')"
+                style="background: #06A0E2; color: white; border: none; padding: 14px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;" 
+                {% if not item.nhaxe.SoTaiKhoan %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                Xác nhận đã chuyển
+            </button>
         </div>
     </div>
     {% empty %}
@@ -46,4 +126,47 @@
     </div>
     {% endfor %}
 </div>
+
+<!-- Modal Xác nhận Quyết toán THEO MẪU -->
+<div id="confirmModal" class="confirm-modal-overlay">
+    <div class="confirm-modal-box">
+        <div class="confirm-modal-title">Thông báo</div>
+        <div class="confirm-modal-msg">
+            Xác nhận Admin đã chuyển khoản <b id="modalAmount">0 đ</b> cho nhà xe <b id="modalNhaxeName">...</b>?
+        </div>
+        <div class="confirm-modal-actions">
+            <form id="confirmForm" method="POST" action="">
+                {% csrf_token %}
+                <button type="submit" class="btn-modal btn-modal-confirm">Đồng ý</button>
+            </form>
+            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeConfirmModal()">Không</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openConfirmModal(nhaxeId, nhaxeName, amount) {
+        const modal = document.getElementById('confirmModal');
+        const form = document.getElementById('confirmForm');
+        const nameEl = document.getElementById('modalNhaxeName');
+        const amountEl = document.getElementById('modalAmount');
+
+        nameEl.textContent = nhaxeName;
+        amountEl.textContent = amount + ' đ';
+        form.action = `/admin/xac-nhan-quyet-toan/${nhaxeId}/`;
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('confirmModal');
+        if (event.target == modal) {
+            closeConfirmModal();
+        }
+    }
+</script>
 {% endblock %}

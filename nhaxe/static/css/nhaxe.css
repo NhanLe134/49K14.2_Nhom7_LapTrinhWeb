@@ -7,7 +7,8 @@
 }
 
 /* FIX SCROLL ROOT */
-html, body {
+html,
+body {
     height: 100vh !important;
     overflow: hidden !important;
 }
@@ -30,7 +31,7 @@ body {
     height: 75px;
     flex-shrink: 0;
     position: relative;
-    z-index: 100;
+    z-index: 1000;
 }
 
 .header-logo {
@@ -92,13 +93,13 @@ body {
     top: calc(100% + 15px);
     right: 0;
     background-color: white;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     width: 230px;
     display: none;
     flex-direction: column;
     padding: 8px 0;
-    z-index: 1000;
+    z-index: 2000;
 }
 
 .dropdown-menu.show {
@@ -139,7 +140,7 @@ body {
 .sidebar {
     width: 250px;
     background-color: white;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
     padding: 25px 0;
     flex-shrink: 0;
     overflow-y: auto;
@@ -158,6 +159,7 @@ body {
     font-weight: 600;
     transition: all 0.2s ease;
     border-left: 4px solid transparent;
+    white-space: nowrap;
 }
 
 .sidebar-item i {

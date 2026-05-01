@@ -3,14 +3,21 @@
 
 {% block title %}Cấu hình ngân hàng - {{ nhaxe.TenNhaXe }}{% endblock %}
 
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#444{% endblock %}
+{% block active_bank %}active{% endblock %}
+{% block color_bank %}#06A0E2{% endblock %}
+
 {% block content %}
 <style>
     .config-container {
         padding: 40px 20px;
         background-color: #f8fafc;
-        min-height: calc(100vh - 70px);
+        height: 100%;
+        overflow-y: auto;
         display: flex;
         justify-content: center;
+        align-items: flex-start;
     }
 
     .config-card {
@@ -18,7 +25,7 @@
         width: 100%;
         max-width: 650px;
         border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         padding: 40px;
         border: 1px solid #e2e8f0;
     }
@@ -28,18 +35,7 @@
         margin-bottom: 35px;
     }
 
-    .config-icon {
-        width: 64px;
-        height: 64px;
-        background: #eff6ff;
-        color: #3b82f6;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        margin: 0 auto 15px;
-    }
+
 
     .config-title {
         font-size: 24px;
@@ -139,59 +135,57 @@
 <div class="config-container">
     <div class="config-card">
         <div class="config-header">
-            <div class="config-icon">
-                <i class="fa-solid fa-building-columns"></i>
-            </div>
             <h1 class="config-title">Cấu hình Ngân hàng</h1>
             <p class="config-subtitle">Đây là tài khoản dùng để Admin chuyển trả doanh thu hàng tháng cho bạn.</p>
         </div>
 
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    <i class="fa-solid fa-circle-check"></i>
-                    {{ message }}
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <i class="fa-solid fa-circle-check"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
         {% endif %}
 
         <form method="POST">
             {% csrf_token %}
-            
+
             <div class="form-group">
                 <label class="form-label">Ngân hàng thụ hưởng</label>
                 <select name="ma_ngan_hang" class="form-control bank-select" required>
                     <option value="" disabled selected>Chọn ngân hàng...</option>
                     {% for ngan_hang in danh_sach_ngan_hang %}
-                        <option value="{{ ngan_hang.id }}" {% if nhaxe.MaNganHang == ngan_hang.id %}selected{% endif %}>
-                            {{ ngan_hang.name }}
-                        </option>
+                    <option value="{{ ngan_hang.id }}" {% if nhaxe.MaNganHang == ngan_hang.id %}selected{% endif %}>
+                        {{ ngan_hang.name }}
+                    </option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Số tài khoản</label>
-                <input type="text" name="so_tai_khoan" class="form-control" 
-                       placeholder="Ví dụ: 0377400XXX" value="{{ nhaxe.SoTaiKhoan|default:'' }}" required>
+                <input type="text" name="so_tai_khoan" class="form-control" placeholder="Ví dụ: 0377400XXX"
+                    value="{{ nhaxe.SoTaiKhoan|default:'' }}" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Tên chủ tài khoản (viết hoa không dấu)</label>
-                <input type="text" name="ten_chu_tai_khoan" class="form-control" 
-                       placeholder="Ví dụ: NGUYEN VAN A" value="{{ nhaxe.TenChuTaiKhoan|default:'' }}" required>
+                <input type="text" name="ten_chu_tai_khoan" class="form-control" placeholder="Ví dụ: NGUYEN VAN A"
+                    value="{{ nhaxe.TenChuTaiKhoan|default:'' }}" required>
             </div>
 
             <div class="alert alert-info">
                 <i class="fa-solid fa-circle-info"></i>
-                Lưu ý: Mọi giao dịch online của khách hàng sẽ được thanh toán vào tài khoản tập trung của sàn để đối soát.
+                Lưu ý: Mọi giao dịch online của khách hàng sẽ được thanh toán vào tài khoản tập trung của sàn để đối
+                soát.
             </div>
 
             <button type="submit" class="btn-save">
-                <i class="fa-solid fa-floppy-disk"></i>
                 Lưu cấu hình
             </button>
         </form>
     </div>
 </div>
+
 {% endblock %}
