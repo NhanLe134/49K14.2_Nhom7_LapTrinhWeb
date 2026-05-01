@@ -11,12 +11,107 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/nhaxe_loaixe_style.css' %}">
 <style>
+    /* 1. Tối ưu lại Grid: Chia nhiều cột hơn, khoảng cách nhỏ lại */
+    .nx-card-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 15px !important;
+        padding: 10px !important;
+    }
+
+    /* 2. Thu nhỏ kích thước Card */
+    .nx-card {
+        padding: 15px !important;
+        min-height: auto !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        background: white;
+    }
+
+    /* 3. Tối ưu Header trong Card */
+    .nx-card-header {
+        margin-bottom: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+
+    .nx-card-icon {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        font-size: 1.1rem !important;
+        border-radius: 6px !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+    }
+
+    .nx-card-title h3 {
+        font-size: 1rem !important;
+        margin: 0 !important;
+        color: #333 !important;
+        text-transform: uppercase;
+    }
+
+    .nx-card-title span {
+        font-size: 0.8rem !important;
+        color: #777 !important;
+    }
+
+    /* 4. Thu gọn các hàng thông tin */
+    .nx-card-row {
+        margin-bottom: 6px !important;
+        font-size: 0.85rem !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .nx-label {
+        color: #555 !important;
+        font-weight: 500 !important;
+    }
+
+    .nx-value {
+        font-weight: 600 !important;
+        color: #333 !important;
+    }
+
+    /* 5. Thu nhỏ nút bấm */
+    .nx-btn-update {
+        width: 100% !important;
+        padding: 8px 12px !important;
+        font-size: 0.85rem !important;
+        margin-top: 10px !important;
+        border-radius: 5px !important;
+        background-color: #13B5F6 !important;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease !important;
+    }
+
+    .nx-btn-update:hover {
+        background-color: #0d96d9 !important;
+        transform: translateY(-1px);
+    }
+
+    /* 6. Hệ thống màu sắc theo phân hạng (Logic Seat Capacity) */
+    /* Nhóm A: <= 4 chỗ (Xanh dương) */
     .icon-A { background-color: #3b82f6 !important; color: white !important; }
+    .nx-card-A { border-top: 4px solid #3b82f6 !important; }
+
+    /* Nhóm B: 5 - 7 chỗ (Xanh lá) */
     .icon-B { background-color: #10b981 !important; color: white !important; }
+    .nx-card-B { border-top: 4px solid #10b981 !important; }
+
+    /* Nhóm C: > 7 chỗ (Tím) */
     .icon-C { background-color: #a855f7 !important; color: white !important; }
-    .nx-card-A { border-top: 5px solid #3b82f6 !important; }
-    .nx-card-B { border-top: 5px solid #10b981 !important; }
-    .nx-card-C { border-top: 5px solid #a855f7 !important; }
+    .nx-card-C { border-top: 4px solid #a855f7 !important; }
+
+    /* Modal Overlay */
     .nx-modal-overlay.show-modal { display: flex !important; }
 </style>
 {% endblock %}
@@ -25,39 +120,49 @@
 <div class="nx-card-grid" id="main-vehicle-grid">
     {% if loaixe_list %}
         {% for v in loaixe_list %}
-        <div class="nx-card {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}nx-card-A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}nx-card-B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}nx-card-C{% endif %}">
+        {# Logic xử lý Class màu sắc dựa trên số ghế #}
+        <div class="nx-card
+            {% if v.SoGhe <= 4 %}nx-card-A
+            {% elif v.SoGhe <= 7 %}nx-card-B
+            {% else %}nx-card-C{% endif %}">
+
             <div class="nx-card-header">
-                <div class="nx-card-icon {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}icon-A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}icon-B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}icon-C{% endif %}">
-                    {% if 'A' in v.TenLoaiXe or '4' in v.SoGhe %}A{% elif 'B' in v.TenLoaiXe or '7' in v.SoGhe %}B{% elif 'C' in v.TenLoaiXe or '9' in v.SoGhe %}C{% else %}X{% endif %}
+                <div class="nx-card-icon
+                    {% if v.SoGhe <= 4 %}icon-A
+                    {% elif v.SoGhe <= 7 %}icon-B
+                    {% else %}icon-C{% endif %}">
+
+                    {% if v.SoGhe <= 4 %}A
+                    {% elif v.SoGhe <= 7 %}B
+                    {% else %}C{% endif %}
                 </div>
                 <div class="nx-card-title">
                     <h3>{{ v.TenLoaiXe }}</h3>
                     <span>{{ v.SoGhe }} chỗ</span>
                 </div>
             </div>
+
             <div class="nx-card-row">
                 <span class="nx-label">💲 Giá vé</span>
                 {% if v.GiaVe %}
                     <span class="nx-value">{{ v.GiaVe|floatformat:0 }} đ</span>
                 {% else %}
-                    <span class="nx-badge-warning">Chưa thiết lập</span>
+                    <span class="nx-badge-warning" style="background: #fff4e5; color: #b76e00; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Chưa thiết lập</span>
                 {% endif %}
             </div>
+
             <div class="nx-card-row">
-                <span class="nx-label">📅 Cập nhật cuối</span>
-                {% if v.NgayCapNhat %}
-                    <span class="nx-value">{{ v.NgayCapNhat }}</span>
-                {% else %}
-                    <span class="nx-value">Chưa cập nhật</span>
-                {% endif %}
+                <span class="nx-label">📅 Cập nhật</span>
+                <span class="nx-value">{{ v.NgayCapNhat|default:"Chưa có" }}</span>
             </div>
+
             <button class="nx-btn-update" onclick="openUpdateModal('{{ v.LoaiXeId }}', '{{ v.TenLoaiXe }}', '{{ v.SoGhe }}', '{% if v.GiaVe %}{{ v.GiaVe }}{% else %}0{% endif %}')">
-                💲 Cập nhật giá vé
+                💲 Cập nhật giá
             </button>
         </div>
         {% endfor %}
     {% else %}
-        <p>Không có dữ liệu loại xe.</p>
+        <p style="grid-column: 1/-1; text-align: center; color: #888; padding: 20px;">Không có dữ liệu loại xe.</p>
     {% endif %}
 </div>
 

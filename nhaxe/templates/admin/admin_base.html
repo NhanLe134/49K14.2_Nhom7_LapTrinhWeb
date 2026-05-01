@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quản trị hệ thống - Vexeapp{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Header Đồng bộ với Nhaxe -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>HỆ THỐNG QUẢN TRỊ</h1>
+        </div>
+        <div class="header-user">
+            <span>Chào, Admin</span>
+            <div class="user-avatar">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <!-- Sidebar Đồng bộ với Nhaxe -->
+        <aside class="sidebar">
+            <a href="{% url 'admin_dashboard_quyet_toan' %}"
+                class="sidebar-item {% if request.resolver_match.url_name == 'admin_dashboard_quyet_toan' %}active{% endif %}">
+                <i class="fa-solid fa-wallet"></i> Quyết toán nợ
+            </a>
+            <a href="{% url 'admin_list_nhaxe' %}"
+                class="sidebar-item {% if request.resolver_match.url_name == 'admin_list_nhaxe' %}active{% endif %}">
+                <i class="fa-solid fa-bus"></i> Quản lý Nhà xe
+            </a>
+            <a href="{% url 'admin_list_khachhang' %}"
+                class="sidebar-item {% if request.resolver_match.url_name == 'admin_list_khachhang' %}active{% endif %}">
+                <i class="fa-solid fa-users"></i> Quản lý Khách hàng
+            </a>
+
+            <div style="margin-top: auto; padding-bottom: 20px;">
+                <a href="{% url 'dangxuat' %}" class="sidebar-item">
+                    <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

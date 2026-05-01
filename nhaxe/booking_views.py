@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import ChuyenXe, GheNgoi, Ve, User_Authentication, KhachHang
+from .models import ChuyenXe, GheNgoi, Ve, User_Authentication, KhachHang, CHITIETLOAIXE
 import uuid
 
 # ==================== ĐIỀN THÔNG TIN VÀ XÁC NHẬN ĐẶT VÉ ====================
@@ -74,7 +74,21 @@ def xac_nhan_dat_ve(request):
                 messages.error(request, "Tài khoản của bạn không có thông tin khách hàng.")
                 return redirect('index')
 
-            chuyen_xe = ChuyenXe.objects.get(ChuyenXeID=chuyen_id)
+            # Tối ưu query và lấy các object liên quan cần thiết
+            chuyen_xe = ChuyenXe.objects.select_related('TuyenXe__nhaXe', 'Xe__Loaixe').get(ChuyenXeID=chuyen_id)
+
+            # === SỬA LỖI: Lấy giá vé từ CHITIETLOAIXE thay vì Loaixe ===
+            try:
+                chitiet_loaixe = CHITIETLOAIXE.objects.get(
+                    Nhaxe=chuyen_xe.TuyenXe.nhaXe,
+                    Loaixe=chuyen_xe.Xe.Loaixe
+                )
+                gia_ve = chitiet_loaixe.GiaVe
+            except CHITIETLOAIXE.DoesNotExist:
+                # Xử lý trường hợp nhà xe chưa set giá cho loại xe này
+                messages.error(request, "Nhà xe chưa cập nhật giá cho loại xe này. Vui lòng thử lại sau.")
+                return redirect('timkiem')
+            # === KẾT THÚC SỬA LỖI ===
 
             # 0. Lấy mã VeID lớn nhất hiện tại để làm căn cứ tăng dần
             all_ve_ids = Ve.objects.values_list('VeID', flat=True)
@@ -106,7 +120,7 @@ def xac_nhan_dat_ve(request):
                     HoTen=ho_ten,
                     DiemDon=diem_don,
                     DiemTra=diem_tra,
-                    GiaVe=chuyen_xe.Xe.Loaixe.GiaVe, # Lấy giá niêm yết từ Loại xe
+                    GiaVe=gia_ve, # Sử dụng giá vé đã được lấy chính xác
                     TrangThaiThanhToan="Chưa thanh toán" # Ràng buộc: Luôn là Chưa thanh toán khi mới tạo
                 )
 

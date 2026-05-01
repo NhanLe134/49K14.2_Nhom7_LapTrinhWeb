@@ -29,6 +29,14 @@ class Nhaxe(models.Model):
     )
     SoLuotDanhGia = models.IntegerField(default=0)
     TongDiemDanhGia = models.IntegerField(default=0)
+    
+    # Thông tin thanh toán (VietQR)
+    MaNganHang = models.CharField(max_length=50, null=True, blank=True, help_text="Ví dụ: MB, VCB, ICB")
+    SoTaiKhoan = models.CharField(max_length=50, null=True, blank=True)
+    TenChuTaiKhoan = models.CharField(max_length=200, null=True, blank=True)
+    
+    # TRƯỜNG THÊM MỚI: % Hoa hồng
+    PhanTramHoaHong = models.DecimalField(max_digits=5, decimal_places=2, default=10.0)
 
     def __str__(self):
         return self.NhaxeID
@@ -83,7 +91,7 @@ class Taixe(models.Model):
 
 # 5. Bảng CHITIETTAIXE (Chi tiết tài xế - Liên kết nhà xe)
 class CHITIETTAIXE(models.Model):
-    Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
+    Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE, db_column='Nhaxe_id')
     Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE)
     HoTen = models.CharField(max_length=200, null=True, blank=True)
     NgayBatDau = models.DateField()
@@ -95,7 +103,7 @@ class CHITIETTAIXE(models.Model):
 # 6. Bảng Loaixe (Loại xe)
 class Loaixe(models.Model):
     LoaixeID = models.CharField(max_length=10, primary_key=True)
-    TenLoaiXe = models.CharField(max_length=50, null=True, blank=True) # Thêm trường này
+    # TenLoaiXe = models.CharField(max_length=50, null=True, blank=True) # Thêm trường này
     SoCho = models.IntegerField(validators=[MinValueValidator(1)])
     SoDoGheNgoiURL = models.CharField(max_length=255, null=True, blank=True)
     # GiaVe và NgayCapNhatGia đã được di chuyển sang CHITIETLOAIXE
@@ -227,10 +235,10 @@ class ChuyenXe(models.Model):
 
 # 11. Bảng Ghế Ngồi
 class GheNgoi(models.Model):
-    gheID = models.CharField(max_length=20, primary_key=True) # Nới rộng để chứa CX00001A1
-    ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE)
-    soGhe = models.CharField(max_length=10, null=True, blank=True)
-    trangThai = models.CharField(max_length=20, default='Còn trống')
+    gheID = models.CharField(max_length=20, primary_key=True, db_column='gheid') # Nới rộng để chứa CX00001A1
+    ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE, db_column='chuyenxe_id')
+    soGhe = models.CharField(max_length=10, null=True, blank=True, db_column='soghe')
+    trangThai = models.CharField(max_length=20, default='Còn trống', db_column='trangthai')
 
     def __str__(self):
         return f"{self.soGhe} - {self.ChuyenXe.ChuyenXeID}"
@@ -238,9 +246,9 @@ class GheNgoi(models.Model):
 # 12. Bảng Vé
 class Ve(models.Model):
     VeID = models.CharField(max_length=10, primary_key=True)
-    KhachHang = models.ForeignKey(KhachHang, on_delete=models.CASCADE)
-    ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE)
-    Ghe = models.ForeignKey(GheNgoi, on_delete=models.CASCADE)
+    KhachHang = models.ForeignKey(KhachHang, on_delete=models.CASCADE, db_column='KhachHang_id')
+    ChuyenXe = models.ForeignKey(ChuyenXe, on_delete=models.CASCADE, db_column='ChuyenXe_id')
+    Ghe = models.ForeignKey(GheNgoi, on_delete=models.CASCADE, db_column='Ghe_id')
     SoDienThoai = models.CharField(
         max_length=20,
         validators=[RegexValidator(regex=r'^\d{10,12}$', message="SĐT phải có từ 10-12 số")]
@@ -264,6 +272,8 @@ class ThanhToan(models.Model):
     PhuongThucTT = models.CharField(max_length=20, null=True, blank=True)
     NgayThanhToan = models.DateTimeField(null=True, blank=True)
     MaGiaoDich = models.CharField(max_length=50, null=True, blank=True)
+
+    DaQuyetToan = models.BooleanField(default=False, verbose_name="Đã quyết toán")
 
     def __str__(self):
         return self.ThanhToanID

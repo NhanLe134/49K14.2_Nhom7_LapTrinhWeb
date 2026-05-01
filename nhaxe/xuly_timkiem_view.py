@@ -1,70 +1,71 @@
-from .models import ChuyenXe, GheNgoi, CHITIETLOAIXE, TuyenXe, User_Authentication, KhachHang
+from .models import ChuyenXe, GheNgoi, CHITIETLOAIXE, TuyenXe, User_Authentication, Ve,KhachHang
 from django.db.models import Q
 from django.shortcuts import render
 from django.contrib import messages
 from django.http import JsonResponse
 
+
 def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
-    """
-    Hàm lọc danh sách chuyến xe khả dụng dựa trên điểm đi, điểm đến và ngày khởi hành.
-    Lấy đầy đủ thông tin từ các bảng liên quan: ChuyenXe, Xe (Loaixe, Nhaxe), TuyenXe, Taixe và GheNgoi.
-    """
     try:
-        # Lọc ChuyenXe: Khớp tuyến đường và ngày, bỏ qua các chuyến đã hoàn thành hoặc đã hủy
-        # Tối ưu hóa truy vấn bằng select_related
+        # Lọc chuyến xe
         chuyen_xe_query = ChuyenXe.objects.filter(
             TuyenXe__diemDi__icontains=diem_di,
             TuyenXe__diemDen__icontains=diem_den,
             NgayKhoiHanh=ngay_di
-        ).exclude(TrangThai__in=['Hoàn thành', 'Đã hủy'])\
-         .select_related('TuyenXe', 'Xe__Loaixe', 'Xe__Nhaxe', 'Taixe')
+        ).exclude(TrangThai__in=['Hoàn thành', 'Đã hủy']) \
+            .select_related('TuyenXe', 'Xe__Loaixe', 'Xe__Nhaxe', 'Taixe')
 
         danh_sach_ket_qua = []
-        
+
         for cx in chuyen_xe_query:
-            # 1. Lấy thông tin chi tiết loại xe từ bảng CHITIETLOAIXE
-            ct_loaixe = None
-            if cx.Xe:
-                ct_loaixe = CHITIETLOAIXE.objects.filter(Nhaxe=cx.Xe.Nhaxe, Loaixe=cx.Xe.Loaixe).first()
-            
-            ten_loai = "Xe khách"
+            # KIỂM TRA AN TOÀN: Nếu chuyến xe chưa gán xe hoặc chưa có tuyến thì bỏ qua hoặc gán giá trị mặc định
+            if not cx.Xe or not cx.TuyenXe:
+                continue
+
+                # 1. Lấy thông tin giá vé từ bảng CHITIETLOAIXE
+            ct_loaixe = CHITIETLOAIXE.objects.filter(
+                Nhaxe=cx.Xe.Nhaxe,
+                Loaixe=cx.Xe.Loaixe
+            ).first()
+
+            # Xử lý tên loại xe hiển thị
             if ct_loaixe and ct_loaixe.TenLoaiXe:
                 ten_loai = ct_loaixe.TenLoaiXe
-            elif cx.Xe and cx.Xe.Loaixe:
+            else:
                 ten_loai = f"Xe {cx.Xe.Loaixe.SoCho} chỗ"
 
-            # 2. Tính toán số chỗ trống dựa trên bảng GheNgoi và quy tắc trừ ghế tài xế
-            # Quy tắc: 4->3, 7->7 (B1-B7), 9->8
-            tong_ghe_xe = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 4
-            if tong_ghe_xe == 4: tong_ghe_ban = 3
-            elif tong_ghe_xe == 7: tong_ghe_ban = 7
-            elif tong_ghe_xe == 9: tong_ghe_ban = 8
-            else: tong_ghe_ban = max(0, tong_ghe_xe - 1)
+            # Lấy Giá vé thực tế
+            gia_ve_thuc_te = ct_loaixe.GiaVe if ct_loaixe else 0
 
-            ghe_ngoi_qs = GheNgoi.objects.filter(ChuyenXe=cx)
-            tong_so_ghe_hien_tai = ghe_ngoi_qs.count()
-            
-            if tong_so_ghe_hien_tai == 0:
-                so_cho_trong = tong_ghe_ban
+            # 2. Tính toán số chỗ trống (Dùng model Ve để chính xác tuyệt đối)
+            tong_ghe_xe = cx.Xe.Loaixe.SoCho
+            # Quy tắc trừ ghế tài xế của bạn
+            if tong_ghe_xe == 4:
+                tong_ghe_ban = 3
+            elif tong_ghe_xe == 7:
+                tong_ghe_ban = 7
+            elif tong_ghe_xe == 9:
+                tong_ghe_ban = 8
             else:
-                # Chỉ tính những ghế có mã khớp với quy chuẩn (A, B, C) và chưa đặt
-                so_cho_trong = ghe_ngoi_qs.exclude(trangThai='Đã đặt').count()
-                # Đảm bảo không vượt quá số ghế bán được
-                so_cho_trong = min(so_cho_trong, tong_ghe_ban)
+                tong_ghe_ban = max(0, tong_ghe_xe - 1)
 
-            # 3. Tổng hợp dữ liệu trả về cho template
+            # Đếm số vé đã đặt cho chuyến này
+            ve_da_dat_count = Ve.objects.filter(ChuyenXe=cx).exclude(TrangThai='Đã hủy').count()
+            so_cho_trong = max(0, tong_ghe_ban - ve_da_dat_count)
+
+            # 3. Đóng gói dữ liệu
             item = {
                 'ChuyenXeID': cx.ChuyenXeID,
                 'GioDi': cx.GioDi,
                 'GioDen': cx.GioDen,
                 'NgayKhoiHanh': cx.NgayKhoiHanh,
-                'tenTuyen': cx.TuyenXe.tenTuyen if cx.TuyenXe else 'N/A',
-                'DiemDi': cx.TuyenXe.diemDi if cx.TuyenXe else '',
-                'DiemDen': cx.TuyenXe.diemDen if cx.TuyenXe else '',
-                'GiaVe': cx.Xe.Loaixe.GiaVe if cx.Xe and cx.Xe.Loaixe else 0,
-                'TenNhaXe': cx.Xe.Nhaxe.TenNhaXe if cx.Xe and cx.Xe.Nhaxe else 'N/A',
+                'tenTuyen': cx.TuyenXe.tenTuyen,
+                'DiemDi': cx.TuyenXe.diemDi,
+                'DiemDen': cx.TuyenXe.diemDen,
+                'GiaVe': gia_ve_thuc_te,
+                'TenNhaXe': cx.Xe.Nhaxe.TenNhaXe,
                 'LoaiXe': ten_loai,
-                'BienSoXe': cx.Xe.BienSoXe if cx.Xe else '',
+                'BienSoXe': cx.Xe.BienSoXe,
                 'TenTaiXe': cx.Taixe.HoTen if cx.Taixe else 'Chưa rõ',
                 'SoChoTrong': so_cho_trong,
                 'TongSoCho': tong_ghe_ban,
@@ -76,23 +77,15 @@ def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
 
     except Exception as e:
         print(f"Lỗi truy vấn ChuyenXe: {str(e)}")
-        raise e
-
+        return []
 def lay_so_do_ghe(chuyen_xe_id):
     """
-    Hàm lấy sơ đồ ghế và trạng thái thực tế của từng ghế trong chuyến xe.
-    Quy tắc:
-    - Xe 4 chỗ: A1 -> A3
-    - Xe 7 chỗ: B1 -> B6
-    - Xe 9 chỗ: C1 -> C8
+    Đã sửa lỗi logic so sánh chuỗi status để màu sắc hiển thị đúng trên Template
     """
     try:
         chuyen = ChuyenXe.objects.select_related('Xe__Loaixe').get(ChuyenXeID=chuyen_xe_id)
-        # Lấy số chỗ từ Loại xe
         tong_cho = chuyen.Xe.Loaixe.SoCho if chuyen.Xe and chuyen.Xe.Loaixe else 4
-        
-        prefix = "A"
-        count = 3
+
         if tong_cho == 4:
             prefix, count = "A", 3
         elif tong_cho == 7:
@@ -102,25 +95,24 @@ def lay_so_do_ghe(chuyen_xe_id):
         else:
             prefix, count = "S", tong_cho - 1
 
-        # Tạo danh sách nhãn ghế
         labels = [f"{prefix}{i}" for i in range(1, count + 1)]
-
-        # Truy vấn các ghế đã có trong DB (để biết trạng thái Đã đặt)
         ghe_db = GheNgoi.objects.filter(ChuyenXe=chuyen)
-        # Tạo map với key đã chuẩn hóa (strip và viết hoa)
-        ghe_status_map = {str(g.soGhe).strip().upper(): g.trangThai for g in ghe_db if g.soGhe}
+
+        # Chuẩn hóa trạng thái ghế từ DB
+        ghe_status_map = {}
+        for g in ghe_db:
+            if g.soGhe:
+                # Lưu vào map: "B1": "Đã đặt"
+                ghe_status_map[str(g.soGhe).strip().upper()] = str(g.trangThai).strip()
 
         danh_sach_ghe = []
         for label in labels:
-            # Lấy trạng thái từ map theo label đã chuẩn hóa
             db_status = ghe_status_map.get(label.upper(), "Còn trống")
-            
-            # Chuẩn hóa trạng thái để so sánh
-            str_status = str(db_status).strip().lower()
-            
-            # Nếu status chứa cụm "đã đặt" -> sold (màu xanh blue #1da1f2)
-            # Ngược lại là available (màu xám gray #999)
-            if "đã đặt" in str_status:
+
+            # Logic mapping màu sắc cho CSS của bạn
+            # "Đã đặt" -> sold (màu xanh blue trong CSS của bạn)
+            # "Còn trống" -> available
+            if "đã đặt" in db_status.lower():
                 final_status = "sold"
             else:
                 final_status = "available"
@@ -129,15 +121,10 @@ def lay_so_do_ghe(chuyen_xe_id):
                 "soGhe": label,
                 "trangThai": final_status
             })
-            
+
         return danh_sach_ghe
-
-    except ChuyenXe.DoesNotExist:
-        return []
     except Exception as e:
-        print(f"Lỗi lấy sơ đồ ghế: {str(e)}")
-        raise e
-
+        return []
 # ==================== VIEWS CHO TÌM KIẾM CHUYẾN XE ====================
 
 def view_tim_kiem_ve(request):

@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử giao dịch - Vexeapp</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/quanlyve.css' %}">
+    <style>
+        .transaction-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #06A0E2;
+        }
+        .trans-info h4 { margin: 0 0 5px 0; color: #333; font-size: 16px; }
+        .trans-info p { margin: 0; color: #777; font-size: 13px; }
+        .trans-amount { text-align: right; }
+        .amount-value { font-size: 18px; font-weight: 700; color: #22c55e; }
+        .trans-id { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #94a3b8; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Nhà xe Hùng Cường</h1>
+        </div>
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="{% url 'khachhang' %}" class="sidebar-item">
+                <i class="fa-solid fa-house"></i> Trang chủ
+            </a>
+            <a href="{% url 'timkiem' %}" class="sidebar-item">
+                <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm vé
+            </a>
+            <a href="{% url 'quanlyve' %}" class="sidebar-item">
+                <i class="fa-solid fa-ticket"></i> Vé của tôi
+            </a>
+            <a href="{% url 'khachhang_giao_dich' %}" class="sidebar-item active">
+                <i class="fa-solid fa-receipt" style="color: #06A0E2;"></i> Lịch sử giao dịch
+            </a>
+            <a href="{% url 'danhgiachuyenxe' %}" class="sidebar-item">
+                <i class="fa-solid fa-comments"></i> Đánh giá chuyến xe
+            </a>
+        </aside>
+
+        <main class="main-content">
+            <div style="padding: 25px;">
+                <h2 style="margin-bottom: 25px; font-weight: 800; color: #1e293b;">Lịch sử giao dịch</h2>
+                
+                <div class="transaction-list">
+                    {% for item in danh_sach_giao_dich %}
+                    <div class="transaction-card">
+                        <div class="trans-info">
+                            <h4>Thanh toán vé: <b>{{ item.Ve.VeID }}</b></h4>
+                            <p><i class="fa-solid fa-route"></i> Tuyến: {{ item.Ve.ChuyenXe.TuyenXe.tenTuyen }}</p>
+                            <p><i class="fa-regular fa-calendar"></i> {{ item.NgayThanhToan|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div class="trans-amount">
+                            <div class="amount-value">+{{ item.SoTien|floatformat:0 }} đ</div>
+                            <div class="trans-id">{{ item.ThanhToanID }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-receipt" style="font-size: 50px; margin-bottom: 15px; display: block;"></i>
+                        <p>Bạn chưa thực hiện giao dịch nào.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

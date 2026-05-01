@@ -1,0 +1,450 @@
+{% extends 'home/khachhang.html' %}
+{% load static %}
+
+{% block title %}Thanh toán vé xe - Vexeapp{% endblock %}
+
+{% block content %}
+<style>
+    /* ===== OVERRIDE main-content của khachhang.css ===== */
+    .main-content {
+        padding: 0 !important;
+        background-color: #f0f5fb !important;
+        overflow-y: auto !important;
+    }
+
+    /* ===== PAYMENT WRAPPER ===== */
+    .pmt-wrapper {
+        min-height: 100%;
+        background-color: #f0f5fb;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 36px 20px 60px;
+    }
+
+    /* ===== CARD ===== */
+    .pmt-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 560px;
+        border-radius: 16px;
+        box-shadow: 0 4px 28px rgba(0,0,0,0.09);
+        padding: 28px 32px 32px;
+    }
+
+    /* ===== HEADER ===== */
+    .pmt-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .pmt-back {
+        width: 32px;
+        height: 32px;
+        background: #f2f4f7;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #555;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        transition: background 0.2s;
+    }
+    .pmt-back:hover { background: #e2e6ec; }
+
+    .pmt-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* ===== INFO TABLE ===== */
+    .pmt-info-box {
+        background: #f7f9fd;
+        border: 1px solid #e8ecf2;
+        border-radius: 12px;
+        padding: 4px 20px;
+        margin-bottom: 20px;
+    }
+
+    .pmt-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 11px 0;
+        border-bottom: 1px solid #edf0f5;
+    }
+    .pmt-row:last-child { border-bottom: none; }
+
+    .pmt-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 400;
+    }
+
+    .pmt-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .pmt-row.total .pmt-label {
+        font-weight: 700;
+        color: #111827;
+        font-size: 0.9rem;
+    }
+    .pmt-row.total .pmt-value {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #06A0E2;
+    }
+
+    /* ===== METHODS SECTION ===== */
+    .pmt-section-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 10px;
+    }
+
+    .pmt-method {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 16px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        background: white;
+        transition: border-color 0.2s, background 0.2s;
+        user-select: none;
+    }
+    .pmt-method:hover { border-color: #06A0E2; background: #f8fdff; }
+    .pmt-method.active {
+        border-color: #06A0E2;
+        background: #f0faff;
+    }
+
+    .pmt-method-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #f0f4f8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #64748b;
+        flex-shrink: 0;
+        transition: background 0.2s, color 0.2s;
+    }
+    .pmt-method.active .pmt-method-icon {
+        background: #daf2fd;
+        color: #06A0E2;
+    }
+
+    .pmt-method-info { display: flex; flex-direction: column; gap: 2px; }
+    .pmt-method-name { font-size: 0.875rem; font-weight: 700; color: #111827; }
+    .pmt-method-desc { font-size: 0.78rem; color: #9ca3af; }
+
+    /* ===== QR SECTION ===== */
+    .pmt-qr-section {
+        margin-top: 16px;
+        text-align: center;
+        padding: 8px 0 4px;
+    }
+
+    .pmt-qr-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+
+    .pmt-qr-countdown {
+        font-size: 0.82rem;
+        color: #ef4444;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .pmt-qr-img {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 14px;
+        display: block;
+        border: 1px solid #dde3eb;
+        border-radius: 10px;
+        padding: 6px;
+        background: white;
+        object-fit: contain;
+    }
+
+    .pmt-qr-note {
+        font-size: 0.79rem;
+        color: #6b7280;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 8px;
+        padding: 9px 14px;
+        text-align: left;
+        margin-top: 4px;
+    }
+
+    /* ===== CASH WARNING & ERRORS ===== */
+    .pmt-cash-warning, .pmt-error-box {
+        margin-top: 16px;
+        background: #fffbeb;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 0.85rem;
+        color: #92400e;
+        line-height: 1.6;
+        display: none; /* Ẩn mặc định */
+    }
+    .pmt-error-box {
+        background: #fef2f2;
+        border-color: #ef4444;
+        color: #991b1b;
+    }
+
+    .pmt-cash-warning strong, .pmt-error-box strong {
+        color: inherit;
+        font-weight: 700;
+    }
+
+    /* ===== BUTTONS ===== */
+    .pmt-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .pmt-btn-cancel {
+        flex: 1;
+        padding: 13px 0;
+        background: #e5e7eb;
+        color: #374151 !important;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    .pmt-btn-cancel:hover { background: #d1d5db; }
+
+    .pmt-btn-confirm {
+        flex: 2;
+        padding: 13px 0;
+        background: #06A0E2;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+    }
+    .pmt-btn-confirm:hover { background: #0589c4; }
+    .pmt-btn-confirm:active { transform: scale(0.98); }
+</style>
+
+<div class="pmt-wrapper">
+    <div class="pmt-card">
+
+        <!-- Header -->
+        <div class="pmt-header">
+            <button class="pmt-back" onclick="history.back()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h2 class="pmt-title">Thanh toán vé xe</h2>
+        </div>
+
+        <!-- Ticket Info -->
+        <div class="pmt-info-box">
+            <div class="pmt-row">
+                <span class="pmt-label">Mã vé</span>
+                <span class="pmt-value">{{ ve.VeID }}</span>
+            </div>
+            <div class="pmt-row">
+                <span class="pmt-label">Tuyến</span>
+                <span class="pmt-value">{{ ve.ChuyenXe.TuyenXe.tenTuyen|default:"—" }}</span>
+            </div>
+            <div class="pmt-row">
+                <span class="pmt-label">Ngày khởi hành</span>
+                <span class="pmt-value">{{ ve.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</span>
+            </div>
+            <div class="pmt-row">
+                <span class="pmt-label">Giờ khởi hành</span>
+                <span class="pmt-value">{{ ve.ChuyenXe.GioDi|time:"H:i" }}</span>
+            </div>
+            <div class="pmt-row">
+                <span class="pmt-label">Số ghế</span>
+                <span class="pmt-value">{{ ve.Ghe.soGhe|default:"—" }}</span>
+            </div>
+            <div class="pmt-row total">
+                <span class="pmt-label">Tổng tiền</span>
+                <span class="pmt-value">{{ ve.GiaVe|floatformat:0 }} đ</span>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="pmt-section-title">Chọn phương thức thanh toán</div>
+
+        <form action="{% url 'xac_nhan_thanh_toan' ve.VeID %}" method="POST" id="formThanhToan">
+            {% csrf_token %}
+            <input type="hidden" name="phuong_thuc" id="phuongThucDaChon" value="Chuyển khoản">
+
+            <!-- Lựa chọn Chuyển khoản -->
+            <div class="pmt-method active" onclick="chonPhuongThuc('Chuyển khoản', this)">
+                <div class="pmt-method-icon"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="pmt-method-info">
+                    <div class="pmt-method-name">Chuyển khoản</div>
+                    <div class="pmt-method-desc">Thanh toán QR Code ngân hàng</div>
+                </div>
+            </div>
+
+            <!-- Lựa chọn Tiền mặt -->
+            <div class="pmt-method" onclick="chonPhuongThuc('Tiền mặt', this)">
+                <div class="pmt-method-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <div class="pmt-method-info">
+                    <div class="pmt-method-name">Tiền mặt</div>
+                    <div class="pmt-method-desc">Thanh toán trực tiếp với tài xế</div>
+                </div>
+            </div>
+
+            <!-- Khu vực hiển thị khi chọn Chuyển khoản -->
+            <div id="khuVucChuyenKhoan" style="display: block;">
+                {% if thanh_toan_online_kha_dung %}
+                    <!-- Hiện mã QR nếu nhà xe có cấu hình -->
+                    <div id="khuVucQR" class="pmt-qr-section">
+                        <div class="pmt-qr-title">Quét mã để thanh toán</div>
+                        <div class="pmt-qr-countdown">Hết hạn sau: <span id="dongHoDemNguoc">5:00</span></div>
+                        <img src="{{ qr_url }}" class="pmt-qr-img" alt="VietQR">
+                        <div class="pmt-qr-note">
+                            <strong>Ghi chú:</strong> Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống tự động xác nhận.
+                            <br>
+                            <strong>Tài khoản:</strong> {{ thong_tin_ngan_hang.so_tai_khoan }} - {{ thong_tin_ngan_hang.ten_chu_tai_khoan }} ({{ thong_tin_ngan_hang.ma_ngan_hang }})
+                        </div>
+                        <div id="trangThaiThanhToan" style="margin-top: 15px; font-size: 0.85rem; color: #06A0E2; display: none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Đang chờ xác nhận chuyển khoản...
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Hiện thông báo lỗi nếu nhà xe CHƯA cấu hình -->
+                    <div class="pmt-error-box" style="display: block;">
+                        <strong>Thông báo:</strong> Nhà xe này chưa thiết lập chức năng thanh toán online. Vui lòng chọn phương thức thanh toán bằng Tiền mặt.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Khu vực hiển thị khi chọn Tiền mặt -->
+            <div id="canhBaoTienMat" class="pmt-cash-warning">
+                <strong>Lưu ý:</strong> Vui lòng chuẩn bị đủ tiền mặt để thanh toán cho tài xế khi lên xe.
+                Vé sẽ được xác nhận đã thanh toán sau khi tài xế xác nhận đã nhận tiền.
+            </div>
+
+            <!-- Buttons -->
+            <div class="pmt-actions">
+                <a href="javascript:history.back()" class="pmt-btn-cancel">Hủy</a>
+                <button type="submit" class="pmt-btn-confirm" id="nutXacNhan">Xác nhận thanh toán</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    const onlineKhaDung = {{ thanh_toan_online_kha_dung|yesno:"true,false" }};
+
+    function chonPhuongThuc(phuongThuc, element) {
+        document.getElementById('phuongThucDaChon').value = phuongThuc;
+        document.querySelectorAll('.pmt-method').forEach(m => m.classList.remove('active'));
+        element.classList.add('active');
+
+        const laChuyenKhoan = (phuongThuc === 'Chuyển khoản');
+        
+        // Hiện/Ẩn các khu vực tương ứng
+        document.getElementById('khuVucChuyenKhoan').style.display = laChuyenKhoan ? 'block' : 'none';
+        document.getElementById('canhBaoTienMat').style.display = laChuyenKhoan ? 'none' : 'block';
+        
+        // Kiểm soát nút xác nhận
+        const nutXacNhan = document.getElementById('nutXacNhan');
+        if (laChuyenKhoan && !onlineKhaDung) {
+            nutXacNhan.disabled = true;
+            nutXacNhan.style.opacity = '0.5';
+            nutXacNhan.style.cursor = 'not-allowed';
+        } else {
+            nutXacNhan.disabled = false;
+            nutXacNhan.style.opacity = '1';
+            nutXacNhan.style.cursor = 'pointer';
+        }
+    }
+
+    {% if thanh_toan_online_kha_dung %}
+    // Đếm ngược thời gian QR
+    let thoiGianConLai = 300; 
+    const dongHoEl = document.getElementById('dongHoDemNguoc');
+    const boDem = setInterval(() => {
+        thoiGianConLai--;
+        if (dongHoEl) {
+            let phut = Math.floor(thoiGianConLai / 60);
+            let giay = thoiGianConLai % 60;
+            dongHoEl.textContent = `${phut}:${giay < 10 ? '0' : ''}${giay}`;
+        }
+        if (thoiGianConLai <= 0) {
+            clearInterval(boDem);
+            if (dongHoEl) dongHoEl.textContent = "Hết hạn";
+        }
+    }, 1000);
+
+    // Kiểm tra trạng thái thanh toán (Polling)
+    const veId = "{{ ve.VeID }}";
+    const statusEl = document.getElementById('trangThaiThanhToan');
+    
+    function kiemTraThanhToan() {
+        if (document.getElementById('phuongThucDaChon').value !== 'Chuyển khoản') return;
+        
+        if (statusEl) statusEl.style.display = 'block';
+        
+        fetch(`/api/check-payment-status/${veId}/`)
+            .then(response => response.json())
+            .then(duLieu => {
+                if (duLieu.da_thanh_toan) {
+                    if (statusEl) {
+                        statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Thanh toán thành công! Đang chuyển hướng...';
+                        statusEl.style.color = '#10b981';
+                    }
+                    setTimeout(() => {
+                        window.location.href = "{% url 'quanlyve' %}";
+                    }, 2000);
+                } else {
+                    setTimeout(kiemTraThanhToan, 3000);
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi:", err);
+                setTimeout(kiemTraThanhToan, 5000);
+            });
+    }
+
+    if (document.getElementById('phuongThucDaChon').value === 'Chuyển khoản') {
+        kiemTraThanhToan();
+    }
+    {% endif %}
+</script>
+{% endblock %}

@@ -16,17 +16,29 @@ def quanlytaixe(request):
     
     # Thông báo chuyến trễ
     today = datetime.now().date()
-    overdue_trips = ChuyenXe.objects.filter(
-        TuyenXe__nhaXe_id=user_id,
+    # WORKAROUND cho TuyenXe_id
+    overdue_trips_raw = ChuyenXe.objects.filter(
         NgayKhoiHanh__lt=today,
         TrangThai='Chưa hoàn thành'
     ).select_related('TuyenXe')
-    overdue_trips_count = overdue_trips.count()
+    
+    overdue_trips_list = [trip for trip in overdue_trips_raw if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == user_id]
+    overdue_trips_count = len(overdue_trips_list)
 
     taixe_list = []
     
     # 1. Lấy tài xế thuộc nhà xe này (qua CHITIETTAIXE)
-    drivers = Taixe.objects.filter(chitiettaixe__Nhaxe_id=user_id)
+    # WORKAROUND cho Nhaxe_id trong CHITIETTAIXE
+    drivers_raw = Taixe.objects.all().prefetch_related('chitiettaixe_set')
+    drivers = []
+    for driver in drivers_raw:
+        # Lấy tất cả chi tiết tài xế cho driver này
+        details = driver.chitiettaixe_set.all()
+        for detail in details:
+             if getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None)) == user_id:
+                  drivers.append(driver)
+                  break
+
     users = {u.UserID: u for u in User_Authentication.objects.all()}
 
     # Tính toán mã ID mới
@@ -46,7 +58,7 @@ def quanlytaixe(request):
             'soBangLai':      driver.SoBangLai,
             'soCCCD':         driver.soCCCD,
             'loaiBangLai':    driver.LoaiBangLai,
-            'hinhAnh':        driver.HinhAnhURL,
+            'hinhAnh':        getattr(driver, 'HinhAnhURL', None),
         })
     
     ma_tai_xe_moi = f"TAI{max_num + 1:04d}"
@@ -55,8 +67,8 @@ def quanlytaixe(request):
         'taixe_list': taixe_list,
         'ma_tai_xe_moi': ma_tai_xe_moi,
         'nha_xe': nha_xe_obj,
-        'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
-        'overdue_trips': overdue_trips,
+        'avatar_url': getattr(nha_xe_obj, 'AnhDaiDienURL', None) if nha_xe_obj else None,
+        'overdue_trips': overdue_trips_list,
         'overdue_trips_count': overdue_trips_count
     })
 
@@ -104,14 +116,20 @@ def them_tai_xe(request):
                 new_id = f"TAI{max_num + 1:04d}"
 
                 # 4. Lưu User
-                new_user = User_Authentication.objects.create(
+                nha_xe_id = request.session.get('user_id')
+                new_user = User_Authentication(
                     UserID=new_id,
                     TenDangNhap=username,
                     MatKhau=password,
                     SoDienThoai=phone,
                     Vaitro="taixe",
-                    Nhaxe_id=request.session.get('user_id') # Sửa: dùng user_id của nhà xe đang login
                 )
+                if nha_xe_id:
+                     setattr(new_user, 'Nhaxe_id', nha_xe_id)
+                     if not hasattr(new_user, 'Nhaxe_id'):
+                          setattr(new_user, 'nhaxe_id', nha_xe_id)
+
+                new_user.save()
 
                 # 5. Lưu Taixe
                 new_driver = Taixe.objects.create(
@@ -126,13 +144,14 @@ def them_tai_xe(request):
                 ma_nha_xe = request.session.get('user_id')
                 if ma_nha_xe:
                     Nhaxe_obj = Nhaxe.objects.get(NhaxeID=ma_nha_xe)
-                    CHITIETTAIXE.objects.create(
+                    cttx = CHITIETTAIXE(
                         Nhaxe=Nhaxe_obj,
                         Taixe=new_driver,
                         HoTen=full_name,
                         NgayBatDau=datetime.now().date(),
                         NgayKetThuc=datetime(2099, 12, 31).date()
                     )
+                    cttx.save()
 
             messages.success(request, f"Thêm tài xế {full_name} thành công.")
         except Exception as e:
@@ -248,7 +267,7 @@ def taixe(request):
     # Lấy thông tin tài xế & nhà xe để hiện Header
     nha_xe_obj = None
     taixe_obj = driver
-    avatar_url = taixe_obj.HinhAnhURL if taixe_obj else None
+    avatar_url = getattr(taixe_obj, 'HinhAnhURL', None) if taixe_obj else None
     detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()
     if detail:
         nha_xe_obj = detail.Nhaxe
@@ -284,7 +303,7 @@ def thongtin_taixe(request):
         'detail': detail,
         'nha_xe': detail.Nhaxe if detail else None,
         'ten_taixe': driver.HoTen if driver else None,
-        'avatar_url': driver.HinhAnhURL if driver else None
+        'avatar_url': getattr(driver, 'HinhAnhURL', None) if driver else None
     })
 def taixe_lotrinh(request):
     trip_id = request.GET.get('id', '')
@@ -312,7 +331,7 @@ def taixe_lotrinh(request):
         've_list': ve_list,
         'nha_xe': nha_xe_obj,
         'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
-        'avatar_url': taixe_obj.HinhAnhURL if taixe_obj else None
+        'avatar_url': getattr(taixe_obj, 'HinhAnhURL', None) if taixe_obj else None
     })
 def phancongtaixe(request):
     nha_xe_id = request.session.get('user_id')
@@ -323,12 +342,14 @@ def phancongtaixe(request):
     
     # Thông báo chuyến trễ
     today = datetime.now().date()
-    overdue_trips = ChuyenXe.objects.filter(
-        TuyenXe__nhaXe_id=nha_xe_id,
+    # WORKAROUND cho TuyenXe_id
+    overdue_trips_raw = ChuyenXe.objects.filter(
         NgayKhoiHanh__lt=today,
         TrangThai='Chưa hoàn thành'
     ).select_related('TuyenXe')
-    overdue_trips_count = overdue_trips.count()
+    
+    overdue_trips = [trip for trip in overdue_trips_raw if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+    overdue_trips_count = len(overdue_trips)
 
     trip_id = request.GET.get('id')
     if not trip_id:
@@ -352,7 +373,16 @@ def phancongtaixe(request):
             return JsonResponse({'status': 'error', 'message': f"{str(e)}\n\n{error_trace}"})
 
     # Lấy danh sách tài xế của nhà xe này
-    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
+    # WORKAROUND cho Nhaxe_id trong CHITIETTAIXE
+    taixe_list_raw = Taixe.objects.all().prefetch_related('chitiettaixe_set')
+    taixe_list = []
+    for driver in taixe_list_raw:
+        # Lấy tất cả chi tiết tài xế cho driver này
+        details = driver.chitiettaixe_set.all()
+        for detail in details:
+             if getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None)) == nha_xe_id:
+                  taixe_list.append(driver)
+                  break
     
     return render(request, 'home/phancongtaixe.html', {
         'trip_id': trip_id,

@@ -1,0 +1,197 @@
+{% extends 'home/nhaxe.html' %}
+{% load static %}
+
+{% block title %}Cấu hình ngân hàng - {{ nhaxe.TenNhaXe }}{% endblock %}
+
+{% block content %}
+<style>
+    .config-container {
+        padding: 40px 20px;
+        background-color: #f8fafc;
+        min-height: calc(100vh - 70px);
+        display: flex;
+        justify-content: center;
+    }
+
+    .config-card {
+        background: white;
+        width: 100%;
+        max-width: 650px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        padding: 40px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .config-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .config-icon {
+        width: 64px;
+        height: 64px;
+        background: #eff6ff;
+        color: #3b82f6;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin: 0 auto 15px;
+    }
+
+    .config-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .config-subtitle {
+        color: #64748b;
+        font-size: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s;
+        color: #1e293b;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .bank-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 18px;
+    }
+
+    .btn-save {
+        width: 100%;
+        padding: 14px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-save:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .alert-info {
+        background: #f0f9ff;
+        color: #075985;
+        border: 1px solid #bae6fd;
+    }
+</style>
+
+<div class="config-container">
+    <div class="config-card">
+        <div class="config-header">
+            <div class="config-icon">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <h1 class="config-title">Cấu hình Ngân hàng</h1>
+            <p class="config-subtitle">Đây là tài khoản dùng để Admin chuyển trả doanh thu hàng tháng cho bạn.</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fa-solid fa-circle-check"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Ngân hàng thụ hưởng</label>
+                <select name="ma_ngan_hang" class="form-control bank-select" required>
+                    <option value="" disabled selected>Chọn ngân hàng...</option>
+                    {% for ngan_hang in danh_sach_ngan_hang %}
+                        <option value="{{ ngan_hang.id }}" {% if nhaxe.MaNganHang == ngan_hang.id %}selected{% endif %}>
+                            {{ ngan_hang.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Số tài khoản</label>
+                <input type="text" name="so_tai_khoan" class="form-control" 
+                       placeholder="Ví dụ: 0377400XXX" value="{{ nhaxe.SoTaiKhoan|default:'' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tên chủ tài khoản (viết hoa không dấu)</label>
+                <input type="text" name="ten_chu_tai_khoan" class="form-control" 
+                       placeholder="Ví dụ: NGUYEN VAN A" value="{{ nhaxe.TenChuTaiKhoan|default:'' }}" required>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-info"></i>
+                Lưu ý: Mọi giao dịch online của khách hàng sẽ được thanh toán vào tài khoản tập trung của sàn để đối soát.
+            </div>
+
+            <button type="submit" class="btn-save">
+                <i class="fa-solid fa-floppy-disk"></i>
+                Lưu cấu hình
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

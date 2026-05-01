@@ -1,0 +1,49 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Quyết toán Nhà xe - Admin{% endblock %}
+
+{% block admin_content %}
+<h2 class="page-title">Quyết toán doanh thu Nhà xe</h2>
+
+<div class="nhaxe-list">
+    {% for item in bao_cao_nhaxe %}
+    <div class="card" style="padding: 25px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h3 style="margin: 0; font-size: 18px; color: #1e293b;">{{ item.nhaxe.TenNhaXe }}</h3>
+            <div style="margin-top: 8px; font-size: 13px; color: #64748b; background: #f1f5f9; padding: 6px 12px; border-radius: 8px; display: inline-block;">
+                <i class="fa-solid fa-university"></i> 
+                {% if item.nhaxe.SoTaiKhoan %}
+                    {{ item.nhaxe.MaNganHang }}: {{ item.nhaxe.SoTaiKhoan }} - {{ item.nhaxe.TenChuTaiKhoan }}
+                {% else %}
+                    <span style="color: #ef4444;">Chưa cập nhật tài khoản ngân hàng</span>
+                {% endif %}
+            </div>
+            <div style="margin-top: 10px; font-size: 13px;">
+                Số giao dịch chờ chuyển: <b style="color: #06A0E2;">{{ item.so_giao_dich }}</b>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 40px; align-items: center;">
+            <div style="text-align: right;">
+                <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Cần quyết toán</div>
+                <div style="font-size: 22px; font-weight: 800; color: #22c55e;">{{ item.thuc_nhan|floatformat:0 }} đ</div>
+                <div style="font-size: 12px; color: #64748b;">(Sau khi trừ phí sàn {{ item.nhaxe.PhanTramHoaHong }}%)</div>
+            </div>
+
+            <form action="{% url 'admin_xac_nhan_quyet_toan' item.nhaxe.NhaxeID %}" method="POST" onsubmit="return confirm('Xác nhận Admin đã chuyển khoản thành công?')">
+                {% csrf_token %}
+                <button type="submit" style="background: #06A0E2; color: white; border: none; padding: 14px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;" 
+                    {% if not item.nhaxe.SoTaiKhoan %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                    Xác nhận đã chuyển
+                </button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card" style="text-align: center; padding: 80px 0; color: #94a3b8;">
+        <i class="fa-solid fa-circle-check" style="font-size: 50px; margin-bottom: 20px; color: #10b981;"></i>
+        <p style="font-size: 16px; font-weight: 600;">Hiện tại không có khoản nợ nào cần quyết toán.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

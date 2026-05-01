@@ -8,7 +8,7 @@ import json
 import re
 from decimal import Decimal
 
-# Thông tin tài khoản Admin (Nơi nhận tiền từ khách)
+# Thông tin tài khoản Admin
 NGAN_HANG_ADMIN = {
     'ma_ngan_hang': 'MB',
     'so_tai_khoan': '0352149424',
@@ -22,7 +22,7 @@ def tao_ma_thanh_toan_tu_dong():
     next_id = int(match.group()) + 1 if match else 1
     return f"TT{next_id:04d}"
 
-def process_payment(request, ve_id):
+def xu_ly_thanh_toan(request, ve_id):
     ve = get_object_or_404(Ve, pk=ve_id)
     nhaxe = ve.ChuyenXe.TuyenXe.nhaXe
     thanh_toan_online_kha_dung = all([nhaxe.MaNganHang, nhaxe.SoTaiKhoan])
@@ -31,9 +31,9 @@ def process_payment(request, ve_id):
         so_tien = 2000 # Dùng 2000đ để test thực tế
         noi_dung = f"THANH TOAN VE {ve.VeID}"
         qr_url = f"https://img.vietqr.io/image/{NGAN_HANG_ADMIN['ma_ngan_hang']}-{NGAN_HANG_ADMIN['so_tai_khoan']}-compact.png?amount={so_tien}&addInfo={noi_dung}&accountName={NGAN_HANG_ADMIN['ten_chu_tai_khoan']}"
-    return render(request, 'khachhang/thanhtoan.html', {'ve': ve, 'qr_url': qr_url, 'thanh_toan_online_kha_dung': thanh_toan_online_kha_dung, 'thong_tin_ngan_hang': NGAN_HANG_ADMIN})
+    return render(request, 'khachhang/payment.html', {'ve': ve, 'qr_url': qr_url, 'thanh_toan_online_kha_dung': thanh_toan_online_kha_dung, 'thong_tin_ngan_hang': NGAN_HANG_ADMIN})
 
-def confirm_payment(request, ve_id):
+def xac_nhan_thanh_toan(request, ve_id):
     if request.method == 'POST':
         ve = get_object_or_404(Ve, pk=ve_id)
         phuong_thuc = request.POST.get('phuong_thuc')
@@ -49,7 +49,7 @@ def confirm_payment(request, ve_id):
     return redirect('quanlyve')
 
 @csrf_exempt
-def sepay_webhook(request):
+def webhook_sepay(request):
     try:
         du_lieu = json.loads(request.body)
         noi_dung = du_lieu.get('content', '') or du_lieu.get('transaction_content', '')
@@ -64,7 +64,7 @@ def sepay_webhook(request):
     except: pass
     return JsonResponse({'status': 'error'})
 
-def check_payment_status(request, ve_id):
+def kiem_tra_trang_thai_thanh_toan(request, ve_id):
     ve = Ve.objects.filter(VeID=ve_id).first()
     return JsonResponse({'da_thanh_toan': (ve.TrangThaiThanhToan == "Đã thanh toán") if ve else False})
 
@@ -73,7 +73,7 @@ def khachhang_lich_su_giao_dich(request):
     user_auth = User_Authentication.objects.filter(UserID=user_id).first()
     if not user_auth or user_auth.Vaitro != 'KhachHang': return redirect('dangnhap')
     danh_sach = ThanhToan.objects.filter(Ve__KhachHang=user_auth.KhachHang).order_by('-NgayThanhToan')
-    return render(request, 'khachhang/lich_su_giao_dich.html', {'danh_sach_giao_dich': danh_sach})
+    return render(request, 'khachhang/transactions.html', {'danh_sach_giao_dich': danh_sach})
 
 def nhaxe_bao_cao_doanh_thu(request):
     user_id = request.session.get('user_id')
@@ -89,7 +89,7 @@ def nhaxe_bao_cao_doanh_thu(request):
     ti_le = Decimal(str(getattr(nhaxe, 'PhanTramHoaHong', 10.0) or 10.0)) / Decimal('100')
     tong_hoa_hong = Decimal(str(tong_doanh_thu)) * ti_le
     thuc_nhan = Decimal(str(tong_doanh_thu)) - tong_hoa_hong
-    return render(request, 'nhaxe/bao_cao_doanh_thu.html', {'nhaxe': nhaxe, 'danh_sach_cho_duyet': giao_dich_cho_duyet, 'danh_sach_da_xong': giao_dich_da_xong, 'tong_doanh_thu': tong_doanh_thu, 'tong_hoa_hong': tong_hoa_hong, 'thuc_nhan': thuc_nhan})
+    return render(request, 'nhaxe/revenue_report.html', {'nhaxe': nhaxe, 'danh_sach_cho_duyet': giao_dich_cho_duyet, 'danh_sach_da_xong': giao_dich_da_xong, 'tong_doanh_thu': tong_doanh_thu, 'tong_hoa_hong': tong_hoa_hong, 'thuc_nhan': thuc_nhan})
 
 def nhaxe_cau_hinh_ngan_hang(request):
     user_id = request.session.get('user_id')
@@ -105,59 +105,3 @@ def nhaxe_cau_hinh_ngan_hang(request):
         nhaxe.save()
         messages.success(request, "Cập nhật thành công!")
     return render(request, 'nhaxe/bank_config.html', {'nhaxe': nhaxe})
-
-# ==================== PHẦN DÀNH CHO ADMIN TỔNG ====================
-
-def kiem_tra_admin(request):
-    user_id = request.session.get('user_id')
-    user_auth = User_Authentication.objects.filter(UserID=user_id).first()
-    if not user_auth or user_auth.Vaitro not in ['Admin', 'QuanTri', 'Nhaxe']:
-        return None
-    return user_auth
-
-def admin_dashboard_quyet_toan(request):
-    auth = kiem_tra_admin(request)
-    if not auth: return redirect('dangnhap')
-
-    cac_nha_xe = Nhaxe.objects.all()
-    bao_cao_nhaxe = []
-    
-    for nx in cac_nha_xe:
-        cho_duyet = ThanhToan.objects.filter(Ve__ChuyenXe__TuyenXe__nhaXe=nx, Ve__TrangThaiThanhToan="Đã thanh toán", DaQuyetToan=False)
-        if cho_duyet.exists():
-            tong_tien = sum(p.SoTien for p in cho_duyet)
-            ti_le = Decimal(str(nx.PhanTramHoaHong or 10.0)) / Decimal('100')
-            phi_san = tong_tien * ti_le
-            thuc_nhan = tong_tien - phi_san
-            
-            bao_cao_nhaxe.append({
-                'nhaxe': nx,
-                'tong_tien': tong_tien,
-                'phi_san': phi_san,
-                'thuc_nhan': thuc_nhan,
-                'so_giao_dich': cho_duyet.count()
-            })
-
-    return render(request, 'admin/quan_ly_quyet_toan.html', {'bao_cao_nhaxe': bao_cao_nhaxe})
-
-def admin_xac_nhan_quyet_toan(request, nhaxe_id):
-    if request.method == 'POST':
-        ThanhToan.objects.filter(
-            Ve__ChuyenXe__TuyenXe__nhaXe_id=nhaxe_id, 
-            Ve__TrangThaiThanhToan="Đã thanh toán", 
-            DaQuyetToan=False
-        ).update(DaQuyetToan=True)
-        messages.success(request, f"Đã xác nhận quyết toán thành công cho nhà xe {nhaxe_id}")
-    return redirect('admin_dashboard_quyet_toan')
-
-def admin_list_nhaxe(request):
-    auth = kiem_tra_admin(request)
-    if not auth: return redirect('dangnhap')
-    danh_sach = Nhaxe.objects.all()
-    return render(request, 'admin/list_nhaxe.html', {'danh_sach_nhaxe': danh_sach})
-
-def admin_list_khachhang(request):
-    auth = kiem_tra_admin(request)
-    if not auth: return redirect('dangnhap')
-    danh_sach = KhachHang.objects.all()
-    return render(request, 'admin/list_khachhang.html', {'danh_sach_khachhang': danh_sach})

@@ -33,11 +33,11 @@ class ChiTietTaiXeAdmin(admin.ModelAdmin):
 
 @admin.register(Loaixe)
 class LoaixeAdmin(admin.ModelAdmin):
-    list_display = ('LoaixeID', 'TenLoaiXe', 'SoCho') # Đã loại bỏ GiaVe và NgayCapNhatGia, thêm TenLoaiXe
+    list_display = ('LoaixeID', 'SoCho') # Đã loại bỏ TenLoaiXe, GiaVe và NgayCapNhatGia
 
 @admin.register(CHITIETLOAIXE)
 class ChiTietLoaiXeAdmin(admin.ModelAdmin):
-    list_display = ('Nhaxe', 'Loaixe', 'TenLoaiXe', 'GiaVe', 'NgayCapNhatGia') # Thêm GiaVe và NgayCapNhatGia vào đây
+    list_display = ('Nhaxe', 'Loaixe', 'TenLoaiXe', 'GiaVe', 'NgayCapNhatGia') # Thêm TenLoaiXe, GiaVe và NgayCapNhatGia vào đây
 
 @admin.register(Xe)
 class XeAdmin(admin.ModelAdmin):
@@ -65,7 +65,8 @@ class VeAdmin(admin.ModelAdmin):
 
 @admin.register(ThanhToan)
 class ThanhToanAdmin(admin.ModelAdmin):
-    list_display = ('ThanhToanID', 'Ve', 'SoTien', 'PhuongThucTT', 'NgayThanhToan')
+    list_display = ('ThanhToanID', 'Ve', 'SoTien', 'NgayThanhToan', 'DaQuyetToan')
+    list_filter = ('DaQuyetToan',)
 
 @admin.register(DanhGia)
 class DanhGiaAdmin(admin.ModelAdmin):

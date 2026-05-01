@@ -238,7 +238,7 @@ def verify_and_register_nhaxe(request):
             for car_type_data in default_car_types:
                 loaixe_obj, created = Loaixe.objects.get_or_create(
                     LoaixeID=car_type_data['id'],
-                    defaults={'SoCho': car_type_data['seats'], 'TenLoaiXe': car_type_data['name']}
+                    defaults={'SoCho': car_type_data['seats']}
                 )
                 # Tạo CHITIETLOAIXE cho nhà xe mới với giá mặc định là 0
                 CHITIETLOAIXE.objects.create(
@@ -541,12 +541,14 @@ def chitietchuyenxe(request):
             # Thông báo chuyến trễ
             from datetime import datetime
             today = datetime.now().date()
+            # WORKAROUND cho TuyenXe_id
             overdue_trips = ChuyenXe.objects.filter(
-                Nhaxe_id=nha_xe_id,
                 NgayKhoiHanh__lt=today,
                 TrangThai='Chưa hoàn thành'
             ).select_related('TuyenXe')
-            overdue_trips_count = overdue_trips.count()
+            
+            overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+            overdue_trips_count = len(overdue_trips_list)
         except Exception:
             pass
 
@@ -556,7 +558,7 @@ def chitietchuyenxe(request):
         'trip_status': cx.TrangThai or 'Chưa hoàn thành',
         've_list': ve_list,
         'nha_xe': nha_xe_obj,
-        'overdue_trips': overdue_trips,
+        'overdue_trips': overdue_trips_list if 'overdue_trips_list' in locals() else [],
         'overdue_trips_count': overdue_trips_count
     })
 
@@ -603,13 +605,23 @@ def nhaxe(request):
             })
 
         # 3. Lấy danh sách tài xế
-        drivers_queryset = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
+        # WORKAROUND cho Nhaxe_id trong CHITIETTAIXE
+        drivers_raw = Taixe.objects.all().prefetch_related('chitiettaixe_set')
+        drivers_queryset = []
+        for driver in drivers_raw:
+            details = driver.chitiettaixe_set.all()
+            for detail in details:
+                 if getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None)) == nha_xe_id:
+                      drivers_queryset.append(driver)
+                      break
 
         # 4. Lấy tất cả chuyến xe trong tuần này của nhà xe
-        trips_queryset = ChuyenXe.objects.filter(
-            TuyenXe__nhaXe_id=nha_xe_id,
+        # WORKAROUND cho TuyenXe_id
+        trips_queryset_raw = ChuyenXe.objects.filter(
             NgayKhoiHanh__range=[week_dates[0], week_dates[-1]]
         ).select_related('TuyenXe', 'Taixe')
+        
+        trips_queryset = [trip for trip in trips_queryset_raw if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
 
         # 5. Tổ chức dữ liệu Lịch làm việc
         schedule_data = []
@@ -621,7 +633,7 @@ def nhaxe(request):
             driver_row = {
                 'id': driver.TaixeID,
                 'name': driver.HoTen or "Chưa đặt tên",
-                'avatar': driver.HinhAnhURL or "/static/img/default-avatar.png",
+                'avatar': getattr(driver, 'HinhAnhURL', None) or "/static/img/default-avatar.png",
                 'days': []
             }
 
@@ -650,7 +662,7 @@ def nhaxe(request):
         # 6. Thống kê
         total_trips = total_completed + total_pending
         active_count = len(active_drivers_today)
-        total_drivers = drivers_queryset.count()
+        total_drivers = len(drivers_queryset)
         avg_trips = round(total_trips / total_drivers, 1) if total_drivers > 0 else 0
 
         context = {
@@ -724,32 +736,47 @@ def quanly_loaixe(request):
 
     # Thông báo chuyến trễ
     today = datetime.now().date()
+    
     overdue_trips = ChuyenXe.objects.filter(
-        TuyenXe__nhaXe_id=nha_xe_id,
         NgayKhoiHanh__lt=today,
         TrangThai='Chưa hoàn thành'
     ).select_related('TuyenXe')
-    overdue_trips_count = overdue_trips.count()
+    
+    # Lọc bằng python (list comprehension) để tránh issue ở CSDL khi truy vấn qua khóa ngoại có vấn đề case-sensitive
+    # Việc này xử lý nhanh chóng mà không cần cấu hình lại CSDL
+    overdue_trips_list = []
+    for trip in overdue_trips:
+        # Check an object level, Django will handle field mapping internally
+        if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id:
+            overdue_trips_list.append(trip)
+            
+    overdue_trips_count = len(overdue_trips_list)
 
     # Lấy thông tin loại xe và giá từ CHITIETLOAIXE của nhà xe hiện tại
-    loaixe_list_for_nhaxe = CHITIETLOAIXE.objects.filter(Nhaxe=nha_xe_obj).select_related('Loaixe').order_by('Loaixe__SoCho')
+    loaixe_list_for_nhaxe = CHITIETLOAIXE.objects.filter(Nhaxe=nha_xe_obj).select_related('Loaixe')
     
     # Chuẩn bị dữ liệu để truyền vào template
     loaixe_data = []
     for ctlx in loaixe_list_for_nhaxe:
         loaixe_data.append({
             'LoaiXeId': ctlx.Loaixe.LoaixeID,
-            'TenLoaiXe': ctlx.TenLoaiXe or ctlx.Loaixe.TenLoaiXe, # Ưu tiên tên tùy chỉnh, nếu không có thì dùng tên mặc định
-            'SoGhe': ctlx.Loaixe.SoCho,
+            'TenLoaiXe': ctlx.TenLoaiXe, # Lấy tên từ CHITIETLOAIXE
+            'SoGhe': getattr(ctlx.Loaixe, 'SoCho', getattr(ctlx.Loaixe, 'socho', None)),
             'GiaVe': ctlx.GiaVe,
             'NgayCapNhat': ctlx.NgayCapNhatGia.strftime('%Y-%m-%d') if ctlx.NgayCapNhatGia else None
         })
+
+    # Nếu muốn sắp xếp thì sort sau khi lấy dữ liệu lên python
+    try:
+        loaixe_data = sorted(loaixe_data, key=lambda x: x['SoGhe'] if x['SoGhe'] is not None else 0)
+    except:
+        pass
 
     return render(request, 'home/quanly_loaixe.html', {
         'loaixe_list': loaixe_data, # Đã đổi tên biến để tránh nhầm lẫn
         'nha_xe': nha_xe_obj,
         'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
-        'overdue_trips': overdue_trips,
+        'overdue_trips': overdue_trips_list,
         'overdue_trips_count': overdue_trips_count
     })
 
@@ -781,12 +808,14 @@ def quan_ly_xe(request):
 
     # Thông báo chuyến trễ
     today = datetime.now().date()
+    # WORKAROUND cho TuyenXe_id
     overdue_trips = ChuyenXe.objects.filter(
-        TuyenXe__nhaXe_id=nha_xe_id,
         NgayKhoiHanh__lt=today,
         TrangThai='Chưa hoàn thành'
     ).select_related('TuyenXe')
-    overdue_trips_count = overdue_trips.count()
+    
+    overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+    overdue_trips_count = len(overdue_trips_list)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -819,7 +848,7 @@ def quan_ly_xe(request):
                 # Tạo Loaixe chung (nếu chưa có)
                 loaixe_obj, created = Loaixe.objects.get_or_create(
                     LoaixeID=loaixe_id,
-                    defaults={'SoCho': int(new_loai_socho), 'TenLoaiXe': f"Loại xe {new_loai_socho} chỗ"}
+                    defaults={'SoCho': int(new_loai_socho)}
                 )
                 # Tạo CHITIETLOAIXE cho nhà xe hiện tại
                 CHITIETLOAIXE.objects.create(
@@ -853,7 +882,7 @@ def quan_ly_xe(request):
         'vehicle_types': vehicle_types,
         'nha_xe': nha_xe_obj,
         'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
-        'overdue_trips': overdue_trips,
+        'overdue_trips': overdue_trips_list,
         'overdue_trips_count': overdue_trips_count
     })
 
@@ -862,12 +891,18 @@ def quanly_khachhang(request):
     nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id) if nha_xe_id else None
 
     # Thông báo chuyến trễ
-    overdue_trips = []
+    overdue_trips_list = []
     overdue_trips_count = 0
     if nha_xe_id:
         today = datetime.now().date()
-        overdue_trips = ChuyenXe.objects.filter(TuyenXe__nhaXe_id=nha_xe_id, NgayKhoiHanh__lt=today, TrangThai='Chưa hoàn thành').select_related('TuyenXe')
-        overdue_trips_count = overdue_trips.count()
+        # WORKAROUND cho TuyenXe_id
+        overdue_trips = ChuyenXe.objects.filter(
+            NgayKhoiHanh__lt=today,
+            TrangThai='Chưa hoàn thành'
+        ).select_related('TuyenXe')
+        
+        overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+        overdue_trips_count = len(overdue_trips_list)
 
     khach_hang_data = User_Authentication.objects.filter(UserID=request.session.get('user_id')).first()
     avatar_url = None
@@ -880,7 +915,7 @@ def quanly_khachhang(request):
         'khach_hang': khach_hang_data,
         'nha_xe': nha_xe_obj,
         'avatar_url': avatar_url,
-        'overdue_trips': overdue_trips,
+        'overdue_trips': overdue_trips_list,
         'overdue_trips_count': overdue_trips_count
     })
 
@@ -893,10 +928,24 @@ def phancongtaixe(request):
 
     # Thông báo chuyến trễ
     today = datetime.now().date()
-    overdue_trips = ChuyenXe.objects.filter(Nhaxe_id=nha_xe_id, NgayKhoiHanh__lt=today, TrangThai='Chưa hoàn thành').select_related('TuyenXe')
-    overdue_trips_count = overdue_trips.count()
+    # WORKAROUND cho TuyenXe_id
+    overdue_trips = ChuyenXe.objects.filter(
+        NgayKhoiHanh__lt=today,
+        TrangThai='Chưa hoàn thành'
+    ).select_related('TuyenXe')
+    
+    overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+    overdue_trips_count = len(overdue_trips_list)
 
-    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).select_related('User_Authentication')
+    # WORKAROUND cho Nhaxe_id trong CHITIETTAIXE
+    taixe_list_raw = Taixe.objects.all().prefetch_related('chitiettaixe_set')
+    taixe_list = []
+    for driver in taixe_list_raw:
+        details = driver.chitiettaixe_set.all()
+        for detail in details:
+             if getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None)) == nha_xe_id:
+                  taixe_list.append(driver)
+                  break
 
     if request.method == 'POST':
         taixe_id = request.POST.get('taixe_id')
@@ -912,7 +961,7 @@ def phancongtaixe(request):
     return render(request, 'home/phancongtaixe.html', {
         'taixe_list': taixe_list,
         'nha_xe': nha_xe_obj,
-        'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
-        'overdue_trips': overdue_trips,
+        'avatar_url': getattr(nha_xe_obj, 'AnhDaiDienURL', None) if nha_xe_obj else None,
+        'overdue_trips': overdue_trips_list,
         'overdue_trips_count': overdue_trips_count
     })
