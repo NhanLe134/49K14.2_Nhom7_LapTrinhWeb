@@ -3,214 +3,97 @@
 
 {% block title %}Quản lý chuyến xe Tài xế - Vexeapp{% endblock %}
 
-{% block active_chuyenxe_tx %}active{% endblock %}
-{% block color_chuyenxe_tx %}#06A0E2{% endblock %}
+{% block active_chuyenxe_taixe %}active{% endblock %}
+{% block color_chuyenxe_taixe %}#06A0E2{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/quanlychuyenxe.css' %}?v={% now 'U' %}">
 <style>
-    .main-content {
-        background-color: #f8fafc;
-        padding: 30px;
+    /* Status Badge Overrides */
+    .status-badge {
+        padding: 6px 10px !important;
+        border-radius: 20px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        display: inline-block !important;
+        text-align: center !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        white-space: nowrap !important;
     }
-    .page-header {
-        margin-bottom: 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+
+    .status-chua-hoan-thanh {
+        background-color: #fefce8 !important; 
+        color: #eab308 !important;            
     }
-    .page-title {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #1e293b;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+
+    .status-hoan-thanh {
+        background-color: #dcfce7 !important; 
+        color: #166534 !important;            
     }
     
-    .trip-list-container {
+    .trip-list {
         display: flex;
         flex-direction: column;
         gap: 20px;
-    }
-
-    .premium-trip-card {
-        background: white;
-        border-radius: 20px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 25px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
-        border: 1px solid rgba(0,0,0,0.02);
-        transition: all 0.3s;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .premium-trip-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(6, 160, 226, 0.1);
-        border-color: #bae6fd;
-    }
-
-    .trip-img-wrapper {
-        width: 120px;
-        height: 120px;
-        border-radius: 15px;
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-
-    .trip-img-wrapper img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .trip-main-info {
-        flex: 1;
-    }
-
-    .trip-id-badge {
-        font-size: 0.75rem;
-        font-weight: 800;
-        color: #06A0E2;
-        background: #e0f2fe;
-        padding: 4px 10px;
-        border-radius: 6px;
-        margin-bottom: 8px;
-        display: inline-block;
-    }
-
-    .trip-route-name {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #1e293b;
-        margin-bottom: 10px;
-    }
-
-    .trip-meta-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-    }
-
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
-
-    .meta-item i {
-        color: #94a3b8;
-    }
-
-    .trip-status-section {
-        padding-left: 20px;
-        border-left: 1px dashed #e2e8f0;
-        min-width: 180px;
-        text-align: center;
-    }
-
-    .status-pill {
-        padding: 8px 20px;
-        border-radius: 30px;
-        font-weight: 800;
-        font-size: 0.85rem;
-        display: inline-block;
-    }
-
-    .pill-completed { background: #ecfdf5; color: #059669; }
-    .pill-pending { background: #fff7ed; color: #ea580c; }
-
-    .empty-state {
-        background: white;
-        border-radius: 24px;
-        padding: 100px 40px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        margin-top: 20px;
     }
     
-    .empty-icon-box {
-        width: 100px;
-        height: 100px;
-        background: #f8fafc;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 25px;
+    .btn-view-detail {
+        background: #15baf6;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 10px;
+        width: 100%;
     }
 
-    .empty-icon-box i {
-        font-size: 3rem;
-        color: #cbd5e1;
-    }
-
-    .empty-title {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #1e293b;
-        margin-bottom: 10px;
-    }
-
-    .empty-desc {
-        color: #94a3b8;
-        font-weight: 600;
+    .btn-view-detail:hover {
+        background: #0ea5e9;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Chuyến xe được phân công</h1>
+<div class="page-header" style="margin-bottom: 30px;">
+    <h1 style="font-size: 1.8rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 1px;">Quản lý chuyến xe</h1>
 </div>
 
-<div class="trip-list-container">
+<div class="trip-list">
     {% for chuyen in chuyen_xe_list %}
-    <div class="premium-trip-card" onclick="window.location.href='{% url 'taixe_chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'">
-        <div class="trip-img-wrapper">
-            <img src="{% if chuyen.seat_count == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.seat_count == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
+    <div class="trip-card" onclick="window.location.href='{% url 'taixe_chitietchuyenxe' %}?id={{ chuyen.ChuyenXeID }}'">
+        <img class="trip-image" src="{% if chuyen.seat_count == 4 %}{% static 'img/xe4cho.jpeg' %}{% elif chuyen.seat_count == 7 %}{% static 'img/xe7cho.jpg' %}{% else %}{% static 'img/xe9cho.webp' %}{% endif %}" alt="xe">
+        
+        <div class="trip-title">
+            <div class="trip-id">{{ chuyen.ChuyenXeID }}</div>
+            <div class="trip-route">{{ chuyen.route_name }}</div>
         </div>
-        <div class="trip-main-info">
-            <span class="trip-id-badge">ID: {{ chuyen.ChuyenXeID }}</span>
-            <div class="trip-route-name">{{ chuyen.TuyenXe.diemDi }} &rarr; {{ chuyen.TuyenXe.diemDen }}</div>
-            <div class="trip-meta-grid">
-                <div class="meta-item">
-                    <i class="fa-regular fa-clock"></i>
-                    {{ chuyen.GioDi|time:"H:i" }}
-                </div>
-                <div class="meta-item">
-                    <i class="fa-solid fa-chair"></i>
-                    {{ chuyen.seat_count|default:0 }} Ghế
-                </div>
-                <div class="meta-item">
-                    <i class="fa-solid fa-user-check"></i>
-                    {{ chuyen.available_seats }} Ghế trống
-                </div>
-            </div>
+        
+        <div class="trip-details">
+            <div class="trip-time">Giờ xuất phát: {{ chuyen.gio_di_fmt }}</div>
+            <div class="trip-type">Loại xe: xe {{ chuyen.seat_count }} chỗ</div>
         </div>
-        <div class="trip-status-section">
-            {% if chuyen.TrangThai == 'Hoàn thành' or chuyen.TrangThai|lower == 'completed' %}
-                <span class="status-pill pill-completed">Hoàn thành</span>
+        
+        <!-- Actions area -->
+        <div class="trip-actions" onclick="event.stopPropagation();">
+            {% if chuyen.TrangThai == 'Hoàn thành' %}
+                <div class="status-badge status-hoan-thanh">Hoàn thành</div>
             {% else %}
-                <span class="status-pill pill-pending">Chưa hoàn thành</span>
+                <div class="status-badge status-chua-hoan-thanh">Chưa hoàn thành</div>
             {% endif %}
-            <div style="margin-top: 10px; font-size: 0.8rem; color: #94a3b8; font-weight: 700;">
-                Bấm để xem chi tiết
-            </div>
         </div>
     </div>
     {% empty %}
-    <div class="empty-state">
-        <div class="empty-icon-box">
-            <i class="fa-solid fa-bus-simple"></i>
+    <div style="background: white; border-radius: 24px; padding: 100px 40px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04);">
+        <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;">
+            <i class="fa-solid fa-bus-simple" style="font-size: 3rem; color: #cbd5e1;"></i>
         </div>
-        <h2 class="empty-title">Trống trải quá!</h2>
-        <p class="empty-desc">Hiện tại bạn chưa được phân công chuyến xe nào trong hệ thống.</p>
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Trống trải quá!</h2>
+        <p style="color: #94a3b8; font-weight: 600;">Hiện tại bạn chưa được phân công chuyến xe nào trong hệ thống.</p>
     </div>
     {% endfor %}
 </div>

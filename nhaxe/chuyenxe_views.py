@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve, GheNgoi
+from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve, GheNgoi, CHITIETTAIXE, CHITIETLOAIXE
 from datetime import datetime
 import random
+import json
 
 
 
@@ -10,8 +11,14 @@ import random
 
 def quanlychuyenxe(request):
     nha_xe_id = request.session.get('user_id')
+    role = request.session.get('role', '').lower()
+    
     if not nha_xe_id:
         return redirect('index')
+    
+    # Nếu là tài xế mà vào nhầm link nhà xe thì redirect về đúng trang của mình
+    if role in ['taixe', 'tx', 'driver']:
+        return redirect('taixe_quanlychuyenxe')
 
     try:
         from django.db.models import Count
@@ -56,7 +63,23 @@ def quanlychuyenxe(request):
         })
     except Exception as e:
         messages.error(request, f'Lỗi lấy danh sách chuyến xe: {str(e)}')
-        return render(request, 'home/quanlychuyenxe.html', {'chuyen_xe_list': []})
+        # Lấy lại nha_xe_obj thông minh hơn (xử lý cả trường hợp tài xế truy cập nhầm link)
+        nha_xe_id = request.session.get('user_id')
+        nha_xe_obj = None
+        if nha_xe_id:
+            try:
+                # Thử tìm trực tiếp (nếu là chủ nhà xe)
+                nha_xe_obj = Nhaxe.objects.get(NhaxeID=nha_xe_id)
+            except Nhaxe.DoesNotExist:
+                # Thử tìm qua tài xế (nếu là tài xế truy cập nhầm link nhà xe)
+                from .models import CHITIETTAIXE
+                detail = CHITIETTAIXE.objects.filter(Taixe_id=nha_xe_id).first()
+                if detail:
+                    nha_xe_obj = detail.Nhaxe
+        return render(request, 'home/quanlychuyenxe.html', {
+            'chuyen_xe_list': [],
+            'nha_xe': nha_xe_obj
+        })
 
 def themchuyenxe(request):
     nha_xe_id = request.session.get('user_id')
@@ -225,13 +248,12 @@ def taixe_quanlychuyenxe(request):
         for cx in trips:
             total_seats = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 0
             chuyen_xe_list.append({
-                'ChuyenXeID': cx.ChuyenXeID,
-                'TuyenXe': cx.TuyenXe,
-                'GioDi': cx.GioDi,
-                'Xe': cx.Xe,
-                'TrangThai': cx.TrangThai,
-                'seat_count': total_seats,
-                'available_seats': (total_seats - cx.ticket_count) if total_seats > 0 else 0
+                'ChuyenXeID':   cx.ChuyenXeID,
+                'route_name':   cx.TuyenXe.tenTuyen if cx.TuyenXe else f"{cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen}" if cx.TuyenXe else "-",
+                'gio_di_fmt':   cx.GioDi.strftime('%H:%M') if cx.GioDi else '-',
+                'seat_count':   total_seats,
+                'available_seats': (total_seats - cx.ticket_count) if total_seats > 0 else 0,
+                'TrangThai':    cx.TrangThai or 'Chưa hoàn thành',
             })
         return render(request, 'home/taixe_quanlychuyenxe.html', {
             'chuyen_xe_list': chuyen_xe_list,
@@ -240,9 +262,16 @@ def taixe_quanlychuyenxe(request):
             'avatar_url': getattr(taixe_obj, 'HinhAnhURL', None) if taixe_obj else None
         })
     except Exception:
+        # Fallback nha_xe retrieval
+        nha_xe_obj = None
+        user_id = request.session.get('user_id')
+        if user_id:
+            detail = CHITIETTAIXE.objects.filter(Taixe_id=user_id).first()
+            if detail: nha_xe_obj = detail.Nhaxe
+            
         return render(request, 'home/taixe_quanlychuyenxe.html', {
             'chuyen_xe_list': [],
-            'nha_xe': None,
+            'nha_xe': nha_xe_obj,
             'ten_taixe': request.session.get('username')
         })
 
@@ -283,4 +312,139 @@ def taixe_chitietchuyenxe(request):
         'nha_xe': nha_xe_obj,
         'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
         'avatar_url': getattr(taixe_obj, 'HinhAnhURL', None) if taixe_obj else None
+    })
+
+def lotrinh(request):
+    nha_xe_id = request.session.get('user_id')
+    nha_xe_obj = None
+    if nha_xe_id:
+        try:
+            nha_xe_obj = Nhaxe.objects.get(NhaxeID=nha_xe_id)
+        except:
+            pass
+
+    trip_id = request.GET.get('id', '')
+    if not trip_id:
+        return redirect('nhaxe')
+
+    try:
+        chuyen = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe'), pk=trip_id)
+        ve_list = Ve.objects.filter(ChuyenXe_id=trip_id).select_related('Ghe')
+    except Exception as e:
+        messages.error(request, f"Lỗi: {e}")
+        return redirect('nhaxe')
+
+    return render(request, 'home/lotrinh.html', {
+        'trip_id': trip_id,
+        'chuyen': chuyen,
+        've_list': ve_list,
+        'nha_xe': nha_xe_obj
+    })
+
+def chitietchuyenxe(request):
+    if request.method == 'POST':
+        post_id = request.POST.get('id')
+        new_status = request.POST.get('status')
+        if post_id and new_status:
+            try:
+                ChuyenXe.objects.filter(pk=post_id).update(TrangThai=new_status)
+                # Tự động cập nhật vé thành 'Đã đi' nếu chuyến xe hoàn thành
+                if new_status == 'Hoàn thành':
+                    Ve.objects.filter(ChuyenXe_id=post_id).update(TrangThai='Đã đi')
+                messages.success(request, f'Đã cập nhật trạng thái thành "{new_status}".')
+            except Exception as e:
+                messages.error(request, f"Lỗi: {e}")
+            return redirect(f"/chitietchuyenxe?id={post_id}")
+
+    chuyenxe_id = request.GET.get('id')
+
+    if not chuyenxe_id:
+        return redirect('index')
+
+    # Lấy thông tin chi tiết chuyến xe (GET)
+    try:
+        cx = get_object_or_404(ChuyenXe.objects.select_related('TuyenXe', 'Xe', 'Taixe'), pk=chuyenxe_id)
+
+        # Format dữ liệu cho template
+        if cx.TuyenXe:
+            route_name = cx.TuyenXe.tenTuyen or "Chưa rõ"
+
+        # Lấy số ghế set cứng theo loại xe (Loaixe.SoCho)
+        total_seats = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 0
+
+        route_name = cx.TuyenXe.tenTuyen if cx.TuyenXe else "Chưa rõ"
+        # Nếu tên tuyến chưa có thông tin điểm đi/đến thì mới nối thêm
+        if cx.TuyenXe and cx.TuyenXe.diemDi and cx.TuyenXe.diemDen:
+            if cx.TuyenXe.diemDi not in route_name or cx.TuyenXe.diemDen not in route_name:
+                route_name = f"{cx.TuyenXe.tenTuyen} ({cx.TuyenXe.diemDi} - {cx.TuyenXe.diemDen})"
+
+        # Chọn ảnh dựa trên số chỗ
+        trip_image = "/static/img/xe1.jpg"
+        if total_seats == 4: trip_image = "/static/img/xe4cho.jpeg"
+        elif total_seats == 7: trip_image = "/static/img/xe7cho.jpg"
+        elif total_seats == 9: trip_image = "/static/img/xe9cho.webp"
+
+        # Tính giờ đến
+        arrival_time_str = 'N/A'
+        if cx.GioDi and cx.TuyenXe and cx.TuyenXe.ThoiGian:
+            import datetime
+            full_datetime = datetime.datetime.combine(datetime.date.today(), cx.GioDi)
+            arrival_datetime = full_datetime + datetime.timedelta(hours=float(cx.TuyenXe.ThoiGian))
+            arrival_time_str = arrival_datetime.strftime('%H:%M')
+        elif cx.GioDen:
+            arrival_time_str = cx.GioDen.strftime('%H:%M')
+
+        trip_data = {
+            'id': cx.ChuyenXeID,
+            'driver': cx.Taixe.HoTen if cx.Taixe else None,
+            'taixe_id': cx.Taixe.TaixeID if cx.Taixe else None,
+            'route': route_name,
+            'time': cx.GioDi.strftime('%H:%M') if cx.GioDi else 'N/A',
+            'arrival_time': arrival_time_str,
+            'carType': str(total_seats),
+            'image': trip_image,
+            'status': cx.TrangThai or 'Chưa hoàn thành'
+        }
+    except Exception as e:
+        messages.error(request, f"Lỗi hiển thị chi tiết: {str(e)}")
+        return redirect('quanlychuyenxe')
+
+    ve_list = Ve.objects.filter(ChuyenXe_id=chuyenxe_id).select_related('Ghe')
+    ticket_count = ve_list.count()
+    available_seats = (cx.Xe.SoGhe - ticket_count) if cx.Xe and cx.Xe.SoGhe else 0
+
+    # Cập nhật trip_data với available_seats
+    trip_data['available_seats'] = available_seats
+
+    # Lấy thông tin nhà xe để hiển thị header
+    nha_xe_id = request.session.get('user_id')
+    nha_xe_obj = None
+    overdue_trips = []
+    overdue_trips_count = 0
+    if nha_xe_id:
+        try:
+            nha_xe_obj = Nhaxe.objects.get(NhaxeID=nha_xe_id)
+            # Thông báo chuyến trễ
+            from datetime import datetime
+            today = datetime.now().date()
+            # WORKAROUND cho TuyenXe_id
+            overdue_trips = ChuyenXe.objects.filter(
+                NgayKhoiHanh__lt=today,
+                TrangThai='Chưa hoàn thành'
+            ).select_related('TuyenXe')
+            
+            overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+            overdue_trips_count = len(overdue_trips_list)
+        except Exception:
+            pass
+
+    return render(request, 'home/chitietchuyenxe.html', {
+        'trip_json': json.dumps(trip_data),
+        'chuyenxe_id': chuyenxe_id,
+        'trip_status': cx.TrangThai or 'Chưa hoàn thành',
+        'has_driver': cx.Taixe is not None,
+        've_list': ve_list,
+        'nha_xe': nha_xe_obj,
+        'overdue_trips': overdue_trips_list if 'overdue_trips_list' in locals() else [],
+        'overdue_trips_count': overdue_trips_count
     })

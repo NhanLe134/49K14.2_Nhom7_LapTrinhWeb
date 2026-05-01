@@ -319,13 +319,7 @@
 
         <div class="login-form-container">
             <div class="login-form">
-                {% if messages %}
-                <ul class="django-messages">
-                    {% for msg in messages %}
-                    <li class="msg-{{ msg.tags }}">{{ msg }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
+
 
                 <form id="loginForm" method="POST" action="{% url 'dangnhap' %}" novalidate>
                     {% csrf_token %}

@@ -23,11 +23,15 @@
         margin-top: 0;
         font-size: 1.6rem;
         font-weight: 800;
-        color: #2c3e50;
+        color: #222;
         text-align: center;
-        border-bottom: 2px solid #f0f2f5;
-        padding-bottom: 15px;
-        margin-bottom: 25px;
+        margin-bottom: 40px;
+        text-transform: uppercase;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 40px;
     }
     .form-group {
         margin-bottom: 20px;
@@ -53,26 +57,28 @@
     }
     .form-buttons {
         display: flex;
-        gap: 15px;
-        margin-top: 35px;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 20px;
     }
     .btn-cancel,
     .btn-submit {
-        flex: 1;
-        padding: 14px;
+        width: 160px;
+        padding: 12px 0;
         border: none;
-        border-radius: 10px;
+        border-radius: 6px;
         cursor: pointer;
         font-weight: 700;
         font-size: 1rem;
         transition: all 0.2s;
+        text-align: center;
     }
     .btn-cancel {
-        background: #f1f5f9;
-        color: #64748b;
+        background: #9ca3af;
+        color: white;
     }
     .btn-cancel:hover {
-        background: #e2e8f0;
+        background: #6b7280;
     }
     .btn-submit {
         background: #06A0E2;
@@ -82,12 +88,78 @@
         background: #0284c7;
         box-shadow: 0 4px 12px rgba(6, 160, 226, 0.2);
     }
+    
+    /* Popups */
+    .popup-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(3px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+    }
+    .popup-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .popup-box {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        text-align: center;
+        min-width: 350px;
+        border: 1px solid #e2e8f0;
+    }
+    .popup-box h3 {
+        margin-top: 0;
+        font-size: 1.4rem;
+        color: #1e293b;
+        margin-bottom: 15px;
+    }
+    .popup-box p {
+        color: #475569;
+        margin-bottom: 30px;
+        font-size: 1.05rem;
+    }
+    .popup-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    .btn-popup {
+        padding: 10px 30px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+    }
+    .btn-popup-primary {
+        background: #06A0E2;
+        color: white;
+    }
+    .btn-popup-outline {
+        background: white;
+        color: #06A0E2;
+        border-color: #06A0E2;
+    }
+    .success-icon {
+        color: #10b981;
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="form-container">
-    <h2 class="form-title">THÊM CHUYẾN XE MỚI</h2>
+    <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
 
     {% if messages %}
     <ul class="django-messages" style="list-style: none; padding: 0; margin-bottom: 20px;">
@@ -160,15 +232,43 @@
 
         <!-- Nút bấm -->
         <div class="form-buttons">
-            <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Hủy</button>
-            <button type="submit" class="btn-submit">Lưu thông tin</button>
+            <button type="button" class="btn-cancel" onclick="showCancelPopup()">Hủy</button>
+            <button type="submit" class="btn-submit">Lưu</button>
         </div>
     </form>
+</div>
+
+<!-- Popup Hủy -->
+<div class="popup-overlay" id="cancelPopup">
+    <div class="popup-box">
+        <h3>Thông báo</h3>
+        <p>Bạn chắc chắn muốn huỷ<br>Thêm mới chuyến xe?</p>
+        <div class="popup-buttons">
+            <button class="btn-popup btn-popup-primary" onclick="window.location.href='{% url 'quanlychuyenxe' %}'">Đồng ý</button>
+            <button class="btn-popup btn-popup-outline" onclick="hideCancelPopup()">Không</button>
+        </div>
+    </div>
+</div>
+
+<!-- Popup Thành công -->
+<div class="popup-overlay" id="successPopup">
+    <div class="popup-box">
+        <i class="fa-regular fa-circle-check success-icon"></i>
+        <h3 style="margin-bottom: 0;">Tạo chuyến xe thành công</h3>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    function showCancelPopup() {
+        document.getElementById('cancelPopup').classList.add('active');
+    }
+
+    function hideCancelPopup() {
+        document.getElementById('cancelPopup').classList.remove('active');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         // Cài đặt ngày tối thiểu là ngày hôm nay
         const dateInput = document.getElementById('date');
@@ -178,6 +278,51 @@
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             dateInput.min = `${year}-${month}-${day}`;
+        }
+
+        // Bắt sự kiện submit form để hiển thị popup thành công
+        const tripForm = document.getElementById('tripForm');
+        const submitBtn = tripForm.querySelector('button[type="submit"]');
+        let isSubmitting = false;
+
+        if (tripForm) {
+            tripForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); // Chặn hành vi submit mặc định
+                
+                if (isSubmitting) return; // Nếu đang gửi rồi thì không làm gì nữa
+                
+                isSubmitting = true;
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Đang lưu...';
+                submitBtn.style.opacity = '0.7';
+                submitBtn.style.cursor = 'not-allowed';
+
+                const formData = new FormData(tripForm);
+                try {
+                    const response = await fetch(tripForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (response.redirected) {
+                        // Hiện popup thành công
+                        document.getElementById('successPopup').classList.add('active');
+                        // Đợi 1.5s rồi chuyển hướng
+                        setTimeout(() => {
+                            window.location.href = response.url;
+                        }, 1500);
+                    } else {
+                        // Nếu có lỗi server (không redirect), submit bình thường để hiện lỗi từ Django
+                        tripForm.submit();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    tripForm.submit(); // fallback
+                }
+            });
         }
     });
 </script>

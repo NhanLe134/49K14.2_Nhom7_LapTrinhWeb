@@ -8,7 +8,7 @@ class KhachHang(models.Model):
     HovaTen = models.CharField(max_length=200, null=True, blank=True) # Sửa từ HoVaTen
     Email = models.CharField(max_length=100, unique=True, null=True, blank=True)
     NgaySinh = models.DateField(null=True, blank=True)
-    NgayDangKy = models.DateTimeField(auto_now_add=True) # Thêm trường này
+    NgayDangKy = models.DateTimeField(auto_now_add=True, null=True, blank=True) # Thêm trường này
     AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
@@ -18,10 +18,11 @@ class KhachHang(models.Model):
 class Nhaxe(models.Model):
     NhaxeID = models.CharField(max_length=10, primary_key=True)
     Email = models.CharField(max_length=100, unique=True)
-    NgayDangKy = models.DateTimeField(auto_now_add=True)
+    NgayDangKy = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     AnhDaiDienURL = models.TextField(null=True,blank=True)
     DiaChiTruSo = models.CharField(max_length=200, null=True, blank=True)
     TenNhaXe = models.CharField(max_length=200, null=True, blank=True) # Tên nhà xe
+    HoTenNguoiDaiDien = models.CharField(max_length=200, null=True, blank=True) # Họ tên người đại diện
     SoDienThoai = models.CharField(
         max_length=20,  # Nới rộng từ 10 thành 20
         unique=True,

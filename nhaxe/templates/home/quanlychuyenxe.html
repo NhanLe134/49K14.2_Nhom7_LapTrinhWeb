@@ -83,13 +83,7 @@
 {% endblock %}
 
 {% block content %}
-{% if messages %}
-<ul class="django-messages" style="margin: 0 0 20px 0; max-width: 1000px; list-style: none; padding: 0;">
-    {% for msg in messages %}
-    <li class="msg-{{ msg.tags }}" style="padding: 10px; border-radius: 5px; {% if msg.tags == 'success' %}background-color: #dcfce7; color: #166534;{% endif %}">{{ msg }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
+
 <div class="top-actions">
     <button class="btn-add-trip" onclick="window.location.href='{% url 'themchuyenxe' %}'">Thêm chuyến xe</button>
 </div>

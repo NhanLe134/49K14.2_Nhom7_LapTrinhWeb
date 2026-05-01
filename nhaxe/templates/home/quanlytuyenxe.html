@@ -6,6 +6,27 @@
 {% block extra_css %}
     <!-- Page specific styling -->
     <link rel="stylesheet" href="{% static 'css/quanlytuyenxe.css' %}">
+    <style>
+        .route-grid {
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
+            padding-right: 10px;
+            /* Custom scrollbar for better look */
+            scrollbar-width: thin;
+            scrollbar-color: #06A0E2 #f1f1f1;
+        }
+        .route-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        .route-grid::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .route-grid::-webkit-scrollbar-thumb {
+            background: #06A0E2;
+            border-radius: 10px;
+        }
+    </style>
 {% endblock %}
 
 {% block active_trangchu %}{% endblock %}

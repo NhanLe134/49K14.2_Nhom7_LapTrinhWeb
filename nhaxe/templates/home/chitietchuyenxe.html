@@ -122,7 +122,19 @@
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 25px !important;
-        margin: 0 auto 50px auto;
+        margin: 0 auto 0 auto;
+        max-height: calc(100vh - 530px);
+        overflow-y: auto;
+        padding-right: 10px;
+        padding-bottom: 20px;
+    }
+
+    .passenger-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .passenger-list::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
     }
 
     .passenger-card {
@@ -185,13 +197,7 @@
 
 {% block content %}
 <div class="main-content-ctcx">
-    {% if messages %}
-    <ul class="django-messages" style="margin: 0 auto 20px auto; width: 100%; max-width: 950px;">
-        {% for msg in messages %}
-        <li class="msg-{{ msg.tags }}">{{ msg }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+
 
     <h2 class="section-title">Thông tin chuyến xe</h2>
 
@@ -199,10 +205,9 @@
         <img src="{% static 'img/xe2.jpg' %}" alt="xe" id="detailImage">
         <div class="detail-route" id="detailRoute">...</div>
         <div class="detail-stats">
-            <p><i class="fa-regular fa-clock"></i> Giờ xuất phát: <span id="detailTime">...</span></p>
-            <p><i class="fa-regular fa-clock"></i> Giờ đến dự kiến: <span id="detailArrivalTime">...</span></p>
-            <p><i class="fa-solid fa-bus"></i> Tổng số ghế: <span id="detailTotalSeats">...</span></p>
-            <p><i class="fa-solid fa-chair"></i> Ghế trống: <span id="detailEmptySeats">...</span></p>
+            <p><i class="fa-regular fa-clock" style="color: #F85A5A;"></i> Giờ xuất phát: <span id="detailTime">...</span></p>
+            <p><i class="fa-solid fa-chair" style="color: #333;"></i> Tổng số ghế: <span id="detailTotalSeats">...</span></p>
+            <p><i class="fa-solid fa-chair" style="color: #333;"></i> Ghế trống: <span id="detailEmptySeats">...</span></p>
         </div>
         <div class="status-dropdown" style="position: relative; display: inline-block; cursor: pointer;">
             {% if trip_status == 'Hoàn thành' %}
@@ -222,7 +227,11 @@
     </div>
 
     <div class="action-row">
-        <button class="btn-route" onclick="window.location.href='{% url 'lotrinh' %}?id={{ chuyenxe_id }}'">Hiển thị lộ trình chuyến</button>
+        {% if has_driver %}
+            <button class="btn-route" onclick="window.location.href='{% url 'lotrinh' %}?id={{ chuyenxe_id }}'">Hiển thị lộ trình chuyến</button>
+        {% else %}
+            <button class="btn-route" style="background-color: #0ea5e9;" onclick="window.location.href='{% url 'phancongtaixe' %}?id={{ chuyenxe_id }}'">Phân công tài xế</button>
+        {% endif %}
     </div>
 
     <h2 class="section-title">Danh sách hành khách</h2>
@@ -283,16 +292,7 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Success Popup Logic
-        const successPopup = document.getElementById('successPopup');
-        const popupText = document.getElementById('popupMsgText');
-        const successMsgs = document.querySelectorAll('.msg-success');
-        
-        if (successMsgs.length > 0) {
-            popupText.innerText = successMsgs[0].innerText;
-            successPopup.classList.add('active');
-            setTimeout(() => successPopup.classList.remove('active'), 2000);
-        }
+
 
         // Load trip JSON data
         const trip = JSON.parse('{{ trip_json|escapejs }}' || 'null');
