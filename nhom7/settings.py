@@ -26,8 +26,8 @@ SECRET_KEY = 'django-insecure-jn-t*k5pknt^a3u67u8#s@yos@(k-ke1rc66wyyb+$hw(grm(n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', 'nanometer-unreal-vacancy.ngrok-free.dev', '.ngrok-free.dev', '.loca.lt']
-CSRF_TRUSTED_ORIGINS = ['https://nanometer-unreal-vacancy.ngrok-free.dev']
+ALLOWED_HOSTS = ['*', 'nanometer-unreal-vacancy.ngrok-free.dev', '.ngrok-free.dev', '.loca.lt', '127.0.0.1', 'localhost']
+CSRF_TRUSTED_ORIGINS = ['https://nanometer-unreal-vacancy.ngrok-free.dev', 'http://127.0.0.1:8000', 'http://localhost:8000']
 
 
 # Application definition
@@ -134,8 +134,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Media files (Uploaded images, etc.)
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

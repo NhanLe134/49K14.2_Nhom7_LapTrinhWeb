@@ -22,14 +22,17 @@ function initCommonUI() {
     const userBtn = document.getElementById('userDropdownBtn');
     const userMenu = document.getElementById('userMenu');
 
-    if (userBtn && userMenu && !userBtn.dataset.initialized) {
-        userBtn.dataset.initialized = 'true';
-        userBtn.addEventListener('click', (e) => {
-            if (userMenu.contains(e.target)) return;
+    if (userBtn && userMenu) {
+        userBtn.onclick = function(e) {
             e.stopPropagation();
             userMenu.classList.toggle('show');
-        }, true);
-        document.addEventListener('click', () => userMenu.classList.remove('show'));
+        };
+        document.addEventListener('click', function() {
+            if (userMenu) userMenu.classList.remove('show');
+        });
+        userMenu.onclick = function(e) {
+            e.stopPropagation();
+        };
     }
     
     // Run status color fix

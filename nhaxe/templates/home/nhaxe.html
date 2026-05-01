@@ -217,23 +217,6 @@
 
 
     <script src="{% static 'js/common.js' %}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userBtn = document.getElementById('userDropdownBtn');
-            const userMenu = document.getElementById('userMenu');
-
-            if (userBtn && userMenu) {
-                userBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('show');
-                });
-
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('show');
-                });
-            }
-        });
-    </script>
     {% block extra_js %}{% endblock %}
 </body>
 

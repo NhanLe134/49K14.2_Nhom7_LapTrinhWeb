@@ -1,170 +1,428 @@
-{% extends 'home/nhaxe.html' %}
+{% extends "home/nhaxe.html" %}
 {% load static %}
 
 {% block title %}Quản lý phương tiện - Vexeapp{% endblock %}
 
-{% block active_trangchu %}{% endblock %}
-{% block color_trangchu %}#5d6d7e{% endblock %}
-{% block active_xe %}active{% endblock %}
-{% block color_xe %}#06A0E2{% endblock %}
-
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/quanly_phuongtien.css' %}">
 <style>
-    .new-loai-fields {
-        background: #f9f9f9;
-        padding: 15px;
+    /* FIX SCROLLING FOR THIS PAGE */
+    html, body { position: static !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .main-wrapper { height: auto !important; min-height: calc(100vh - 75px) !important; overflow: visible !important; }
+    .main-content { height: auto !important; overflow: visible !important; }
+
+    /* FIGMA CORE STYLES - CONTENT AREA ONLY */
+    .view-container {
+        padding: 5px;
+        animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Header in Content */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+    }
+    .btn-add-new {
+        background: #03A9F4 !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 10px 24px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(3,169,244,0.2);
+        transition: 0.3s;
+    }
+    .btn-add-new:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(3,169,244,0.3); }
+
+    /* Vehicle List Items */
+    .vehicle-list { display: flex; flex-direction: column; gap: 15px; }
+    .vehicle-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+    }
+    .vehicle-card-img {
+        width: 130px;
+        height: 85px;
         border-radius: 10px;
+        overflow: hidden;
+        margin-right: 25px;
+        flex-shrink: 0;
+        border: 1px solid #eee;
+    }
+    .vehicle-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .vehicle-card-info { flex: 1; }
+    .vehicle-card-plate { font-size: 1.3rem; font-weight: 700; color: #333; margin-bottom: 5px; display: block; }
+    .vehicle-card-specs { display: flex; gap: 20px; color: #777; font-size: 0.95rem; }
+    .vehicle-card-specs i { color: #03A9F4; margin-right: 5px; }
+
+    /* Status & Actions */
+    .vehicle-card-status-area {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 15px;
+        width: 240px;
+    }
+    .status-pill {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-active { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .status-maintenance { background: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+    .status-inactive { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+
+    /* FIGMA BUTTONS */
+    .action-group { display: flex; gap: 10px; }
+    .btn-figma-edit {
+        background: #E3F2FD !important;
+        color: #1976D2 !important;
+        padding: 10px 20px !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        border: none !important;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem !important;
+    }
+    .btn-figma-edit:hover { background: #BBDEFB !important; }
+
+    .btn-figma-delete {
+        background: #FFEBEE !important;
+        color: #D32F2F !important;
+        padding: 10px 15px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        cursor: pointer;
+        font-size: 1rem !important;
+    }
+    .btn-figma-delete:hover { background: #FFCDD2 !important; }
+
+    /* FIGMA INTEGRATED FORM */
+    .figma-form-container {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+        display: flex;
+        min-height: 600px;
+        overflow: hidden;
         margin-top: 10px;
-        border: 1px dashed #ccc;
     }
-    .status-select, .loaixe-select {
-        width: 100%;
-        padding: 10px;
+    .figma-form-left {
+        background: #B3E5FC;
+        width: 40%;
+        padding: 60px 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .figma-form-right {
+        width: 60%;
+        padding: 60px;
+        background: #fff;
+    }
+    .image-preview-box {
+        width: 240px;
+        height: 240px;
+        background: #fff;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .image-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .btn-upload-label {
+        background: #fff;
+        color: #03A9F4;
+        padding: 12px 30px;
         border-radius: 10px;
-        border: 1px solid #ccc;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
+    
+    .figma-input-group { margin-bottom: 22px; }
+    .figma-input-group label { display: block; margin-bottom: 8px; font-weight: 700; color: #444; font-size: 0.95rem; }
+    .figma-input-group input, .figma-input-group select {
+        width: 100%;
+        padding: 14px 18px;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 1rem;
+        background: #fafafa;
+        transition: 0.3s;
+    }
+    .figma-input-group input:focus { border-color: #03A9F4; background: #fff; box-shadow: 0 0 0 4px rgba(3,169,244,0.1); }
+
+    .figma-actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 40px; }
+    .btn-save-final { background: #03A9F4 !important; color: #fff !important; padding: 14px 50px !important; border-radius: 12px !important; font-weight: 800 !important; cursor: pointer; border: none !important; }
+    .btn-cancel-final { background: #f5f5f5 !important; color: #666 !important; padding: 14px 30px !important; border-radius: 12px !important; font-weight: 700 !important; cursor: pointer; border: none !important; }
+
+    /* FIGMA MODALS */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    .modal-card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 15px;
+        width: 400px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        animation: modalScale 0.3s ease;
+    }
+    @keyframes modalScale { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .modal-icon-success {
+        width: 60px; height: 60px;
+        border: 3px solid #4CAF50;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px;
+        color: #4CAF50; font-size: 2rem;
+    }
+    .modal-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; color: #333; }
+    .modal-text { color: #666; font-size: 1rem; line-height: 1.5; margin-bottom: 25px; }
+
+    .modal-btn-confirm { background: #03A9F4; color: #fff; border: none; padding: 10px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .modal-btn-cancel { background: #fff; color: #03A9F4; border: 1px solid #03A9F4; padding: 10px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .modal-actions { display: flex; gap: 15px; justify-content: center; }
 </style>
 {% endblock %}
 
+{% block active_xe %}active{% endblock %}
+{% block color_xe %}#03A9F4{% endblock %}
+
 {% block content %}
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert {{ message.tags }}" style="padding: 10px; background: #e3f2fd; color: #0d47a1; margin-bottom: 10px; border-radius: 5px;">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-
-<!-- LIST VIEW -->
-<div id="listView" class="view-container">
-    <div class="content-header">
-        <h2 class="page-title">Quản lý xe</h2>
-        <button class="btn-add" onclick="showAddView()">
-            <i class="fa-solid fa-plus"></i> Thêm mới xe
-        </button>
-    </div>
-
-    <div id="vehicleList" class="vehicle-list">
-        {% for xe in vehicles %}
-        <div class="vehicle-item">
-            <div class="vehicle-img">
-                {% if xe.HinhAnhXe %}
-                    <img src="{{ xe.HinhAnhXe.url }}" alt="Vehicle">
-                {% else %}
-                    <img src="{% static 'img/xe1.jpg' %}" alt="Vehicle">
-                {% endif %}
+<div class="view-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}" style="padding: 15px; background: #E3F2FD; color: #0D47A1; border-left: 5px solid #03A9F4; margin-bottom: 20px; border-radius: 8px;">
+                {{ message }}
             </div>
-            <div class="vehicle-info">
-                <div class="vehicle-main-details">
-                    <span class="vehicle-plate">{{ xe.BienSoXe }}</span>
-                    <span class="vehicle-route">ID: {{ xe.XeID }}</span>
-                </div>
-                <div class="vehicle-specs">
-                    <span>Số ghế: {{ xe.SoGhe|default:"--" }} ghế</span>
-                    <span>Loại xe: {{ xe.ten_loai_xe }}</span>
-                </div>
-            </div>
-            <div class="vehicle-status">
-                <span class="status-badge-list 
-                    {% if xe.TrangThai == 'Đang hoạt động' %}status-active
-                    {% elif xe.TrangThai == 'Bảo trì' %}status-maintenance
-                    {% else %}status-inactive{% endif %}">
-                    {{ xe.TrangThai }}
-                </span>
-                <div class="item-actions">
-                    <button class="btn-item-edit" 
-                        onclick="showEditView('{{ xe.XeID }}', '{{ xe.BienSoXe }}', '{{ xe.Loaixe.LoaixeID }}', '{{ xe.SoGhe }}', '{{ xe.TrangThai }}')">
-                        Chỉnh sửa
-                    </button>
-                    <form action="{% url 'quan_ly_xe' %}" method="POST" style="width: 100%;" onsubmit="return confirm('Xóa xe này?')">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="xe_id" value="{{ xe.XeID }}">
-                        <button type="submit" class="btn-item-delete">Xóa</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <p style="text-align: center; color: #666; padding: 20px;">Chưa có xe nào trong danh sách.</p>
         {% endfor %}
+    {% endif %}
+
+    <!-- LIST VIEW -->
+    <div id="listView">
+        <div class="content-header">
+            <div>
+                <h2 class="page-title">Quản lý phương tiện</h2>
+                <p style="color: #888; font-size: 0.9rem;">Danh sách đội xe đang vận hành</p>
+            </div>
+            <button class="btn-add-new" onclick="showAddView()">
+                <i class="fa-solid fa-plus"></i> Thêm xe mới
+            </button>
+        </div>
+
+        <div class="vehicle-list">
+            {% for xe in vehicles %}
+            <div class="vehicle-card">
+                <div class="vehicle-card-img">
+                    {% if xe.HinhAnhXe and xe.HinhAnhXe.name %}
+                        <img src="{{ xe.HinhAnhXe.url }}" alt="Xe" onerror="this.src='{% static 'img/xe1.jpg' %}'">
+                    {% else %}
+                        <img src="{% static 'img/xe1.jpg' %}" alt="Xe">
+                    {% endif %}
+                </div>
+                <div class="vehicle-card-info">
+                    <span class="vehicle-card-plate">{{ xe.BienSoXe }}</span>
+                    <div class="vehicle-card-specs">
+                        <span><i class="fa-solid fa-chair"></i> {{ xe.SoGhe|default:"--" }} ghế thực tế</span>
+                        <span><i class="fa-solid fa-bus"></i> {{ xe.ten_loai_xe }}</span>
+                    </div>
+                </div>
+                <div class="vehicle-card-status-area">
+                    <span class="status-pill 
+                        {% if xe.TrangThai == 'Đang hoạt động' %}status-active
+                        {% elif xe.TrangThai == 'Bảo trì' %}status-maintenance
+                        {% else %}status-inactive{% endif %}">
+                        {{ xe.TrangThai }}
+                    </span>
+                    <div class="action-group">
+                        <button class="btn-figma-edit" onclick="showEditView('{{ xe.XeID }}', '{{ xe.BienSoXe }}', '{{ xe.Loaixe.LoaixeID }}', '{{ xe.SoGhe }}', '{{ xe.TrangThai }}')">
+                            <i class="fa-solid fa-pen-to-square"></i> Sửa
+                        </button>
+                        <button type="button" class="btn-figma-delete" onclick="confirmDelete('{{ xe.XeID }}', '{{ xe.BienSoXe }}')">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 60px; background: #fff; border-radius: 15px; border: 2px dashed #eee; color: #999;">
+                <i class="fa-solid fa-car-side" style="font-size: 4rem; opacity: 0.2; margin-bottom: 15px;"></i>
+                <p>Chưa có phương tiện nào trong danh sách.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ADD/EDIT VIEW -->
+    <div id="editView" style="display: none;">
+        <div class="content-header">
+            <h2 class="page-title" id="formTitle">Thêm xe mới</h2>
+            <button class="btn-cancel-final" onclick="showListView()" style="padding: 10px 20px;">
+                <i class="fa-solid fa-chevron-left"></i> Quay lại
+            </button>
+        </div>
+
+        <div class="figma-form-container">
+            <form id="vehicleForm" method="POST" enctype="multipart/form-data" action="{% url 'quan_ly_xe' %}" style="width: 100%; display: flex;">
+                {% csrf_token %}
+                <input type="hidden" id="vehicleId" name="xe_id">
+                
+                <div class="figma-form-left">
+                    <div class="image-preview-box">
+                        <img id="previewImg" src="{% static 'img/xe1.jpg' %}" alt="Preview">
+                    </div>
+                    <label class="btn-upload-label">
+                        <i class="fa-solid fa-camera"></i> Chọn ảnh xe
+                        <input type="file" name="hinh_anh" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                    </label>
+                </div>
+
+                <div class="figma-form-right">
+                    <div class="figma-input-group">
+                        <label>Biển số xe</label>
+                        <input type="text" id="plate" name="bien_so" placeholder="VD: 43A - 123.45" required>
+                    </div>
+                    
+                    <div class="figma-input-group">
+                        <label>Loại xe đăng ký</label>
+                        <select id="loaixe_id" name="loaixe_id" onchange="handleLoaiChange(this)" required>
+                            <option value="">-- Chọn loại xe --</option>
+                            {% for item in vehicle_types %}
+                                <option value="{{ item.Loaixe.LoaixeID }}" data-seats="{{ item.Loaixe.SoCho }}">
+                                    {{ item.TenLoaiXe }}
+                                </option>
+                            {% endfor %}
+                            <option value="new" style="color: #03A9F4; font-weight: bold;">+ Thêm loại xe mới</option>
+                        </select>
+                    </div>
+
+                    <div id="newTypeFields" style="display: none; background: #E3F2FD; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <div class="figma-input-group">
+                            <label>Số chỗ mới</label>
+                            <input type="number" name="new_loai_socho">
+                        </div>
+                        <div class="figma-input-group" style="margin-bottom: 0;">
+                            <label>Giá vé mặc định</label>
+                            <input type="number" name="new_loai_gia">
+                        </div>
+                    </div>
+
+                    <div class="figma-input-group">
+                        <label>Số ghế thực tế</label>
+                        <input type="number" id="seats" name="so_ghe" placeholder="VD: 16" required>
+                    </div>
+
+                    <div class="figma-input-group">
+                        <label>Trạng thái vận hành</label>
+                        <select id="statusSelect" name="trang_thai">
+                            <option value="Đang hoạt động">Đang hoạt động</option>
+                            <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                            <option value="Bảo trì">Bảo trì</option>
+                        </select>
+                    </div>
+
+                    <div class="figma-actions">
+                        <button type="button" class="btn-cancel-final" onclick="showListView()">Hủy bỏ</button>
+                        <button type="submit" class="btn-save-final">Lưu thông tin</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<!-- EDIT/ADD VIEW -->
-<div id="editView" class="view-container" style="display: none;">
-    <h2 class="page-title" id="formTitle">Thông tin xe</h2>
-    <form id="vehicleForm" class="vehicle-form" method="POST" enctype="multipart/form-data" action="{% url 'quan_ly_xe' %}">
-        {% csrf_token %}
-        <input type="hidden" id="vehicleId" name="xe_id">
-        <div class="form-layout">
-            <div class="form-left">
-                <div class="form-group">
-                    <label for="plate">Biển số</label>
-                    <input type="text" id="plate" name="bien_so" placeholder="75H - 868686" required>
-                </div>
-                <div class="form-group">
-                    <label for="loaixe_id">Loại xe</label>
-                    <select id="loaixe_id" name="loaixe_id" class="loaixe-select" onchange="handleLoaiChange(this)" required>
-                        <option value="" disabled selected>-- Chọn loại xe --</option>
-                        {% for item in vehicle_types %}
-                            <option value="{{ item.LoaixeID }}" data-seats="{{ item.SoCho }}">
-                                {% if item.SoCho == 4 %}Loại xe A
-                                {% elif item.SoCho == 7 %}Loại xe B
-                                {% elif item.SoCho == 9 %}Loại xe C
-                                {% else %}Loại xe {{ item.SoCho }} chỗ{% endif %} 
-                                ({{ item.SoCho }} chỗ)
-                            </option>
-                        {% endfor %}
-                        <option value="new" style="font-weight: bold; color: #06A0E2;">+ Thêm loại xe mới...</option>
-                    </select>
-                </div>
-                <div id="newTypeFields" class="new-loai-fields" style="display: none;">
-                    <h4 style="margin-top: 0;">Thông tin loại xe mới</h4>
-                    <div class="form-group">
-                        <label>Số chỗ</label>
-                        <input type="number" name="new_loai_socho" placeholder="VD: 16">
-                    </div>
-                    <div class="form-group">
-                        <label>Giá vé mặc định</label>
-                        <input type="number" name="new_loai_gia" placeholder="VD: 150000">
-                    </div>
-                </div>
-                <div class="form-group" style="margin-top: 20px;">
-                    <label for="seats">Số ghế thực tế của xe</label>
-                    <input type="number" id="seats" name="so_ghe" placeholder="30" required>
-                </div>
-            </div>
-            <div class="form-right">
-                <div class="form-group">
-                    <label>Trạng thái</label>
-                    <select id="statusSelect" name="trang_thai" class="status-select">
-                        <option value="Đang hoạt động">Đang hoạt động</option>
-                        <option value="Ngừng hoạt động">Ngừng hoạt động</option>
-                        <option value="Bảo trì">Bảo trì</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Hình ảnh xe</label>
-                    <input type="file" name="hinh_anh" accept="image/*">
-                </div>
-            </div>
-        </div>
-        <div class="form-actions">
-            <button type="submit" class="btn-save">Lưu hệ thống</button>
-            <button type="button" class="btn-cancel" onclick="showListView()">Hủy bỏ</button>
-        </div>
-    </form>
+<!-- SUCCESS MODAL -->
+<div id="successModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-icon-success"><i class="fa-solid fa-check"></i></div>
+        <div class="modal-title" id="successTitle">Thành công</div>
+        <div class="modal-text" id="successMsg">Thông tin xe đã được cập nhật.</div>
+        <button class="modal-btn-confirm" onclick="closeSuccess()" style="padding: 10px 40px; border-radius: 8px;">Đóng</button>
+    </div>
 </div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-title">Thông báo</div>
+        <div class="modal-text">Bạn có chắc muốn xóa xe <b id="delPlate"></b> này không? Hành động này không thể hoàn tác.</div>
+        <div class="modal-actions">
+            <button class="modal-btn-confirm" id="btnDoDelete">Đồng ý</button>
+            <button class="modal-btn-cancel" onclick="closeConfirm()">Không</button>
+        </div>
+    </div>
+</div>
+
+<!-- HIDDEN DELETE FORM -->
+<form id="hiddenDeleteForm" action="{% url 'quan_ly_xe' %}" method="POST" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete">
+    <input type="hidden" name="xe_id" id="delXeId">
+</form>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    function showSuccess(title, msg) {
+        document.getElementById('successTitle').textContent = title;
+        document.getElementById('successMsg').textContent = msg;
+        document.getElementById('successModal').style.display = 'flex';
+    }
+    function closeSuccess() { document.getElementById('successModal').style.display = 'none'; }
+
+    function confirmDelete(id, plate) {
+        document.getElementById('delPlate').textContent = plate;
+        document.getElementById('delXeId').value = id;
+        document.getElementById('confirmModal').style.display = 'flex';
+        document.getElementById('btnDoDelete').onclick = function() {
+            document.getElementById('hiddenDeleteForm').submit();
+        };
+    }
+    function closeConfirm() { document.getElementById('confirmModal').style.display = 'none'; }
+
     function showListView() {
         document.getElementById('listView').style.display = 'block';
         document.getElementById('editView').style.display = 'none';
     }
+
     function showAddView() {
         document.getElementById('listView').style.display = 'none';
         document.getElementById('editView').style.display = 'block';
@@ -174,8 +432,10 @@
         document.getElementById('loaixe_id').value = '';
         document.getElementById('seats').value = '';
         document.getElementById('statusSelect').value = 'Đang hoạt động';
+        document.getElementById('previewImg').src = "{% static 'img/xe1.jpg' %}";
         toggleNewLoai('');
     }
+
     function showEditView(id, plate, loaixeId, seats, status) {
         document.getElementById('listView').style.display = 'none';
         document.getElementById('editView').style.display = 'block';
@@ -187,13 +447,14 @@
         document.getElementById('statusSelect').value = status;
         toggleNewLoai(loaixeId);
     }
+
     function handleLoaiChange(select) {
-        const val = select.value;
-        toggleNewLoai(val);
+        toggleNewLoai(select.value);
         const selectedOption = select.options[select.selectedIndex];
         const seats = selectedOption.getAttribute('data-seats');
         if (seats) document.getElementById('seats').value = seats;
     }
+
     function toggleNewLoai(val) {
         const fields = document.getElementById('newTypeFields');
         if (val === 'new') {
@@ -204,13 +465,25 @@
             fields.querySelectorAll('input').forEach(i => i.required = false);
         }
     }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) { document.getElementById('previewImg').src = e.target.result; }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        showListView();
         {% if messages %}
             {% for message in messages %}
-                if (typeof showGlobalPopup === 'function') {
-                    const type = '{{ message.tags }}'.includes('success') ? 'success' : 'error';
-                    showGlobalPopup(type, '{{ message.message|escapejs }}');
+                let msg = "{{ message }}";
+                if (msg.includes("thành công")) {
+                    let title = "Thành công";
+                    if (msg.toLowerCase().includes("thêm")) title = "Thêm mới";
+                    else if (msg.toLowerCase().includes("sửa") || msg.toLowerCase().includes("cập nhật")) title = "Chỉnh sửa";
+                    else if (msg.toLowerCase().includes("xóa")) title = "Xóa";
+                    showSuccess(title, msg);
                 }
             {% endfor %}
         {% endif %}

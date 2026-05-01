@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import Nhaxe, ChuyenXe, Taixe, Loaixe, CHITIETLOAIXE, User_Authentication
+from .models import Nhaxe, ChuyenXe, Taixe, Loaixe, CHITIETLOAIXE, User_Authentication, Xe
 from datetime import datetime, timedelta
 import random
 
 def nhaxe(request):
-    nha_xe_id = request.session.get('user_id')
+    nha_xe_id = request.session.get('ma_nha_xe')
     if not nha_xe_id:
         return redirect('dangnhap')
 
@@ -115,34 +115,60 @@ def nhaxe(request):
     return render(request, 'home/nhaxe.html', context)
 
 def thong_tin_nha_xe(request):
-    user_id = request.session.get('user_id')
+    user_id = request.session.get('ma_nha_xe')
     if not user_id:
         return redirect('dangnhap')
 
     nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=user_id)
+    user_auth = User_Authentication.objects.filter(Nhaxe=nha_xe_obj).first()
+
     if request.method == 'POST':
         action = request.POST.get('action')
-        if action == 'send_otp':
+        if action in ['send_otp', 'send_phone_otp']:
             otp = str(random.randint(100000, 999999))
             request.session['update_otp'] = otp
-            messages.info(request, f"[SIMULATION] Mã xác thực của bạn là: {otp}")
-            return JsonResponse({'status': 'sent'})
+            return JsonResponse({'status': 'success', 'message': f'[SIMULATION] Mã xác thực của bạn là: {otp}'})
 
         elif action == 'save':
             phone = request.POST.get('phone')
             address = request.POST.get('address')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            anh_dai_dien = request.FILES.get('anh_dai_dien')
+
             if phone and phone != nha_xe_obj.SoDienThoai:
-                user_otp = request.POST.get('otp')
+                user_otp = request.POST.get('phone_otp')
                 if user_otp != request.session.get('update_otp'):
                     return JsonResponse({'status': 'error', 'message': 'Mã xác thực không chính xác.'})
 
             nha_xe_obj.SoDienThoai = phone if phone else nha_xe_obj.SoDienThoai
             nha_xe_obj.DiaChiTruSo = address if address else nha_xe_obj.DiaChiTruSo
+            if email: nha_xe_obj.Email = email
+            if anh_dai_dien:
+                from django.core.files.storage import FileSystemStorage
+                fs = FileSystemStorage()
+                # Overwrite if exists by deleting first
+                if nha_xe_obj.AnhDaiDienURL and nha_xe_obj.AnhDaiDienURL.startswith(fs.base_url):
+                    import os
+                    from django.conf import settings
+                    old_path = os.path.join(settings.MEDIA_ROOT, nha_xe_obj.AnhDaiDienURL.replace(fs.base_url, ''))
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                
+                filename = fs.save(f"nhaxe_banners/{nha_xe_obj.NhaxeID}_banner.jpg", anh_dai_dien)
+                nha_xe_obj.AnhDaiDienURL = fs.url(filename)
+
             nha_xe_obj.save()
+
+            if password and user_auth:
+                user_auth.MatKhau = password
+                user_auth.save()
+
             return JsonResponse({'status': 'success', 'message': 'Cập nhật thông tin thành công!'})
 
     return render(request, 'home/thong_tin_nha_xe.html', {
         'nha_xe': nha_xe_obj,
+        'user': user_auth,
         'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None
     })
 
@@ -199,7 +225,7 @@ def capnhat_gia_loaixe(request, pk):
     return redirect('quanly_loaixe')
 
 def quan_ly_xe(request):
-    nha_xe_id = request.session.get('user_id')
+    nha_xe_id = request.session.get('ma_nha_xe')
     if not nha_xe_id: return redirect('dangnhap')
     nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
     today = datetime.now().date()
@@ -243,16 +269,30 @@ def quan_ly_xe(request):
                     xe.save()
                 messages.success(request, "Cập nhật xe thành công.")
             else:
-                from .models import Xe
-                last_xe = Xe.objects.order_by('-XeID').first()
-                new_xe_id = f"X{int(''.join(filter(str.isdigit, str(last_xe.XeID)))) + 1:05d}" if last_xe else "X00001"
+                import re
+                all_ids = Xe.objects.values_list('XeID', flat=True)
+                max_num = 0
+                for xid in all_ids:
+                    nums = re.findall(r'\d+', str(xid))
+                    if nums:
+                        val = int(nums[-1])
+                        if val > max_num:
+                            max_num = val
+                
+                num = max_num + 1
+                while True:
+                    new_xe_id = f"XE{num:05d}"
+                    if not Xe.objects.filter(XeID=new_xe_id).exists():
+                        break
+                    num += 1
+
                 Xe.objects.create(XeID=new_xe_id, Nhaxe_id=nha_xe_id, BienSoXe=bien_so, TrangThai=trang_thai, SoGhe=so_ghe, Loaixe_id=loaixe_id, HinhAnhXe=hinh_anh)
                 messages.success(request, "Thêm xe mới thành công.")
         except Exception as e: messages.error(request, f"Lỗi: {str(e)}")
         return redirect('quan_ly_xe')
 
     vehicles = Xe.objects.filter(Nhaxe_id=nha_xe_id).select_related('Loaixe')
-    vehicle_types = Loaixe.objects.filter(chitietloaixe__Nhaxe=nha_xe_obj).distinct()
+    vehicle_types = CHITIETLOAIXE.objects.filter(Nhaxe_id=nha_xe_id, Loaixe__SoCho__in=[4, 7, 9, 16]).select_related('Loaixe')
     return render(request, 'home/quan_ly_xe.html', {
         'vehicles': vehicles,
         'vehicle_types': vehicle_types,

@@ -15,7 +15,7 @@
 </head>
 
 <body>
-
+    {% csrf_token %}
     <div class="app-container">
         <!-- Header -->
         <header class="header">
@@ -41,10 +41,11 @@
                         </div>
                     </div>
 
-                    <p class="sub-text" style="align-self: flex-start; margin-bottom: 24px;">Nhập email hoặc số điện
-                        thoại để nhận mã xác thực</p>
+                    <p class="sub-text" style="align-self: flex-start; margin-bottom: 24px;">Nhập email hoặc số điện thoại để nhận mã xác thực</p>
 
-                    <button class="btn-primary" onclick="goToStep(2)">Gửi mã xác thực</button>
+                    <div id="error-step-1" class="error-msg" style="color: red; margin-bottom: 10px; display: none;"></div>
+                    
+                    <button class="btn-primary" id="btn-send-otp" onclick="handleSendOTP()">Gửi mã xác thực</button>
                     <a href="{% url 'index' %}" class="link-back">Quay lại đăng nhập</a>
                 </div>
             </div>
@@ -56,12 +57,15 @@
 
                     <div class="form-group">
                         <label>Nhập mã OTP</label>
-                        <input type="text" class="form-control" placeholder="Nhập mã OTP">
+                        <input type="text" id="otp-input" class="form-control" placeholder="Nhập mã OTP">
                         <p class="sub-text">Vui lòng nhập mã OTP đã được gửi đến qua email của bạn.</p>
+                        <p id="otp-debug-hint" style="color: #666; font-size: 12px; margin-top: 5px; display: none;"></p>
                         <p class="timer-text">Gửi lại mã sau 59s</p>
                     </div>
 
-                    <button class="btn-primary" onclick="goToStep(3)">Xác nhận</button>
+                    <div id="error-step-2" class="error-msg" style="color: red; margin-bottom: 10px; display: none;"></div>
+
+                    <button class="btn-primary" id="btn-verify-otp" onclick="handleVerifyOTP()">Xác nhận</button>
                     <a href="{% url 'index' %}" class="link-back">Quay lại đăng nhập</a>
                 </div>
             </div>
@@ -73,15 +77,17 @@
 
                     <div class="form-group">
                         <label>Mật khẩu mới</label>
-                        <input type="password" class="form-control" placeholder="Nhập mật khẩu mới">
+                        <input type="password" id="new-password" class="form-control" placeholder="Nhập mật khẩu mới">
                     </div>
 
                     <div class="form-group">
                         <label>Nhập lại mật khẩu mới</label>
-                        <input type="password" class="form-control" placeholder="Nhập lại mật khẩu mới">
+                        <input type="password" id="confirm-password" class="form-control" placeholder="Nhập lại mật khẩu mới">
                     </div>
 
-                    <button class="btn-primary" onclick="goToStep(4)">Đổi mật khẩu</button>
+                    <div id="error-step-3" class="error-msg" style="color: red; margin-bottom: 10px; display: none;"></div>
+
+                    <button class="btn-primary" id="btn-change-password" onclick="handleChangePassword()">Đổi mật khẩu</button>
                     <a href="{% url 'index' %}" class="link-back">Quay lại đăng nhập</a>
                 </div>
             </div>
@@ -89,7 +95,7 @@
             <!-- Step 4: Thành công -->
             <div id="step-4" class="view-step">
                 <div class="auth-card" style="padding: 60px 40px; justify-content: center; align-items: center; text-align: center;">
-                    <i class="fa-regular fa-circle-check success-icon"></i>
+                    <i class="fa-regular fa-circle-check success-icon" style="color: #4CAF50; font-size: 64px; margin-bottom: 20px;"></i>
                     <p class="success-text">Đổi mật khẩu thành công. Xin<br>vui lòng đăng nhập lại.</p>
                     <button class="btn-primary" style="margin-top: 20px;" onclick="window.location.href='{% url 'index' %}'">Đăng nhập</button>
                 </div>
@@ -97,20 +103,153 @@
 
         </main>
 
-
+        <!-- Footer -->
+        <div class="footer">
+            KẾT NỐI HÀNH TRÌNH DI SẢN
+        </div>
     </div>
 
-    <!-- Script to handle transitions -->
+    <!-- Script to handle transitions and AJAX -->
     <script>
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
         function goToStep(step) {
-            // Hide all steps
             document.querySelectorAll('.view-step').forEach(el => {
                 el.classList.remove('active');
             });
-            // Show requested step
             const targetStep = document.getElementById('step-' + step);
             if (targetStep) {
                 targetStep.classList.add('active');
+            }
+        }
+
+        function showError(step, msg) {
+            const el = document.getElementById('error-step-' + step);
+            if (el) {
+                el.innerText = msg;
+                el.style.display = 'block';
+            }
+        }
+
+        function hideErrors() {
+            document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+        }
+
+        async function handleSendOTP() {
+            const contact = document.getElementById('contact-input').value;
+            if (!contact) {
+                showError(1, 'Vui lòng nhập email hoặc số điện thoại');
+                return;
+            }
+
+            hideErrors();
+            const btn = document.getElementById('btn-send-otp');
+            btn.disabled = true;
+            btn.innerText = 'Đang xử lý...';
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'check_user');
+                formData.append('contact', contact);
+                formData.append('csrfmiddlewaretoken', csrfToken);
+
+                const response = await fetch('', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Hiển thị mã OTP để test (vì chưa có service gửi thật)
+                    const hintEl = document.getElementById('otp-debug-hint');
+                    hintEl.innerText = '(Test OTP: ' + data.otp_test + ')';
+                    hintEl.style.display = 'block';
+                    
+                    goToStep(2);
+                } else {
+                    showError(1, data.message);
+                }
+            } catch (err) {
+                showError(1, 'Có lỗi xảy ra, vui lòng thử lại sau.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Gửi mã xác thực';
+            }
+        }
+
+        async function handleVerifyOTP() {
+            const otp = document.getElementById('otp-input').value;
+            if (!otp) {
+                showError(2, 'Vui lòng nhập mã OTP');
+                return;
+            }
+
+            hideErrors();
+            const btn = document.getElementById('btn-verify-otp');
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'verify_otp');
+                formData.append('otp', otp);
+                formData.append('csrfmiddlewaretoken', csrfToken);
+
+                const response = await fetch('', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    goToStep(3);
+                } else {
+                    showError(2, data.message);
+                }
+            } catch (err) {
+                showError(2, 'Lỗi kết nối.');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function handleChangePassword() {
+            const pass = document.getElementById('new-password').value;
+            const confirm = document.getElementById('confirm-password').value;
+
+            if (!pass || pass.length < 3) {
+                showError(3, 'Mật khẩu phải từ 3 ký tự trở lên');
+                return;
+            }
+            if (pass !== confirm) {
+                showError(3, 'Mật khẩu nhập lại không khớp');
+                return;
+            }
+
+            hideErrors();
+            const btn = document.getElementById('btn-change-password');
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'change_password');
+                formData.append('password', pass);
+                formData.append('csrfmiddlewaretoken', csrfToken);
+
+                const response = await fetch('', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    goToStep(4);
+                } else {
+                    showError(3, data.message);
+                }
+            } catch (err) {
+                showError(3, 'Lỗi hệ thống khi đổi mật khẩu.');
+            } finally {
+                btn.disabled = false;
             }
         }
     </script>

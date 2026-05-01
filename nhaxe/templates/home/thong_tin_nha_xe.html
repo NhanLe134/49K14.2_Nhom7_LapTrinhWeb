@@ -1,223 +1,289 @@
-{% extends 'home/nhaxe.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin nhà xe - Vexeapp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nhaxe.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <style>
+        .profile-container { padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; font-size: 0.95rem; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            background: #f9f9f9; font-size: 1rem; color: #333;
+        }
+        .form-group input[readonly], .form-group textarea[readonly] { background: #f2f2f2; cursor: not-allowed; border-color: #eee; }
+        
+        .image-banner-container { margin-bottom: 30px; border-radius: 12px; overflow: hidden; position: relative; height: auto; min-height: 250px; background: #eee; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; }
+        .image-banner-container img { width: 100%; height: auto; max-height: 400px; object-fit: cover; display: block; }
+        
+        .upload-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; opacity:0; transition:0.3s; }
+        .upload-overlay:hover { opacity:1; }
+        .upload-overlay label { cursor:pointer; color:white; background:#00B0F0; padding:12px 24px; border-radius:6px; font-weight:600; }
 
-{% block title %}Thông tin nhà xe - Vexeapp{% endblock %}
+        .bottom-actions { display: flex; justify-content: center; gap: 20px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; }
+        .btn-figma { padding: 12px 50px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-cancel { background: #A6A6A6; color: white; }
+        .btn-edit { background: #00B0F0; color: white; }
+        .btn-save { background: #00B0F0; color: white; flex: 1; max-width: 300px; }
+        .hidden { display: none !important; }
 
-{% block active_trangchu %}{% endblock %}
-{% block color_trangchu %}#5d6d7e{% endblock %}
+        /* Cropper Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 800px; }
+        .cropper-container { width: 100%; max-height: 500px; background: #f0f0f0; margin-bottom: 20px; overflow: hidden; }
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/thong_tin_nha_xe.css' %}">
-<style>
-    .hidden { display: none !important; }
-    .modal-overlay { display: flex !important; }
-</style>
-{% endblock %}
-
-{% block content %}
-<main class="content-area">
-    <div class="page-title">Thông tin nhà xe</div>
-
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}" style="background: #fff3cd; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ffeeba;">
-            {{ message }}
+        /* ===== FIX SCROLL ===== */
+        html, body { overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+        .main-wrapper { height: auto !important; min-height: calc(100vh - 75px) !important; overflow: visible !important; }
+        .main-content { height: auto !important; overflow: visible !important; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-logo">
+            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
+            <h1>Vexeapp</h1>
         </div>
-        {% endfor %}
+        <div class="header-user" id="userDropdownBtn">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="dropdown-menu" id="userMenu">
+                <a href="{% url 'dangxuat' %}" class="dropdown-item">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <aside class="sidebar">
+            <a href="{% url 'nhaxe' %}" class="sidebar-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
+            <a href="{% url 'thong_tin_nha_xe' %}" class="sidebar-item active"><i class="fa-solid fa-user-gear"></i> Quản lý tài khoản</a>
+            <a href="{% url 'quanlytaixe' %}" class="sidebar-item"><i class="fa-solid fa-users"></i> Quản lý tài xế</a>
+            <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item"><i class="fa-solid fa-route"></i> Quản lý tuyến xe</a>
+            <a href="{% url 'quanly_loaixe' %}" class="sidebar-item"><i class="fa-solid fa-bus"></i> Quản lý loại xe</a>
+            <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item"><i class="fa-solid fa-calendar-days"></i> Quản lý chuyến xe</a>
+            <a href="{% url 'quan_ly_xe' %}" class="sidebar-item"><i class="fa-solid fa-car"></i> Quản lý phương tiện</a>
+        </aside>
+
+        <main class="main-content">
+            <h2 class="page-title">Thông tin nhà xe</h2>
+            <p class="page-subtitle">Quản lý và cập nhật thông tin chi tiết của nhà xe</p>
+
+            <div class="profile-container">
+                <form id="profileForm" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="image-banner-container">
+                        {% if nha_xe.AnhDaiDienURL %}
+                            <img id="previewImg" src="{{ nha_xe.AnhDaiDienURL }}" alt="Banner">
+                        {% else %}
+                            <img id="previewImg" src="{% static 'img/Vexeapp_banner.png' %}" alt="Banner">
+                        {% endif %}
+                        <div id="uploadOverlay" class="upload-overlay hidden">
+                            <label for="fileInput"><i class="fa-solid fa-camera"></i> Thay đổi ảnh banner</label>
+                            <input type="file" id="fileInput" class="hidden" onchange="initCropper(event)">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Cột trái -->
+                        <div class="column">
+                            <div class="form-group">
+                                <label>Tên nhà xe</label>
+                                <input type="text" name="ten_nha_xe" value="{{ nha_xe.TenNhaXe|default_if_none:'' }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Người đại diện</label>
+                                <input type="text" name="representative" value="{{ nha_xe.NguoiDaiDien|default_if_none:'' }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" id="phoneInput" name="phone" value="{{ nha_xe.SoDienThoai|default_if_none:'' }}" readonly maxlength="10">
+                                    <button type="button" id="btnSendPhoneOTP" class="btn-figma hidden" style="padding: 5px 15px; font-size: 0.85rem; background: #00B0F0; color: white;">Gửi OTP</button>
+                                </div>
+                                <span id="phoneError" style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px; display: none;">Số điện thoại không hợp lệ! (Phải có 10 số và bắt đầu bằng số 0)</span>
+                                <div id="phoneOtpGroup" class="hidden" style="margin-top: 10px;">
+                                    <input type="text" name="phone_otp" placeholder="Nhập mã OTP xác thực SĐT">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" value="{{ nha_xe.Email|default_if_none:'' }}" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Cột phải -->
+                        <div class="column">
+                            <div class="form-group">
+                                <label>Tên đăng nhập</label>
+                                <input type="text" value="{{ user.TenDangNhap }}" readonly style="background: #e9ecef; border-color: #ddd;">
+                            </div>
+                            <div class="form-group">
+                                <label>Mật khẩu mới</label>
+                                <input type="password" id="passInput" name="password" placeholder="Nhập mật khẩu mới" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Nhập lại mật khẩu</label>
+                                <input type="password" id="confirmPassInput" name="confirm_password" placeholder="Nhập lại mật khẩu" readonly>
+                                <span id="passError" style="color:#e74c3c;font-size:0.85rem;margin-top:4px;display:none;">Mật khẩu không khớp!</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Địa chỉ trụ sở</label>
+                                <textarea name="address" rows="3" readonly>{{ nha_xe.DiaChiTruSo|default_if_none:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bottom-actions">
+                        <button type="button" id="btnCancel" class="btn-figma btn-cancel hidden">Hủy bỏ</button>
+                        <button type="button" id="btnEdit" class="btn-figma btn-edit">Chỉnh sửa thông tin</button>
+                        <button type="submit" id="btnSave" class="btn-figma btn-save hidden">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </main>
     </div>
-    {% endif %}
 
-    <form id="profileForm" enctype="multipart/form-data" method="POST" class="form-container">
-        {% csrf_token %}
-        <div class="form-grid">
-            <div class="left-column">
-                <div class="form-group">
-                    <label>Tên nhà xe</label>
-                    <input type="text" id="companyName" value="Nhà xe Hùng Cường" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Người đại diện</label>
-                    <input type="text" id="representative" value="{{ request.session.username }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Số điện thoại</label>
-                    <input type="tel" id="phoneNumber" name="phone" value="{{ nha_xe.SoDienThoai }}" readonly required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email" value="{{ nha_xe.Email }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Địa chỉ trụ sở</label>
-                    <input type="text" id="address" name="address" value="{{ nha_xe.DiaChiTruSo|default:'' }}" readonly>
-                </div>
+    <!-- Cropper Modal -->
+    <div id="cropperModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>Cắt ảnh banner</h3>
+            <div class="cropper-container"><img id="cropperImage"></div>
+            <div style="display: flex; justify-content: flex-end; gap: 15px;">
+                <button type="button" onclick="closeCropper()" class="btn-figma btn-cancel" style="padding: 10px 20px;">Hủy</button>
+                <button type="button" onclick="applyCrop()" class="btn-figma btn-save" style="padding: 10px 20px;">Áp dụng</button>
             </div>
-
-            <div class="right-column">
-                <div class="form-group">
-                    <label>Tên đăng nhập</label>
-                    <input type="text" id="username" value="{{ request.session.username }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Mật khẩu mới (Bỏ trống nếu không đổi)</label>
-                    <input type="password" id="password" name="password" value="*************" readonly>
-                    <small id="pwMatchMsg" style="display: none;"></small>
-                </div>
-                <div class="form-group">
-                    <label>Nhập lại mật khẩu mới</label>
-                    <input type="password" id="confirmPassword" name="confirm_password" value="*************" readonly>
-                </div>
-            </div>
-        </div>
-
-        <div class="image-section">
-            <h3>Hình ảnh</h3>
-            <div class="image-banner" style="position: relative;">
-                {% if nha_xe.AnhDaiDienURL %}
-                    <img id="previewImg" src="{{ nha_xe.AnhDaiDienURL }}" alt="Banner nhà xe">
-                {% else %}
-                    <img id="previewImg" src="{% static 'img/Vexeapp_banner.png' %}" alt="Banner nhà xe" onerror="this.src='{% static 'img/xe1.jpg' %}'">
-                {% endif %}
-                
-                <div id="uploadOverlay" class="hidden" style="position: absolute; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; border-radius: 15px;">
-                    <label for="fileInput" style="cursor: pointer; color: white; background: #06A0E2; padding: 10px 20px; border-radius: 5px;">
-                        <i class="fa-solid fa-camera"></i> Thay đổi ảnh
-                    </label>
-                    <input type="file" id="fileInput" name="anh_dai_dien" accept="image/*" class="hidden" onchange="previewFile()">
-                </div>
-            </div>
-        </div>
-
-        <div class="bottom-actions" style="margin-top: 20px;">
-            <button type="button" id="btnEdit" class="btn btn-primary">Chỉnh sửa</button>
-            <div id="editActions" class="hidden" style="width: 100%; display: flex; gap: 10px;">
-                <button type="button" id="btnCancel" class="btn btn-secondary">Hủy</button>
-                <button type="submit" id="btnSubmitForm" class="btn btn-success" style="flex: 1;">Lưu thay đổi</button>
-            </div>
-        </div>
-    </form>
-</main>
-
-<!-- OTP MODAL -->
-<div id="otpModal" class="modal-overlay hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-    <div class="modal-content" style="background: white; padding: 30px; border-radius: 15px; width: 400px; text-align: center;">
-        <h3 style="margin-bottom: 15px;">Xác thực bảo mật</h3>
-        <p style="margin-bottom: 20px; color: #666;">Bạn đang thực hiện thay đổi thông tin nhạy cảm. Vui lòng nhập mã OTP đã được gửi đến bạn.</p>
-        <input type="text" id="otpInput" maxlength="6" placeholder="Nhập mã 6 số" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1.2rem; text-align: center; letter-spacing: 5px; margin-bottom: 20px;">
-        <div style="display: flex; gap: 10px;">
-            <button type="button" id="btnCancelOTP" class="btn btn-secondary" style="flex: 1;">Hủy</button>
-            <button type="button" id="btnVerifyOTP" class="btn btn-success" style="flex: 1;">Xác nhận</button>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const profileForm = document.getElementById('profileForm');
-        const btnEdit = document.getElementById('btnEdit');
-        const editActions = document.getElementById('editActions');
-        const btnCancel = document.getElementById('btnCancel');
-        const inputs = document.querySelectorAll('.form-group input');
-        const pwInput = document.getElementById('password');
-        const cpInput = document.getElementById('confirmPassword');
-        const pwMsg = document.getElementById('pwMatchMsg');
-        const uploadOverlay = document.getElementById('uploadOverlay');
-        const otpModal = document.getElementById('otpModal');
-        const btnVerifyOTP = document.getElementById('btnVerifyOTP');
-        const btnCancelOTP = document.getElementById('btnCancelOTP');
-        const otpInput = document.getElementById('otpInput');
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="{% static 'js/common.js' %}"></script>
+    <script>
+        let cropper;
+        let croppedBlob;
 
-        let initialValues = {};
-        let isVerified = false;
+        document.getElementById('btnEdit').onclick = function() {
+            const inputs = document.querySelectorAll('input:not([readonly][style*="background: #e9ecef"]), textarea');
+            inputs.forEach(i => i.removeAttribute('readonly'));
+            this.classList.add('hidden');
+            document.getElementById('btnSave').classList.remove('hidden');
+            document.getElementById('btnCancel').classList.remove('hidden');
+            document.getElementById('uploadOverlay').classList.remove('hidden');
+        };
 
-        btnEdit.addEventListener('click', () => {
-            inputs.forEach(input => {
-                if (!['companyName', 'representative', 'email', 'username'].includes(input.id)) {
-                    initialValues[input.id] = input.value;
-                    input.removeAttribute('readonly');
-                    if (input.type === 'password') input.value = '';
-                }
-            });
-            btnEdit.classList.add('hidden');
-            editActions.classList.remove('hidden');
-            uploadOverlay.classList.remove('hidden');
-        });
+        document.getElementById('btnCancel').onclick = function() { location.reload(); };
 
-        btnCancel.addEventListener('click', () => {
-            inputs.forEach(input => {
-                if (initialValues[input.id] !== undefined) {
-                    input.value = initialValues[input.id];
-                    input.setAttribute('readonly', true);
-                }
-            });
-            btnEdit.classList.remove('hidden');
-            editActions.classList.add('hidden');
-            uploadOverlay.classList.add('hidden');
-            pwMsg.style.display = 'none';
-        });
+        document.getElementById('phoneInput').oninput = function() {
+            const phone = this.value;
+            const phoneError = document.getElementById('phoneError');
+            const btnSend = document.getElementById('btnSendPhoneOTP');
+            
+            // Chỉ hiện nút Gửi OTP nếu có thay đổi và chưa bị ẩn
+            if (!this.readOnly) {
+                btnSend.classList.remove('hidden');
+            }
 
-        const validatePassword = () => {
-            if (cpInput.value === '') { pwMsg.style.display = 'none'; return true; }
-            if (pwInput.value !== cpInput.value) {
-                pwMsg.style.display = 'block'; pwMsg.textContent = 'Mật khẩu không khớp!'; pwMsg.style.color = '#dc3545';
-                return false;
+            // Regex kiểm tra SĐT Việt Nam (10 số, bắt đầu bằng 0)
+            const phoneRegex = /^0\d{9}$/;
+            if (phone && !phoneRegex.test(phone)) {
+                phoneError.style.display = 'block';
+                btnSend.disabled = true;
+                btnSend.style.opacity = '0.5';
             } else {
-                pwMsg.style.display = 'block'; pwMsg.textContent = 'Mật khẩu trùng khớp.'; pwMsg.style.color = '#28a745';
-                return true;
+                phoneError.style.display = 'none';
+                btnSend.disabled = false;
+                btnSend.style.opacity = '1';
             }
         };
-        pwInput.addEventListener('input', validatePassword);
-        cpInput.addEventListener('input', validatePassword);
+                // Kiem tra mat khau khop theo thoi gian thuc
+        document.getElementById('confirmPassInput').oninput = function() {
+            const pass = document.getElementById('passInput').value;
+            const errSpan = document.getElementById('passError');
+            errSpan.style.display = (this.value && pass !== this.value) ? 'block' : 'none';
+        };
 
-        profileForm.addEventListener('submit', async (e) => {
+        document.getElementById('btnSendPhoneOTP').onclick = function() {
+            fetch('', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'}, body: `action=send_phone_otp&phone=${document.getElementById('phoneInput').value}`})
+            .then(r => r.json()).then(d => { alert(d.message); if(d.status==='success') document.getElementById('phoneOtpGroup').classList.remove('hidden'); });
+        };
+
+
+
+        function initCropper(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('cropperImage').src = event.target.result;
+                    document.getElementById('cropperModal').classList.remove('hidden');
+                    if(cropper) cropper.destroy();
+                    cropper = new Cropper(document.getElementById('cropperImage'), {
+                        viewMode: 1,
+                        autoCropArea: 1, // Select the whole image by default
+                        // Removed aspectRatio constraint to allow free cropping
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function closeCropper() { document.getElementById('cropperModal').classList.add('hidden'); cropper.destroy(); }
+        function applyCrop() {
+            cropper.getCroppedCanvas().toBlob(blob => {
+                croppedBlob = blob;
+                document.getElementById('previewImg').src = cropper.getCroppedCanvas().toDataURL();
+                closeCropper();
+            });
+        }
+
+        document.getElementById('profileForm').onsubmit = function(e) {
             e.preventDefault();
-            if (!validatePassword()) { alert('Vui lòng đảm bảo mật khẩu khớp nhau.'); return; }
-            const currentPhone = "{{ nha_xe.SoDienThoai }}";
-            const newPhone = document.getElementById('phoneNumber').value;
-            const newPw = pwInput.value;
-
-            if (((newPhone && newPhone !== currentPhone) || (newPw !== '')) && !isVerified) {
-                const formData = new FormData();
-                formData.append('action', 'send_otp');
-                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-                try {
-                    const resp = await fetch(window.location.href, { method: 'POST', body: formData });
-                    const data = await resp.json();
-                    if (data.status === 'sent') otpModal.classList.remove('hidden');
-                } catch (err) { alert('Lỗi kết nối máy chủ khi gửi mã xác thực.'); }
+            const pass = document.getElementById('passInput').value;
+            const confirm = document.getElementById('confirmPassInput').value;
+            const errSpan = document.getElementById('passError');
+            if (pass && pass !== confirm) {
+                errSpan.style.display = 'block';
+                document.getElementById('confirmPassInput').focus();
                 return;
             }
-            saveData();
-        });
+            errSpan.style.display = 'none';
+            // Kiểm tra SĐT trước khi gửi
+            const phone = document.getElementById('phoneInput').value;
+            const phoneError = document.getElementById('phoneError');
+            const phoneRegex = /^0\d{9}$/;
+            if (phone && !phoneRegex.test(phone)) {
+                phoneError.style.display = 'block';
+                document.getElementById('phoneInput').focus();
+                return;
+            }
+            phoneError.style.display = 'none';
 
-        const saveData = async () => {
-            const formData = new FormData(profileForm);
+            const formData = new FormData(this);
             formData.append('action', 'save');
-            if (isVerified) formData.append('otp', otpInput.value);
-            try {
-                const resp = await fetch(window.location.href, { method: 'POST', body: formData });
-                const data = await resp.json();
-                if (data.status === 'success') { alert(data.message); location.reload(); }
-                else alert(data.message || 'Có lỗi xảy ra.');
-            } catch (err) { alert('Lỗi khi lưu thông tin.'); }
+            if(croppedBlob) formData.append('anh_dai_dien', croppedBlob, 'banner.jpg');
+            fetch('', {method: 'POST', body: formData})
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'success') {
+                    location.reload();
+                } else {
+                    let errDiv = document.getElementById('formErrorMsg');
+                    if (!errDiv) {
+                        errDiv = document.createElement('p');
+                        errDiv.id = 'formErrorMsg';
+                        errDiv.style.cssText = 'color:#e74c3c;text-align:center;margin-top:10px;font-size:0.9rem;font-weight:500;';
+                        document.querySelector('.bottom-actions').insertAdjacentElement('afterend', errDiv);
+                    }
+                    errDiv.textContent = '⚠️ ' + d.message;
+                }
+            });
         };
-
-        btnCancelOTP.addEventListener('click', () => { otpModal.classList.add('hidden'); otpInput.value = ''; });
-        btnVerifyOTP.addEventListener('click', () => {
-            if (otpInput.value.length === 6) { isVerified = true; otpModal.classList.add('hidden'); saveData(); }
-            else alert('Vui lòng nhập mã xác thực 6 chữ số.');
-        });
-    });
-
-    function previewFile() {
-        const preview = document.getElementById('previewImg');
-        const file = document.getElementById('fileInput').files[0];
-        const reader = new FileReader();
-        reader.onloadend = () => preview.src = reader.result;
-        if (file) reader.readAsDataURL(file);
-    }
-</script>
-{% endblock %}
+    </script>
+</body>
+</html>
