@@ -211,21 +211,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="welcome-banner" style="background: white; padding: 25px 35px; border-radius: 24px; display: flex; align-items: center; gap: 25px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02);">
-    <div class="driver-avatar-large" style="width: 85px; height: 85px; border-radius: 50%; overflow: hidden; border: 4px solid #EBF8FF; flex-shrink: 0;">
-        {% if avatar_url %}
-            <img src="{{ avatar_url }}" alt="Driver Avatar" style="width: 100%; height: 100%; object-fit: cover;">
-        {% else %}
-            <div style="width: 100%; height: 100%; background: #f1f5f9; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-user" style="font-size: 2.5rem; color: #cbd5e1;"></i>
-            </div>
-        {% endif %}
-    </div>
-    <div class="welcome-text">
-        <h2 style="margin: 0; font-size: 1.8rem; font-weight: 800; color: #1e293b;">Chào buổi sáng, {{ ten_taixe }}! 👋</h2>
-        <p style="margin: 5px 0 0; color: #64748b; font-weight: 600; font-size: 1rem;">Chúc bạn một ngày làm việc thuận lợi và an toàn trên mọi cung đường.</p>
-    </div>
-</div>
+
 
 <div class="stats-row">
     <!-- Tổng chuyến tuần -->

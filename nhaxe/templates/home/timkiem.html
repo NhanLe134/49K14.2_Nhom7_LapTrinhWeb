@@ -788,8 +788,8 @@
 
                                         // Quy tắc sắp xếp theo loại xe
                                         let layout = [];
-                                        if (seatCount <= 3) { // Xe 4 chỗ
-                                            layout = [['A2', null, 'A3'], ['A1', null, 'STEERING']];
+                                        if (seatCount <= 4) { // Xe 4 chỗ
+                                            layout = [['A2', 'A3', 'A4'], ['A1', null, 'STEERING']];
                                         } else if (seatCount <= 7) { // Xe 7 chỗ
                                             layout = [['B7', 'B6', 'B5'], ['B2', 'B3', 'B4'], ['B1', null, 'STEERING']];
                                         } else { // Xe 9 chỗ

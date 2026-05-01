@@ -95,7 +95,7 @@
                                 <div class="ticket-divider-dashed"></div>
                             </div>
                             <div class="ticket-card-bottom">
-                                <div class="ticket-status">
+                                <div class="ticket-status booked">
                                     <i class="fa-solid fa-circle-check"></i>
                                     <span>Đã đặt</span>
                                 </div>
@@ -147,7 +147,7 @@
                                 <div class="ticket-divider-dashed"></div>
                             </div>
                             <div class="ticket-card-bottom">
-                                <div class="ticket-status" style="color: #10B981;">
+                                <div class="ticket-status completed">
                                     <i class="fa-solid fa-circle-check"></i>
                                     <span>{% if v.da_danh_gia %}Đã hoàn thành{% else %}Đã đi{% endif %}</span>
                                 </div>
@@ -194,8 +194,8 @@
                                 <div class="ticket-divider-dashed"></div>
                             </div>
                             <div class="ticket-card-bottom">
-                                <div class="ticket-status" style="color: #64748B;">
-                                    <i class="fa-solid fa-circle-xmark"></i>
+                                <div class="ticket-status cancelled">
+                                    <i class="fa-solid fa-ban"></i>
                                     <span>Đã hủy</span>
                                 </div>
                             </div>
@@ -449,18 +449,18 @@
                 if (payBtn) payBtn.style.display = 'none';
 
                 if (status === 'Đã hủy') {
-                    statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i><span>Đã hủy</span>';
-                    statusEl.className = 'value';
-                    statusEl.style.color = '#64748B';
+                    statusEl.innerHTML = '<i class="fa-solid fa-ban"></i><span>Đã hủy</span>';
+                    statusEl.className = 'value cancelled';
+                    statusEl.style.color = ''; // Clear inline style to let CSS class take over
                     if (cancelBtn) cancelBtn.style.display = 'none';
                 } else if (status === 'Đã đi' || status === 'Đã hoàn thành') {
                     statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Đã hoàn thành</span>';
-                    statusEl.className = 'value';
-                    statusEl.style.color = '#10B981';
+                    statusEl.className = 'value completed';
+                    statusEl.style.color = '';
                     if (cancelBtn) cancelBtn.style.display = 'none';
-                } else if (status === 'Chưa thanh toán') {
-                    statusEl.innerHTML = '<i class="fa-regular fa-clock"></i><span>Chưa thanh toán</span>';
-                    statusEl.className = 'value orange';
+                } else if (status === 'Chưa thanh toán' || status === 'Đã đặt') {
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Đã đặt</span>';
+                    statusEl.className = 'value booked';
                     if (payBtn) {
                         payBtn.style.display = 'flex';
                         payBtn.href = `/payment/${id}/`;
@@ -468,8 +468,8 @@
                 } else {
                     // Đã thanh toán (nhưng chưa đi)
                     statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Đã thanh toán</span>';
-                    statusEl.className = 'value';
-                    statusEl.style.color = '#10B981';
+                    statusEl.className = 'value completed';
+                    statusEl.style.color = '';
                 }
 
                 // Gán sự kiện cho nút hủy trong modal

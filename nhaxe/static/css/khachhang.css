@@ -412,35 +412,53 @@ a:active {
     object-fit: cover;
 }
 
-/* New Footer */
-.footer-new {
-    background-color: #06A0E2;
-    color: white;
+/* Figma Footer */
+.footer-figma {
+    background-color: #13B5F6;
+    height: 75px;
+    width: calc(100% - 260px); /* Subtract sidebar width */
+    margin-left: 260px; /* Start after sidebar */
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 60px;
-    padding: 22px 0;
-    width: 100%;
-    margin-top: auto;
-    flex-shrink: 0;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
 }
 
-.footer-item {
+.footer-figma-container {
     display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+    justify-content: center;
+}
+
+.footer-figma-item {
+    display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 10px;
+}
+
+.footer-figma-item i {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-figma-item span {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 24px;
+    color: #FFFFFF;
     white-space: nowrap;
-    font-weight: 500;
 }
-
-.footer-item i {
-    font-size: 1.1rem;
-}
-
-.footer-item.address i { color: #FB7185; }
-.footer-item.hotline i { color: #4ADE80; }
-.footer-item.email i { color: #000000; }
 
 /* ===================== PAYMENT PAGE ===================== */
 .payment-wrapper {

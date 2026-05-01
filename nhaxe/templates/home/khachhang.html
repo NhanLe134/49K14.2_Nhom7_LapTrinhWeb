@@ -126,41 +126,29 @@
             </div>
 
 
-            <!-- Footer mới nằm trong main-content -->
-            <footer class="footer-new">
-                <div class="footer-item">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <span>123 Đường 2/9, Hải Châu, Đà Nẵng</span>
-                </div>
-                <div class="footer-item">
-                    <i class="fa-solid fa-phone"></i>
-                    <span>Hotline: 1900 63 39 63</span>
-                </div>
-                <div class="footer-item">
-                    <i class="fa-solid fa-envelope"></i>
-                    <span>Email: hungcuong@nxe.vn</span>
-                </div>
-            </footer>
+
         </main>
     </div>
-
-    <!-- Footer -->
-    {% if request.resolver_match.url_name == 'khachhang' %}
-    <footer class="footer-banner">
-        <div class="footer-item address">
-            <i class="fa-solid fa-location-dot"></i>
-            <span>123 Đường 2/9, Hải Châu, Đà Nẵng</span>
-        </div>
-        <div class="footer-item hotline">
-            <i class="fa-solid fa-phone"></i>
-            <span>Hotline: 1900 63 39 63</span>
-        </div>
-        <div class="footer-item email">
-            <i class="fa-solid fa-envelope"></i>
-            <span>Email: hungcuong@nxe.vn</span>
+    
+    <!-- Footer Figma -->
+    <footer class="footer-figma">
+        <div class="footer-figma-container">
+            <div class="footer-figma-item">
+                <i class="fa-solid fa-location-dot" style="color: #FB7185;"></i>
+                <span>123 Đường 2/9, Hải Châu, Đà Nẵng</span>
+            </div>
+            <div class="footer-figma-item">
+                <i class="fa-solid fa-phone" style="color: #4ADE80;"></i>
+                <span>Hotline: 1900 63 39 63</span>
+            </div>
+            <div class="footer-figma-item">
+                <i class="fa-solid fa-envelope" style="color: #000000;"></i>
+                <span>Email: hungcuong@nxe.vn</span>
+            </div>
         </div>
     </footer>
-    {% endif %}
+
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

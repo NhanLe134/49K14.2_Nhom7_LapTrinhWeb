@@ -45,7 +45,7 @@ def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
             tong_ghe_xe = cx.Xe.Loaixe.SoCho
             # Quy tắc trừ ghế tài xế của bạn
             if tong_ghe_xe == 4:
-                tong_ghe_ban = 3
+                tong_ghe_ban = 4
             elif tong_ghe_xe == 7:
                 tong_ghe_ban = 7
             elif tong_ghe_xe == 9:
@@ -98,7 +98,7 @@ def lay_so_do_ghe(chuyen_xe_id):
         tong_cho = chuyen.Xe.Loaixe.SoCho if chuyen.Xe and chuyen.Xe.Loaixe else 4
 
         if tong_cho == 4:
-            prefix, count = "A", 3
+            prefix, count = "A", 4
         elif tong_cho == 7:
             prefix, count = "B", 7
         elif tong_cho == 9:

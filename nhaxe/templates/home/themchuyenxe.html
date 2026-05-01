@@ -161,13 +161,7 @@
 <div class="form-container">
     <h2 class="form-title">FORM ĐIỀN THÔNG TIN CHUYẾN XE</h2>
 
-    {% if messages %}
-    <ul class="django-messages" style="list-style: none; padding: 0; margin-bottom: 20px;">
-        {% for msg in messages %}
-        <li class="msg-{{ msg.tags }}" style="padding: 12px 20px; border-radius: 10px; margin-bottom: 10px; font-weight: 500; {% if 'success' in msg.tags %}background: #dcfce7; color: #166534;{% else %}background: #fee2e2; color: #dc2626;{% endif %}">{{ msg }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+
 
     <form id="tripForm" method="POST" action="{% url 'themchuyenxe' %}">
         {% csrf_token %}

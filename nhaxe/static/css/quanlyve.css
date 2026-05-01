@@ -453,9 +453,20 @@ body {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
-    color: #0EA5E9 !important;
     font-size: 13.6px !important;
     font-weight: 700 !important;
+}
+
+.ticket-status.cancelled {
+    color: rgba(102, 102, 102, 0.9) !important;
+}
+
+.ticket-status.completed {
+    color: rgba(46, 204, 113, 0.72) !important;
+}
+
+.ticket-status.booked {
+    color: #0EA5E9 !important;
 }
 
 .btn-cancel-ticket {
