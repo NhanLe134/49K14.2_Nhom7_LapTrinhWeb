@@ -45,7 +45,7 @@ def send_registration_otp(request):
         if len(password) < 8:
             return JsonResponse({'status': 'error', 'message': 'Mật khẩu phải có ít nhất 8 ký tự.'}, status=400)
         
-        if re.search(r'[!@#$%^&*(),.?":{}|<>]', ho_va_ten):
+        if re.search(r'[!@#$%^&*(),.?":{}|<>]', hoVaTen): # Changed ho_va_ten to hoVaTen
             return JsonResponse({'status': 'error', 'message': 'Họ tên không được chứa ký tự đặc biệt.'}, status=400)
 
         if User_Authentication.objects.filter(TenDangNhap=username).exists():
@@ -211,7 +211,7 @@ def verify_and_register_nhaxe(request):
                 new_id_num = last_id_num + 1
                 new_nx_id = f"NX{new_id_num:05d}"
 
-            Nhaxe.objects.create(
+            new_nhaxe = Nhaxe.objects.create(
                 NhaxeID=new_nx_id,
                 TenNhaXe=registration_data.get('tenNhaXe'),
                 DiaChiTruSo=registration_data.get('diaChiTruSo'),
@@ -227,6 +227,28 @@ def verify_and_register_nhaxe(request):
                 SoDienThoai=registration_data.get('phone'),
                 Nhaxe_id=new_nx_id
             )
+            
+            # --- Bổ sung logic khởi tạo loại xe mặc định cho nhà xe mới ---
+            default_car_types = [
+                {'id': 'LX00001', 'seats': 4, 'name': 'Xe 4 chỗ'},
+                {'id': 'LX00002', 'seats': 7, 'name': 'Xe 7 chỗ'},
+                {'id': 'LX00003', 'seats': 9, 'name': 'Xe 9 chỗ'},
+            ]
+
+            for car_type_data in default_car_types:
+                loaixe_obj, created = Loaixe.objects.get_or_create(
+                    LoaixeID=car_type_data['id'],
+                    defaults={'SoCho': car_type_data['seats'], 'TenLoaiXe': car_type_data['name']}
+                )
+                # Tạo CHITIETLOAIXE cho nhà xe mới với giá mặc định là 0
+                CHITIETLOAIXE.objects.create(
+                    Nhaxe=new_nhaxe,
+                    Loaixe=loaixe_obj,
+                    TenLoaiXe=car_type_data['name'], # Tên mặc định
+                    GiaVe=0, # Giá khởi tạo là 0
+                    NgayCapNhatGia=datetime.now().date()
+                )
+            # --- Kết thúc logic bổ sung ---
         
         del request.session['registration_data_nhaxe']
         del request.session['registration_otp_nhaxe']
@@ -709,25 +731,22 @@ def quanly_loaixe(request):
     ).select_related('TuyenXe')
     overdue_trips_count = overdue_trips.count()
 
-    # Danh sách 3 loại xe mặc định theo yêu cầu thiết kế
-    loaixe_list = [
-        {'LoaiXeId': 'LX00001', 'TenLoaiXe': 'Loại xe A', 'SoGhe': '4', 'GiaVe': None, 'NgayCapNhat': None},
-        {'LoaiXeId': 'LX00002', 'TenLoaiXe': 'Loại xe B', 'SoGhe': '7', 'GiaVe': None, 'NgayCapNhat': None},
-        {'LoaiXeId': 'LX00003', 'TenLoaiXe': 'Loại xe C', 'SoGhe': '9', 'GiaVe': None, 'NgayCapNhat': None}
-    ]
-    try:
-        api_data = Loaixe.objects.all()
-        for xe_api in api_data:
-            for xe_macdinh in loaixe_list:
-                if str(xe_api.SoCho) == str(xe_macdinh['SoGhe']):
-                    xe_macdinh['LoaiXeId'] = xe_api.LoaixeID
-                    xe_macdinh['GiaVe'] = xe_api.GiaVe
-                    xe_macdinh['NgayCapNhat'] = xe_api.NgayCapNhatGia.strftime('%Y-%m-%d') if xe_api.NgayCapNhatGia else None
-    except Exception as e:
-        print(f"Lỗi lấy dữ liệu từ database: {e}")
+    # Lấy thông tin loại xe và giá từ CHITIETLOAIXE của nhà xe hiện tại
+    loaixe_list_for_nhaxe = CHITIETLOAIXE.objects.filter(Nhaxe=nha_xe_obj).select_related('Loaixe').order_by('Loaixe__SoCho')
+    
+    # Chuẩn bị dữ liệu để truyền vào template
+    loaixe_data = []
+    for ctlx in loaixe_list_for_nhaxe:
+        loaixe_data.append({
+            'LoaiXeId': ctlx.Loaixe.LoaixeID,
+            'TenLoaiXe': ctlx.TenLoaiXe or ctlx.Loaixe.TenLoaiXe, # Ưu tiên tên tùy chỉnh, nếu không có thì dùng tên mặc định
+            'SoGhe': ctlx.Loaixe.SoCho,
+            'GiaVe': ctlx.GiaVe,
+            'NgayCapNhat': ctlx.NgayCapNhatGia.strftime('%Y-%m-%d') if ctlx.NgayCapNhatGia else None
+        })
 
     return render(request, 'home/quanly_loaixe.html', {
-        'loaixe_list': loaixe_list,
+        'loaixe_list': loaixe_data, # Đã đổi tên biến để tránh nhầm lẫn
         'nha_xe': nha_xe_obj,
         'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
         'overdue_trips': overdue_trips,
@@ -736,17 +755,18 @@ def quanly_loaixe(request):
 
 def capnhat_gia_loaixe(request, pk):
     if request.method == 'POST':
+        nha_xe_id = request.session.get('user_id')
+        if not nha_xe_id:
+            messages.error(request, "Bạn cần đăng nhập để thực hiện chức năng này.")
+            return redirect('dangnhap')
+            
         gia_moi = request.POST.get('gia_ve')
         try:
-            xe, created = Loaixe.objects.get_or_create(LoaixeID=pk)
-            xe.GiaVe = gia_moi
-            xe.NgayCapNhatGia = datetime.now().date()
-            if created:
-                so_cho = 4
-                if pk == 'LX00002': so_cho = 7
-                if pk == 'LX00003': so_cho = 9
-                xe.SoCho = so_cho
-            xe.save()
+            # Tìm CHITIETLOAIXE của nhà xe hiện tại và loại xe được chọn
+            chitiet_loaixe = get_object_or_404(CHITIETLOAIXE, Nhaxe_id=nha_xe_id, Loaixe_id=pk)
+            chitiet_loaixe.GiaVe = gia_moi
+            chitiet_loaixe.NgayCapNhatGia = datetime.now().date()
+            chitiet_loaixe.save()
             messages.success(request, "Cập nhật giá vé thành công!")
         except Exception as e:
             messages.error(request, f"Lỗi cập nhật CSDL: {e}")
@@ -795,8 +815,20 @@ def quan_ly_xe(request):
                     num = int(''.join(filter(str.isdigit, last_loai.LoaixeID))) + 1
                     loaixe_id = f"LX{num:05d}"
                 else: loaixe_id = "LX00001"
-                Loaixe.objects.create(LoaixeID=loaixe_id, SoCho=int(new_loai_socho), GiaVe=new_loai_gia, NgayCapNhatGia=today)
-                CHITIETLOAIXE.objects.create(Nhaxe_id=nha_xe_id, Loaixe_id=loaixe_id, TenLoaiXe=f"Loại xe {new_loai_socho} chỗ")
+                
+                # Tạo Loaixe chung (nếu chưa có)
+                loaixe_obj, created = Loaixe.objects.get_or_create(
+                    LoaixeID=loaixe_id,
+                    defaults={'SoCho': int(new_loai_socho), 'TenLoaiXe': f"Loại xe {new_loai_socho} chỗ"}
+                )
+                # Tạo CHITIETLOAIXE cho nhà xe hiện tại
+                CHITIETLOAIXE.objects.create(
+                    Nhaxe=nha_xe_obj,
+                    Loaixe=loaixe_obj,
+                    TenLoaiXe=f"Loại xe {new_loai_socho} chỗ",
+                    GiaVe=new_loai_gia,
+                    NgayCapNhatGia=today
+                )
 
             if xe_id:
                 xe = Xe.objects.filter(XeID=xe_id).first()
@@ -814,7 +846,8 @@ def quan_ly_xe(request):
         return redirect('quan_ly_xe')
 
     vehicles = Xe.objects.filter(Nhaxe_id=nha_xe_id).select_related('Loaixe')
-    vehicle_types = Loaixe.objects.all()
+    # Lấy các loại xe mà nhà xe này có CHITIETLOAIXE
+    vehicle_types = Loaixe.objects.filter(chitietloaixe__Nhaxe=nha_xe_obj).distinct()
     return render(request, 'home/quan_ly_xe.html', {
         'vehicles': vehicles,
         'vehicle_types': vehicle_types,

@@ -33,11 +33,11 @@ class ChiTietTaiXeAdmin(admin.ModelAdmin):
 
 @admin.register(Loaixe)
 class LoaixeAdmin(admin.ModelAdmin):
-    list_display = ('LoaixeID', 'SoCho', 'GiaVe', 'NgayCapNhatGia')
+    list_display = ('LoaixeID', 'TenLoaiXe', 'SoCho') # Đã loại bỏ GiaVe và NgayCapNhatGia, thêm TenLoaiXe
 
 @admin.register(CHITIETLOAIXE)
 class ChiTietLoaiXeAdmin(admin.ModelAdmin):
-    list_display = ('Nhaxe', 'Loaixe', 'TenLoaiXe')
+    list_display = ('Nhaxe', 'Loaixe', 'TenLoaiXe', 'GiaVe', 'NgayCapNhatGia') # Thêm GiaVe và NgayCapNhatGia vào đây
 
 @admin.register(Xe)
 class XeAdmin(admin.ModelAdmin):

@@ -95,20 +95,22 @@ class CHITIETTAIXE(models.Model):
 # 6. Bảng Loaixe (Loại xe)
 class Loaixe(models.Model):
     LoaixeID = models.CharField(max_length=10, primary_key=True)
-    NgayCapNhatGia = models.DateField(null=True, blank=True)
+    TenLoaiXe = models.CharField(max_length=50, null=True, blank=True) # Thêm trường này
     SoCho = models.IntegerField(validators=[MinValueValidator(1)])
     SoDoGheNgoiURL = models.CharField(max_length=255, null=True, blank=True)
-    GiaVe = models.DecimalField(max_digits=12, decimal_places=0)
+    # GiaVe và NgayCapNhatGia đã được di chuyển sang CHITIETLOAIXE
 
     def __str__(self):
-        return self.LoaixeID
+        return self.TenLoaiXe or self.LoaixeID
 
 # 7. Bảng CHITIETLOAIXE (Chi tiết loại xe - Liên kết nhà xe)
 class CHITIETLOAIXE(models.Model):
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.CASCADE)
     Loaixe = models.ForeignKey(Loaixe, on_delete=models.CASCADE)
-    TenLoaiXe = models.CharField(max_length=50, null=True, blank=True)
-    Tennhaxe = models.CharField(max_length=200, null=True, blank=True)
+    TenLoaiXe = models.CharField(max_length=50, null=True, blank=True) # Tên tùy chỉnh của nhà xe cho loại xe này
+    GiaVe = models.DecimalField(max_digits=12, decimal_places=0, default=0) # Giá riêng của nhà xe cho loại xe này
+    NgayCapNhatGia = models.DateField(null=True, blank=True) # Ngày cập nhật giá riêng
+    # Tennhaxe có vẻ không cần thiết nếu đã có Nhaxe FK
 
     class Meta:
         unique_together = (('Nhaxe', 'Loaixe'),)
