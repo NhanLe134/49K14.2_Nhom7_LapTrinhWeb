@@ -66,6 +66,23 @@ body { background-color: #e6f7ff; }
 .btn-outline:hover { background-color: #f0faff; }
 .btn-fill { background-color: #13B5F6; border: 1px solid #13B5F6; color: white; }
 .btn-fill:hover { opacity: 0.8; }
+.success-icon-wrapper {
+    margin-bottom: 20px;
+}
+.check-circle-outline {
+    width: 70px;
+    height: 70px;
+    border: 3px solid #28a745;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+}
+.check-circle-outline i {
+    color: #28a745;
+    font-size: 35px;
+}
 .alert-icon { width: 45px; height: 45px; margin: 0 auto 15px auto; }
 .alert-icon svg { width: 100%; height: 100%; }
 .footer {

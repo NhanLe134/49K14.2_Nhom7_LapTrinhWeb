@@ -458,15 +458,19 @@ body {
 }
 
 .ticket-status.cancelled {
-    color: rgba(102, 102, 102, 0.9) !important;
+    color: #64748B !important;
 }
 
 .ticket-status.completed {
-    color: rgba(46, 204, 113, 0.72) !important;
+    color: #2ECC71 !important;
 }
 
 .ticket-status.booked {
     color: #0EA5E9 !important;
+}
+
+.ticket-status.pending {
+    color: #2563EB !important;
 }
 
 .btn-cancel-ticket {
@@ -695,6 +699,18 @@ body {
 
 .modal-ticket-body .value.orange {
     color: #FF9800;
+}
+
+.modal-ticket-body .value.cancelled {
+    color: #64748B;
+}
+
+.modal-ticket-body .value.completed {
+    color: #2ECC71;
+}
+
+.modal-ticket-body .value.pending {
+    color: #2563EB;
 }
 
 .modal-ticket-body .divider-dashed {

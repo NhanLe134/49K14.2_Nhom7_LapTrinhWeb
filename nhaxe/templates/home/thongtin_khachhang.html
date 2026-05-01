@@ -170,11 +170,9 @@
     <div id="successModal" class="kh-modal-overlay">
         <div class="kh-modal-box new-success-alert">
             <div class="new-success-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
+                <div class="check-circle">
+                    <i class="fa-solid fa-check"></i>
+                </div>
             </div>
             <p class="new-success-message">Cập nhật thông tin khách hàng<br>thành công</p>
         </div>
@@ -691,7 +689,9 @@
             modal.classList.add('show-modal');
             setTimeout(() => {
                 modal.classList.remove('show-modal');
-            }, 2500);
+                // Tự động quay trở lại màn hình thông tin (tải lại trang)
+                window.location.href = "{% url 'thongtin_khachhang' %}";
+            }, 2000);
         }
     </script>
     <script src="{% static 'js/common.js' %}"></script>

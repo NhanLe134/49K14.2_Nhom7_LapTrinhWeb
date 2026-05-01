@@ -6,12 +6,12 @@
 
 .search-card {
     background-color: #F6FCFF;
-    border-radius: 14px;
-    padding: 25px 40px;
-    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
-    margin-bottom: 40px;
+    border-radius: 12px;
+    padding: 20px 30px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
     width: 100%;
-    min-height: 320px;
+    min-height: 250px;
 }
 
 .search-form {
@@ -21,8 +21,8 @@
 
 .form-row {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    gap: 30px; /* Consistent gap */
+    margin-bottom: 25px;
 }
 
 .locations-row {
@@ -30,8 +30,7 @@
 }
 
 .times-row {
-    justify-content: space-between;
-    gap: 150px;
+    gap: 30px; /* Matching locations-row gap */
 }
 
 .form-group {
@@ -42,20 +41,20 @@
 
 .form-group label {
     font-family: 'Montserrat', sans-serif;
-    font-size: 18px;
+    font-size: 15px;
     color: rgba(0, 0, 0, 0.8);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     font-weight: 700;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 18px;
+    padding: 10px 15px;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     background-color: #F6F6F6;
     font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 400;
     color: #000;
     outline: none;
@@ -252,6 +251,8 @@
     grid-template-columns: repeat(auto-fill, minmax(432px, 1fr));
     gap: 30px;
     width: 100%;
+    padding-left: 35px; /* Pushed to the right a bit */
+    justify-content: center;
 }
 
 .ticket-card {
@@ -455,7 +456,8 @@
 
 .seat-selection-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Center the whole block */
+    gap: 100px; /* Increased gap to push them towards the sides */
     width: 100%;
     margin-top: 15px;
 }
@@ -729,6 +731,7 @@
     text-decoration: none;
     font-weight: 600;
     font-size: 0.9rem;
+    margin-right: 15px; /* Added margin to push away from edge */
 }
 
 .btn-clear-all:hover {
@@ -739,8 +742,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-height: 230px;
-    overflow-y: auto;
+    /* Removed max-height to allow expansion */
     padding-right: 8px;
 }
 

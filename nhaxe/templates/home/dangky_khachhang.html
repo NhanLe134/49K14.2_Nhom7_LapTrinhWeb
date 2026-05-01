@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng ký tài khoản khách hàng</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/khachhang_dangky_style.css' %}">
     <style>
         /* Thêm style cho viền đỏ khi có lỗi */
@@ -114,8 +115,12 @@
 
     <div id="successModal" class="modal-overlay">
         <div class="alert-modal-container">
-            <div class="alert-icon">&#10003;</div>
-            <p class="alert-message" id="successMessageText">Tạo tài khoản thành công</p>
+            <div class="success-icon-wrapper">
+                <div class="check-circle-outline">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+            </div>
+            <p class="alert-message" id="successMessageText" style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: #333;">Tạo tài khoản thành công</p>
         </div>
     </div>
 

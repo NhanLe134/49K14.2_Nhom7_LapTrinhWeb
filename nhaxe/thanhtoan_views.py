@@ -57,16 +57,15 @@ def xac_nhan_thanh_toan(request, ve_id):
         ve = get_object_or_404(Ve, pk=ve_id)
         phuong_thuc = request.POST.get('phuong_thuc')
         if phuong_thuc == 'Tiền mặt':
-            ve.TrangThaiThanhToan = "Chưa thanh toán (Tiền mặt)"
+            ve.TrangThaiThanhToan = "Chưa thanh toán"
             ve.save()
         else:
             ThanhToan.objects.get_or_create(Ve=ve, defaults={'ThanhToanID': tao_ma_thanh_toan_tu_dong(), 'SoTien': ve.GiaVe, 'NgayThanhToan': timezone.now(), 'DaQuyetToan': False})
-            ve.TrangThaiThanhToan = "Chờ xác nhận"
+            ve.TrangThaiThanhToan = "Chưa thanh toán"
             ve.save()
             messages.success(request, "Vui lòng chuyển khoản để hoàn tất.")
         return redirect('quanlyve')
     return redirect('quanlyve')
-
 @csrf_exempt
 def webhook_sepay(request):
     try:

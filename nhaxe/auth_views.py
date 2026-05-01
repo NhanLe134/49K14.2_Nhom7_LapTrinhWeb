@@ -1,8 +1,14 @@
-from django.shortcuts import render, redirect
+from datetime import datetime
+import random
+import json
+import time
+import re
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.http import JsonResponse
 from django.conf import settings
-from django.views.decorators.http import require_http_methods
-from .models import User_Authentication
+from django.db import transaction
+from .models import User_Authentication, KhachHang, Nhaxe, Loaixe, CHITIETLOAIXE
 
 # ==================== ĐĂNG NHẬP / ĐĂNG XUẤT ====================
 
@@ -136,3 +142,238 @@ def _redirect_by_role(role: str):
     }
     url_name = ROLE_MAP.get(role, 'khachhang')  # mặc định → khách hàng
     return redirect(url_name)
+
+
+# ==================== ĐĂNG KÝ & OTP ====================
+
+def quen_mat_khau(request):
+    return render(request, 'home/quen_mat_khau.html')
+
+def dangky_khachhang(request):
+    return render(request, 'home/dangky_khachhang.html')
+
+def dangky_nhaxe(request):
+    return render(request, 'home/dangky_nhaxe.html')
+
+
+def send_registration_otp(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        phone = data.get('phone')
+        hoVaTen = data.get('hoVaTen')
+        ngaySinh = data.get('ngaySinh')
+
+        if not all([username, password, phone, hoVaTen, ngaySinh]):
+            return JsonResponse({'status': 'error', 'message': 'Dữ liệu không đầy đủ.'}, status=400)
+        
+        if len(password) < 8:
+            return JsonResponse({'status': 'error', 'message': 'Mật khẩu phải có ít nhất 8 ký tự.'}, status=400)
+        
+        if re.search(r'[!@#$%^&*(),.?":{}|<>]', hoVaTen):
+            return JsonResponse({'status': 'error', 'message': 'Họ tên không được chứa ký tự đặc biệt.'}, status=400)
+
+        if User_Authentication.objects.filter(TenDangNhap=username).exists():
+            return JsonResponse({'status': 'error', 'message': 'Tên đăng nhập đã tồn tại.'}, status=400)
+        
+        if User_Authentication.objects.filter(SoDienThoai=phone).exists():
+            return JsonResponse({'status': 'error', 'message': 'Số điện thoại đã được sử dụng.'}, status=400)
+
+
+        otp = str(random.randint(100000, 999999))
+        request.session['registration_data'] = data
+        request.session['registration_otp'] = otp
+        request.session['otp_timestamp'] = time.time()
+        
+        print(f"SIMULATION: OTP for {phone} is {otp}")
+
+        return JsonResponse({'status': 'success', 'message': 'OTP has been sent (simulation).'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': 'Lỗi hệ thống. Vui lòng thử lại sau!'}, status=500)
+
+def verify_and_register(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        otp_entered = str(data.get('otp', '')).strip()
+        
+        registration_data = request.session.get('registration_data')
+        registration_otp = str(request.session.get('registration_otp', '')).strip()
+        otp_timestamp = request.session.get('otp_timestamp')
+
+        if not all([registration_data, registration_otp, otp_timestamp]):
+            return JsonResponse({'status': 'error', 'message': 'Phiên đăng ký đã hết hạn. Vui lòng thử lại.'}, status=400)
+
+        if time.time() - otp_timestamp > 180:
+            del request.session['registration_data']
+            del request.session['registration_otp']
+            del request.session['otp_timestamp']
+            return JsonResponse({'status': 'error', 'message': 'Mã OTP đã hết hạn. Vui lòng gửi lại mã.'}, status=400)
+
+        if not otp_entered:
+            return JsonResponse({'status': 'error', 'message': 'Vui lòng nhập mã OTP.'}, status=400)
+
+        if otp_entered != registration_otp:
+            return JsonResponse({'status': 'error', 'message': 'Mã xác thực không đúng.'}, status=400)
+
+        with transaction.atomic():
+            last_kh = KhachHang.objects.order_by('KhachHangID').last()
+            new_kh_id = "KH00001"
+            if last_kh:
+                last_id_num = int(last_kh.KhachHangID[2:])
+                new_id_num = last_id_num + 1
+                new_kh_id = f"KH{new_id_num:05d}"
+
+            KhachHang.objects.create(
+                KhachHangID=new_kh_id,
+                HovaTen=registration_data.get('hoVaTen'),
+                NgaySinh=registration_data.get('ngaySinh'),
+                Email=registration_data.get('email')
+            )
+
+            User_Authentication.objects.create(
+                UserID=new_kh_id,
+                TenDangNhap=registration_data.get('username'),
+                MatKhau=registration_data.get('password'),
+                Vaitro='Khách hàng',
+                SoDienThoai=registration_data.get('phone'),
+                KhachHang_id=new_kh_id
+            )
+        
+        del request.session['registration_data']
+        del request.session['registration_otp']
+        del request.session['otp_timestamp']
+
+        return JsonResponse({'status': 'success', 'message': 'Tạo tài khoản thành công!'})
+
+    except Exception as e:
+        print(f"Error during registration: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Lỗi hệ thống. Vui lòng thử lại sau!'}, status=500)
+
+
+def send_registration_otp_nhaxe(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        phone = data.get('phone')
+        tenNhaXe = data.get('tenNhaXe')
+        hotenDaiDien = data.get('hotenDaiDien')
+        diaChiTruSo = data.get('diaChiTruSo')
+
+        if not all([username, password, phone, tenNhaXe, hotenDaiDien, diaChiTruSo]):
+            return JsonResponse({'status': 'error', 'message': 'Dữ liệu không đầy đủ.'}, status=400)
+        
+        if len(password) < 8:
+            return JsonResponse({'status': 'error', 'message': 'Mật khẩu phải có ít nhất 8 ký tự.'}, status=400)
+        
+        if User_Authentication.objects.filter(TenDangNhap=username).exists():
+            return JsonResponse({'status': 'error', 'message': 'Tên đăng nhập đã tồn tại.'}, status=400)
+        
+        if User_Authentication.objects.filter(SoDienThoai=phone).exists():
+            return JsonResponse({'status': 'error', 'message': 'Số điện thoại đã được sử dụng.'}, status=400)
+            
+        if Nhaxe.objects.filter(SoDienThoai=phone).exists():
+             return JsonResponse({'status': 'error', 'message': 'Số điện thoại đã được sử dụng.'}, status=400)
+
+        otp = str(random.randint(100000, 999999))
+        request.session['registration_data_nhaxe'] = data
+        request.session['registration_otp_nhaxe'] = otp
+        request.session['otp_timestamp_nhaxe'] = time.time()
+        
+        print(f"SIMULATION: OTP for Nha Xe {phone} is {otp}")
+
+        return JsonResponse({'status': 'success', 'message': 'OTP has been sent (simulation).'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': 'Lỗi hệ thống. Vui lòng thử lại sau!'}, status=500)
+
+
+def verify_and_register_nhaxe(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        otp_entered = data.get('otp')
+        
+        registration_data = request.session.get('registration_data_nhaxe')
+        registration_otp = request.session.get('registration_otp_nhaxe')
+        otp_timestamp = request.session.get('otp_timestamp_nhaxe')
+
+        if not all([registration_data, registration_otp, otp_timestamp]):
+            return JsonResponse({'status': 'error', 'message': 'Phiên đăng ký đã hết hạn. Vui lòng thử lại.'}, status=400)
+
+        if time.time() - otp_timestamp > 180:
+            del request.session['registration_data_nhaxe']
+            del request.session['registration_otp_nhaxe']
+            del request.session['otp_timestamp_nhaxe']
+            return JsonResponse({'status': 'error', 'message': 'Mã OTP đã hết hạn. Vui lòng gửi lại mã.'}, status=400)
+
+        if not otp_entered:
+            return JsonResponse({'status': 'error', 'message': 'Vui lòng nhập mã OTP.'}, status=400)
+
+        if otp_entered != registration_otp:
+            return JsonResponse({'status': 'error', 'message': 'Mã xác thực không đúng.'}, status=400)
+
+        with transaction.atomic():
+            last_nx = Nhaxe.objects.order_by('NhaxeID').last()
+            new_nx_id = "NX00001"
+            if last_nx:
+                last_id_num = int(last_nx.NhaxeID[2:])
+                new_id_num = last_id_num + 1
+                new_nx_id = f"NX{new_id_num:05d}"
+
+            new_nhaxe = Nhaxe.objects.create(
+                NhaxeID=new_nx_id,
+                TenNhaXe=registration_data.get('tenNhaXe'),
+                DiaChiTruSo=registration_data.get('diaChiTruSo'),
+                SoDienThoai=registration_data.get('phone'),
+                Email=registration_data.get('email', f"{registration_data.get('username')}@example.com")
+            )
+
+            User_Authentication.objects.create(
+                UserID=new_nx_id,
+                TenDangNhap=registration_data.get('username'),
+                MatKhau=registration_data.get('password'), 
+                Vaitro='Nhaxe',
+                SoDienThoai=registration_data.get('phone'),
+                Nhaxe_id=new_nx_id
+            )
+            
+            default_car_types = [
+                {'id': 'LX00001', 'seats': 4, 'name': 'Xe 4 chỗ'},
+                {'id': 'LX00002', 'seats': 7, 'name': 'Xe 7 chỗ'},
+                {'id': 'LX00003', 'seats': 9, 'name': 'Xe 9 chỗ'},
+            ]
+
+            for car_type_data in default_car_types:
+                loaixe_obj, created = Loaixe.objects.get_or_create(
+                    LoaixeID=car_type_data['id'],
+                    defaults={'SoCho': car_type_data['seats']}
+                )
+                CHITIETLOAIXE.objects.create(
+                    Nhaxe=new_nhaxe,
+                    Loaixe=loaixe_obj,
+                    TenLoaiXe=car_type_data['name'],
+                    GiaVe=0,
+                    NgayCapNhatGia=datetime.now().date()
+                )
+        
+        del request.session['registration_data_nhaxe']
+        del request.session['registration_otp_nhaxe']
+        del request.session['otp_timestamp_nhaxe']
+
+        return JsonResponse({'status': 'success', 'message': 'Tạo tài khoản nhà xe thành công!'})
+
+    except Exception as e:
+        print(f"Error during nha xe registration: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Lỗi hệ thống. Vui lòng thử lại sau!'}, status=500)

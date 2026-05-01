@@ -1,5 +1,5 @@
 from datetime import datetime
-from .models import ChuyenXe
+from .models import ChuyenXe, KhachHang, Nhaxe, User_Authentication
 
 def notifications(request):
     """
@@ -32,3 +32,30 @@ def notifications(request):
             pass # Nếu lỗi DB thì mặc định là 0 để không chết toàn trang
             
     return context
+
+def user_info(request):
+    """
+    Cung cấp thông tin tên người dùng toàn cục.
+    """
+    user_id = request.session.get('user_id')
+    user_name = None
+    
+    if user_id:
+        try:
+            # Lấy User_Authentication kèm theo các bảng liên quan để tối ưu query
+            auth_user = User_Authentication.objects.select_related('KhachHang', 'Nhaxe', 'Taixe').get(UserID=user_id)
+            
+            if auth_user.KhachHang:
+                user_name = auth_user.KhachHang.HovaTen
+            elif auth_user.Nhaxe:
+                user_name = auth_user.Nhaxe.TenNhaXe
+            elif auth_user.Taixe:
+                user_name = auth_user.Taixe.HoTen
+            
+            # Fallback nếu chưa có họ tên thật
+            if not user_name:
+                user_name = auth_user.TenDangNhap
+        except Exception:
+            pass
+            
+    return {'user_name': user_name}

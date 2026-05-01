@@ -1,5 +1,4 @@
 from django.urls import path
-from . import views
 from . import auth_views
 from . import chuyenxe_views
 from . import taixe_views
@@ -9,6 +8,8 @@ from . import feedback_views
 from . import thanhtoan_views
 from . import booking_views
 from . import quanlyve_views
+from . import khachhang_views
+from . import nhaxe_views
 
 urlpatterns = [
 
@@ -19,7 +20,7 @@ urlpatterns = [
     path('timkiem', xuly_timkiem_view.view_tim_kiem_ve, name='timkiem'),
     path('timkiem_ve', xuly_timkiem_view.view_tim_kiem_ve, name='view_tim_kiem_ve'),
     path('api/lay_so_do_ghe', xuly_timkiem_view.lay_so_do_ghe_api, name='api_lay_so_do_ghe'),
-    path('quen_mat_khau', views.quen_mat_khau, name='quen_mat_khau'),
+    path('quen_mat_khau', auth_views.quen_mat_khau, name='quen_mat_khau'),
 
     # ==================== ĐẶT VÉ & QUẢN LÝ VÉ ====================
     path('dat_ve_thong_tin', booking_views.dat_ve_thong_tin, name='dat_ve_thong_tin'),
@@ -30,21 +31,21 @@ urlpatterns = [
     path('quanlyve/', quanlyve_views.quanlyve, name='quanlyve'),
 
     # ==================== OTP & ĐĂNG KÝ ====================
-    path('dangky_khachhang', views.dangky_khachhang, name='dangky_khachhang'),
-    path('send_registration_otp', views.send_registration_otp, name='send_registration_otp'),
-    path('verify_and_register', views.verify_and_register, name='verify_and_register'),
-    path('dangky_nhaxe', views.dangky_nhaxe, name='dangky_nhaxe'),
-    path('send_registration_otp_nhaxe', views.send_registration_otp_nhaxe, name='send_registration_otp_nhaxe'),
-    path('verify_and_register_nhaxe', views.verify_and_register_nhaxe, name='verify_and_register_nhaxe'),
+    path('dangky_khachhang', auth_views.dangky_khachhang, name='dangky_khachhang'),
+    path('send_registration_otp', auth_views.send_registration_otp, name='send_registration_otp'),
+    path('verify_and_register', auth_views.verify_and_register, name='verify_and_register'),
+    path('dangky_nhaxe', auth_views.dangky_nhaxe, name='dangky_nhaxe'),
+    path('send_registration_otp_nhaxe', auth_views.send_registration_otp_nhaxe, name='send_registration_otp_nhaxe'),
+    path('verify_and_register_nhaxe', auth_views.verify_and_register_nhaxe, name='verify_and_register_nhaxe'),
 
     # ==================== KHÁCH HÀNG ====================
-    path('khachhang', views.khachhang, name='khachhang'),
-    path('thongtin_khachhang', views.thongtin_khachhang, name='thongtin_khachhang'),
-    path('capnhat_thongtin_khachhang', views.capnhat_thongtin_khachhang, name='capnhat_thongtin_khachhang'),
-    path('send_update_otp_khachhang', views.send_update_otp_khachhang, name='send_update_otp_khachhang'),
+    path('khachhang', khachhang_views.khachhang, name='khachhang'),
+    path('thongtin_khachhang', khachhang_views.thongtin_khachhang, name='thongtin_khachhang'),
+    path('capnhat_thongtin_khachhang', khachhang_views.capnhat_thongtin_khachhang, name='capnhat_thongtin_khachhang'),
+    path('send_update_otp_khachhang', khachhang_views.send_update_otp_khachhang, name='send_update_otp_khachhang'),
     path('lotrinh', chuyenxe_views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', chuyenxe_views.chitietchuyenxe, name='chitietchuyenxe'),
-    path('vecuatoi', views.vecuatoi, name='vecuatoi'),
+    path('vecuatoi', khachhang_views.vecuatoi, name='vecuatoi'),
     path('khachhang/giao-dich/', thanhtoan_views.khachhang_lich_su_giao_dich, name='khachhang_giao_dich'),
 
     # ==================== THANH TOÁN ====================
@@ -63,12 +64,12 @@ urlpatterns = [
     path('submit_danhgia/', feedback_views.submit_danhgia, name='submit_danhgia'),
 
     # ==================== NHÀ XE ====================
-    path('nhaxe', views.nhaxe, name='nhaxe'),
-    path('thong_tin_nha_xe', views.thong_tin_nha_xe, name='thong_tin_nha_xe'),
-    path('quanly_khachhang', views.quanly_khachhang, name='quanly_khachhang'),
-    path('quan_ly_xe', views.quan_ly_xe, name='quan_ly_xe'),
-    path('quanly_loaixe', views.quanly_loaixe, name='quanly_loaixe'),
-    path('cap-nhat-gia/<str:pk>/', views.capnhat_gia_loaixe, name='cap_nhat_gia_ve'),
+    path('nhaxe', nhaxe_views.nhaxe, name='nhaxe'),
+    path('thong_tin_nha_xe', nhaxe_views.thong_tin_nha_xe, name='thong_tin_nha_xe'),
+    path('quanly_khachhang', nhaxe_views.quanly_khachhang, name='quanly_khachhang'),
+    path('quan_ly_xe', nhaxe_views.quan_ly_xe, name='quan_ly_xe'),
+    path('quanly_loaixe', nhaxe_views.quanly_loaixe, name='quanly_loaixe'),
+    path('cap-nhat-gia/<str:pk>/', nhaxe_views.capnhat_gia_loaixe, name='cap_nhat_gia_ve'),
     
     # Cấu hình & Báo cáo Nhà xe
     path('nhaxe/cau-hinh-ngan-hang/', thanhtoan_views.nhaxe_cau_hinh_ngan_hang, name='nhaxe_cau_hinh_ngan_hang'),

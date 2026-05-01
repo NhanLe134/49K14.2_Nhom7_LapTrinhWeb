@@ -7,12 +7,17 @@ from django.http import JsonResponse
 
 def tim_kiem_chuyen_xe_kha_dung(diem_di, diem_den, ngay_di):
     try:
+        # Xây dựng bộ lọc động
+        filters = Q()
+        if diem_di:
+            filters &= Q(TuyenXe__diemDi__icontains=diem_di)
+        if diem_den:
+            filters &= Q(TuyenXe__diemDen__icontains=diem_den)
+        if ngay_di:
+            filters &= Q(NgayKhoiHanh=ngay_di)
+
         # Lọc chuyến xe
-        chuyen_xe_query = ChuyenXe.objects.filter(
-            TuyenXe__diemDi__icontains=diem_di,
-            TuyenXe__diemDen__icontains=diem_den,
-            NgayKhoiHanh=ngay_di
-        ).exclude(TrangThai__in=['Hoàn thành', 'Đã hủy']) \
+        chuyen_xe_query = ChuyenXe.objects.filter(filters).exclude(TrangThai__in=['Hoàn thành', 'Đã hủy']) \
             .select_related('TuyenXe', 'Xe__Loaixe', 'Xe__Nhaxe', 'Taixe')
 
         danh_sach_ket_qua = []
@@ -171,14 +176,15 @@ def view_tim_kiem_ve(request):
         cac_diem_den = ['Đà Nẵng', 'Huế', 'Hội An']
 
     try:
-        if origin and destination and depart_date:
+        # Cho phép tìm kiếm nếu có ít nhất một thông tin (Điểm đi, Điểm đến HOẶC Ngày đi)
+        if origin or destination or depart_date:
             danh_sach_chuyen = tim_kiem_chuyen_xe_kha_dung(origin, destination, depart_date)
             if not danh_sach_chuyen:
                 messages.info(request, "Không tìm thấy chuyến xe nào phù hợp với yêu cầu.")
         else:
             danh_sach_chuyen = []
             if request.GET.get('search_submitted'):
-                messages.warning(request, "Vui lòng nhập đầy đủ thông tin: Điểm đi, Điểm đến và Ngày đi.")
+                messages.warning(request, "Vui lòng nhập ít nhất một thông tin để tìm kiếm.")
 
         context = {
             'chuyen_xe_list': danh_sach_chuyen,
