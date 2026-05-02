@@ -230,13 +230,7 @@
 
 {% block content %}
 <div class="view-container">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert {{ message.tags }}" style="padding: 15px; background: #E3F2FD; color: #0D47A1; border-left: 5px solid #03A9F4; margin-bottom: 20px; border-radius: 8px;">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+
 
     <!-- LIST VIEW -->
     <div id="listView">
@@ -480,7 +474,7 @@
         {% if messages %}
             {% for message in messages %}
                 let msg = "{{ message }}";
-                if (msg.includes("thành công")) {
+                if (msg.includes("thành công") && !msg.toLowerCase().includes("đặt")) {
                     let title = "Thành công";
                     if (msg.toLowerCase().includes("thêm")) title = "Thêm mới";
                     else if (msg.toLowerCase().includes("sửa") || msg.toLowerCase().includes("cập nhật")) title = "Chỉnh sửa";

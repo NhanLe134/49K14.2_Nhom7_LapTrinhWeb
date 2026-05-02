@@ -369,6 +369,17 @@
     </div>
 
 
+    {% if messages %}
+    <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px;">
+        <ul class="django-messages" style="margin: 0; padding: 0; list-style: none;">
+            {% for message in messages %}
+            <li class="msg-error" style="padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 10px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
     {% if is_locked %}
     <div class="lock-modal-overlay" id="lockModal">

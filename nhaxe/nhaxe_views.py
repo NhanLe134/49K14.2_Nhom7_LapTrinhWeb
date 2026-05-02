@@ -12,7 +12,11 @@ def nhaxe(request):
 
     try:
         nha_xe_obj = Nhaxe.objects.get(NhaxeID=nha_xe_id)
-        week_offset = int(request.GET.get('week_offset', 0))
+        try:
+            week_offset = int(request.GET.get('week_offset', 0))
+        except (ValueError, TypeError):
+            week_offset = 0
+        
         today = datetime.now().date()
         current_monday = today - timedelta(days=today.weekday())
         start_of_week = current_monday + timedelta(weeks=week_offset)
@@ -109,7 +113,8 @@ def nhaxe(request):
             except: pass
         context = {
             'error': str(e),
-            'nha_xe': nha_xe_obj
+            'nha_xe': nha_xe_obj,
+            'week_offset': week_offset if 'week_offset' in locals() else 0
         }
 
     return render(request, 'home/nhaxe.html', context)

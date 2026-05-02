@@ -249,7 +249,9 @@ def taixe(request):
 
     # 1. Lấy thông tin tài xế
     user_auth = User_Authentication.objects.filter(UserID=user_id).first()
-    driver = user_auth.Taixe if user_auth else None
+    driver = Taixe.objects.filter(TaixeID=user_id).first()
+    if not driver and user_auth and getattr(user_auth, 'Taixe_id', None):
+        driver = Taixe.objects.filter(TaixeID=user_auth.Taixe_id).first()
     
     if not driver:
         if user_auth and user_auth.Vaitro == 'Nhaxe':
@@ -257,6 +259,7 @@ def taixe(request):
 
         messages.error(request, "Không tìm thấy thông tin tài xế. Vui lòng đăng nhập lại.")
         return redirect('index')
+
     
     # 2. Tính toán khoảng thời gian trong tuần (Thứ 2 -> Chủ Nhật)
     now = datetime.now()
@@ -319,7 +322,7 @@ def thongtin_taixe(request):
         return redirect('index')
 
     user_auth = User_Authentication.objects.filter(UserID=user_id).first()
-    driver = user_auth.Taixe if user_auth else None
+    driver = user_auth.Taixe if user_auth and user_auth.Taixe else Taixe.objects.filter(TaixeID=user_id).first()
     detail = CHITIETTAIXE.objects.filter(Taixe_id=driver.TaixeID if driver else None).first()
 
     if not driver or not user_auth:
@@ -347,7 +350,7 @@ def taixe_lotrinh(request):
         return redirect('taixe')
 
     user_auth = User_Authentication.objects.filter(UserID=request.session.get('user_id')).first()
-    taixe_obj = user_auth.Taixe if user_auth else None
+    taixe_obj = user_auth.Taixe if user_auth and user_auth.Taixe else Taixe.objects.filter(TaixeID=request.session.get('user_id')).first()
     
     nha_xe_obj = None
     detail = CHITIETTAIXE.objects.filter(Taixe_id=taixe_obj.TaixeID if taixe_obj else None).first()

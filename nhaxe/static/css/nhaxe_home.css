@@ -220,8 +220,17 @@ html, body {
 .stat-sublabel.perf { color: #ca8a04; background: #fef9c3; }
 
 .week-controls { display: flex; gap: 8px; }
-.btn-week { padding: 6px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; }
+.btn-week { 
+    padding: 8px 20px; 
+    border-radius: 8px; 
+    font-size: 0.85rem; 
+    font-weight: 700; 
+    cursor: pointer; 
+    border: 1px solid transparent; 
+    transition: all 0.2s;
+    font-family: inherit;
+}
 .btn-week.prev { background: white; color: #64748b; border-color: #e2e8f0; }
-.btn-week.current { background: #60a5fa; color: white; }
-.btn-week:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-week.current { background: #60a5fa; color: white; border-color: #60a5fa; }
+.btn-week:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); opacity: 0.9; }
 

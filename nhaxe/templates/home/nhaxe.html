@@ -60,7 +60,7 @@
                 <i class="fa-solid fa-sort-down" style="margin-bottom: 6px; color: white;"></i>
                 
                 <div class="dropdown-menu" id="userMenu">
-                    {% if request.session.role == 'taixe' or request.session.role == 'tx' or request.session.role == 'driver' %}
+                    {% if request.session.role == 'taixe' or request.session.role == 'tài xế' or request.session.role == 'tx' or request.session.role == 'driver' %}
                     <a href="{% url 'thongtin_taixe' %}" class="dropdown-item">
                         <i class="fa-solid fa-gear"></i> Hồ sơ cá nhân
                     </a>
@@ -81,7 +81,7 @@
     <div class="main-wrapper">
         <!-- Sidebar -->
         <aside class="sidebar">
-            {% if request.session.role == 'taixe' or request.session.role == 'tx' or request.session.role == 'driver' %}
+            {% if request.session.role == 'taixe' or request.session.role == 'tài xế' or request.session.role == 'tx' or request.session.role == 'driver' %}
             <!-- Driver Menu -->
             <a href="{% url 'taixe' %}" class="sidebar-item {% block active_trangchu_taixe %}{% if request.resolver_match.url_name == 'taixe' %}active{% endif %}{% endblock %}">
                 <i class="fa-solid fa-house"></i> Trang chủ
@@ -94,20 +94,18 @@
             <a href="{% url 'nhaxe' %}" class="sidebar-item {% block active_trangchu %}{% if request.resolver_match.url_name == 'nhaxe' %}active{% endif %}{% endblock %}">
                 <i class="fa-solid fa-house"></i> Trang chủ
             </a>
-            <a href="{% url 'thong_tin_nha_xe' %}" class="sidebar-item {% block active_account %}{% if request.resolver_match.url_name == 'thong_tin_nha_xe' %}active{% endif %}{% endblock %}">
-                <i class="fa-solid fa-user-gear"></i> Quản lý tài khoản
-            </a>
+            
             <a href="{% url 'quanlytaixe' %}" class="sidebar-item {% block active_taixe %}{% if request.resolver_match.url_name == 'quanlytaixe' %}active{% endif %}{% endblock %}">
-                <i class="fa-solid fa-users"></i> Quản lý tài xế
+                <i class="fa-solid fa-user-gear"></i> Quản lý tài xế
             </a>
             <a href="{% url 'quanlytuyenxe' %}" class="sidebar-item {% block active_tuyenxe %}{% if request.resolver_match.url_name == 'quanlytuyenxe' %}active{% endif %}{% endblock %}">
                 <i class="fa-solid fa-route"></i> Quản lý tuyến xe
             </a>
             <a href="{% url 'quanly_loaixe' %}" class="sidebar-item {% block active_loaixe %}{% if request.resolver_match.url_name == 'quanly_loaixe' %}active{% endif %}{% endblock %}">
-                <i class="fa-solid fa-bus"></i> Quản lý loại xe
+                <i class="fa-solid fa-tag"></i> Quản lý loại xe
             </a>
             <a href="{% url 'quanlychuyenxe' %}" class="sidebar-item {% block active_chuyenxe %}{% if request.resolver_match.url_name == 'quanlychuyenxe' %}active{% endif %}{% endblock %}">
-                <i class="fa-solid fa-calendar-days"></i> Quản lý chuyến xe
+                <i class="fa-solid fa-map"></i> Quản lý chuyến xe
             </a>
             <a href="{% url 'quan_ly_xe' %}" class="sidebar-item {% block active_xe %}{% if request.resolver_match.url_name == 'quan_ly_xe' %}active{% endif %}{% endblock %}">
                 <i class="fa-solid fa-car"></i> Quản lý phương tiện
@@ -171,8 +169,14 @@
                 <div class="schedule-header-row">
                     <h3 style="margin: 0;">Lịch làm việc</h3>
                     <div class="week-controls">
-                        <a href="?week_offset={{ week_offset|add:'-1' }}" class="btn-week prev" style="text-decoration: none;">Tuần trước</a>
-                        <a href="?week_offset=0" class="btn-week current" style="text-decoration: none;">Tuần này</a>
+                        <button onclick="location.href='?week_offset={{ week_offset|add:-1 }}'" 
+                                class="btn-week {% if week_offset < 0 %}current{% else %}prev{% endif %}">
+                            Tuần trước
+                        </button>
+                        <button onclick="location.href='?week_offset=0'" 
+                                class="btn-week {% if week_offset == 0 %}current{% else %}prev{% endif %}">
+                            Tuần này
+                        </button>
                     </div>
                 </div>
                 

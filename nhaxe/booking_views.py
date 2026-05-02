@@ -101,10 +101,21 @@ def xac_nhan_dat_ve(request):
             # Quét qua danh sách ghế đã chọn và tạo vé
             for index, ghe_id in enumerate(ghe_ids):
                 # 0. Đảm bảo ghế tồn tại trong DB (nếu chưa có thì tạo mới)
+                # Tính prefix dựa trên số chỗ của xe
+                tong_cho = chuyen_xe.Xe.Loaixe.SoCho if chuyen_xe.Xe and chuyen_xe.Xe.Loaixe else 4
+                prefix = 'A'
+                if tong_cho == 7:
+                    prefix = 'B'
+                elif tong_cho == 9:
+                    prefix = 'C'
+                
+                # Đồng bộ format ID: CX00001A1 giống trong model ChuyenXe.save()
+                ghe_id_formatted = f"{chuyen_id}{ghe_id}"
+                
                 ghe, created = GheNgoi.objects.get_or_create(
                     soGhe=ghe_id, 
                     ChuyenXe=chuyen_xe,
-                    defaults={'gheID': f"G{chuyen_id[2:]}{ghe_id}", 'trangThai': 'Còn trống'}
+                    defaults={'gheID': ghe_id_formatted, 'trangThai': 'Còn trống'}
                 )
                 
                 # 0.1 Tính mã VeID tự động (Tăng dần theo index)

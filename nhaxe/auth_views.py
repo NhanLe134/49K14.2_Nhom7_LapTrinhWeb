@@ -89,14 +89,16 @@ def dangnhap(request):
                 avatar_url = matched_user.KhachHang.AnhDaiDienURL
                 
             request.session['ho_ten'] = display_name
-            request.session['avatar'] = avatar_url
+            # KHÔNG ĐƯỢC LƯU avatar_url vào session vì nếu nó là chuỗi Base64 sẽ làm phình cookie vượt quá giới hạn 4KB của trình duyệt!
+            # request.session['avatar'] = avatar_url
             
             if matched_user.Nhaxe:
                 request.session['ma_nha_xe'] = matched_user.Nhaxe.NhaxeID
                 request.session['ten_nha_xe'] = matched_user.Nhaxe.TenNhaXe
             
             request.session['token']    = 'direct-db-session'
-            request.session.set_expiry(0)
+            # request.session.set_expiry(0) # Tạm thời tắt để fix lỗi rớt session
+            request.session.save() # Ép buộc lưu session vào Database trước khi redirect
             return _redirect_by_role(request.session['role'])
         else:
             # Sai -> Tăng số lần sai
@@ -139,12 +141,15 @@ def _redirect_by_role(role: str):
     """
     ROLE_MAP = {
         'nhaxe':     'nhaxe',
+        'nhà xe':    'nhaxe',
         'nx':        'nhaxe',
         'admin':     'admin_dashboard_quyet_toan',
         'taixe':     'taixe',
+        'tài xế':    'taixe',
         'tx':        'taixe',
         'driver':    'taixe',
         'khachhang': 'khachhang',
+        'khách hàng': 'khachhang',
         'kh':        'khachhang',
         'customer':  'khachhang',
     }
