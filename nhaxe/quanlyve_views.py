@@ -28,6 +28,7 @@ def quanlyve(request):
             # Tự động cập nhật vé thành 'Đã đi' chỉ khi chuyến xe đã hoàn thành
             if v.TrangThai == 'Đã đặt' and v.ChuyenXe and v.ChuyenXe.TrangThai == 'Hoàn thành':
                 v.TrangThai = 'Đã đi'
+                v.TrangThaiThanhToan = 'Đã thanh toán'
                 ve_can_cap_nhat.append(v)
 
             # Phân loại vé dựa trên trường TrangThai mới
@@ -39,7 +40,7 @@ def quanlyve(request):
                 ve_da_dat.append(v)
 
         if ve_can_cap_nhat:
-            Ve.objects.bulk_update(ve_can_cap_nhat, ['TrangThai'])
+            Ve.objects.bulk_update(ve_can_cap_nhat, ['TrangThai', 'TrangThaiThanhToan'])
                 
         return render(request, 'home/quanlyve.html', {
             've_da_dat': ve_da_dat,
