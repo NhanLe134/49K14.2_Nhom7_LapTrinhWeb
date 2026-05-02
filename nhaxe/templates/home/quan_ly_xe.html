@@ -5,11 +5,6 @@
 
 {% block extra_css %}
 <style>
-    /* FIX SCROLLING FOR THIS PAGE */
-    html, body { position: static !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
-    .main-wrapper { height: auto !important; min-height: calc(100vh - 75px) !important; overflow: visible !important; }
-    .main-content { height: auto !important; overflow: visible !important; }
-
     /* FIGMA CORE STYLES - CONTENT AREA ONLY */
     .view-container {
         padding: 5px;
@@ -55,6 +50,13 @@
         align-items: center;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         border: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .vehicle-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        border-color: #03A9F4;
     }
     .vehicle-card-img {
         width: 130px;
@@ -250,7 +252,7 @@
 
         <div class="vehicle-list">
             {% for xe in vehicles %}
-            <div class="vehicle-card">
+            <div class="vehicle-card" onclick="showEditView('{{ xe.XeID }}', '{{ xe.BienSoXe }}', '{{ xe.Loaixe.LoaixeID }}', '{{ xe.SoGhe }}', '{{ xe.TrangThai }}')">
                 <div class="vehicle-card-img">
                     {% if xe.HinhAnhXe and xe.HinhAnhXe.name %}
                         <img src="{{ xe.HinhAnhXe.url }}" alt="Xe" onerror="this.src='{% static 'img/xe1.jpg' %}'">
@@ -273,10 +275,10 @@
                         {{ xe.TrangThai }}
                     </span>
                     <div class="action-group">
-                        <button class="btn-figma-edit" onclick="showEditView('{{ xe.XeID }}', '{{ xe.BienSoXe }}', '{{ xe.Loaixe.LoaixeID }}', '{{ xe.SoGhe }}', '{{ xe.TrangThai }}')">
+                        <button class="btn-figma-edit" onclick="event.stopPropagation(); showEditView('{{ xe.XeID }}', '{{ xe.BienSoXe }}', '{{ xe.Loaixe.LoaixeID }}', '{{ xe.SoGhe }}', '{{ xe.TrangThai }}')">
                             <i class="fa-solid fa-pen-to-square"></i> Sửa
                         </button>
-                        <button type="button" class="btn-figma-delete" onclick="confirmDelete('{{ xe.XeID }}', '{{ xe.BienSoXe }}')">
+                        <button type="button" class="btn-figma-delete" onclick="event.stopPropagation(); confirmDelete('{{ xe.XeID }}', '{{ xe.BienSoXe }}')">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>

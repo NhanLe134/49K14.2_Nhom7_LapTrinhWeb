@@ -130,6 +130,8 @@ def thong_tin_nha_xe(request):
             return JsonResponse({'status': 'success', 'message': f'[SIMULATION] Mã xác thực của bạn là: {otp}'})
 
         elif action == 'save':
+            ten_nha_xe = request.POST.get('ten_nha_xe')
+            representative = request.POST.get('representative')
             phone = request.POST.get('phone')
             address = request.POST.get('address')
             email = request.POST.get('email')
@@ -141,6 +143,8 @@ def thong_tin_nha_xe(request):
                 if user_otp != request.session.get('update_otp'):
                     return JsonResponse({'status': 'error', 'message': 'Mã xác thực không chính xác.'})
 
+            nha_xe_obj.TenNhaXe = ten_nha_xe if ten_nha_xe else nha_xe_obj.TenNhaXe
+            nha_xe_obj.NguoiDaiDien = representative if representative else nha_xe_obj.NguoiDaiDien
             nha_xe_obj.SoDienThoai = phone if phone else nha_xe_obj.SoDienThoai
             nha_xe_obj.DiaChiTruSo = address if address else nha_xe_obj.DiaChiTruSo
             if email: nha_xe_obj.Email = email
