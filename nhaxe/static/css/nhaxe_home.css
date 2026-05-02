@@ -12,14 +12,16 @@
 }
 
 /* Fix global scrolling */
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
     overflow: hidden;
 }
 
 .main-wrapper {
-    height: calc(100vh - 75px); /* Header height is 75px */
+    height: calc(100vh - 75px);
+    /* Header height is 75px */
     display: flex;
     overflow: hidden;
 }
@@ -30,7 +32,8 @@ html, body {
     flex-direction: column;
     padding: 30px;
     background: #f0f4f8;
-    overflow-y: auto; /* Cho phép cuộn nội dung chính */
+    overflow-y: auto;
+    /* Cho phép cuộn nội dung chính */
 }
 
 .page-title {
@@ -86,20 +89,59 @@ html, body {
 }
 
 /* Card Specific Colors - Restored */
-.card-red { background: #fff1f2; }
-.card-red .stat-label { color: #e11d48; }
-.card-red .stat-value { color: #1e293b; }
-.card-red .stat-icon { background: white; color: #e11d48; box-shadow: 0 4px 10px rgba(225, 29, 72, 0.1); }
+.card-red {
+    background: #fff1f2;
+}
 
-.card-green { background: #f0fdf4; }
-.card-green .stat-label { color: #16a34a; }
-.card-green .stat-value { color: #1e293b; }
-.card-green .stat-icon { background: white; color: #16a34a; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.1); }
+.card-red .stat-label {
+    color: #e11d48;
+}
 
-.card-yellow { background: #fefce8; }
-.card-yellow .stat-label { color: #ca8a04; }
-.card-yellow .stat-value { color: #1e293b; }
-.card-yellow .stat-icon { background: white; color: #ca8a04; box-shadow: 0 4px 10px rgba(202, 138, 4, 0.1); }
+.card-red .stat-value {
+    color: #1e293b;
+}
+
+.card-red .stat-icon {
+    background: white;
+    color: #e11d48;
+    box-shadow: 0 4px 10px rgba(225, 29, 72, 0.1);
+}
+
+.card-green {
+    background: #f0fdf4;
+}
+
+.card-green .stat-label {
+    color: #16a34a;
+}
+
+.card-green .stat-value {
+    color: #1e293b;
+}
+
+.card-green .stat-icon {
+    background: white;
+    color: #16a34a;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.1);
+}
+
+.card-yellow {
+    background: #fefce8;
+}
+
+.card-yellow .stat-label {
+    color: #ca8a04;
+}
+
+.card-yellow .stat-value {
+    color: #1e293b;
+}
+
+.card-yellow .stat-icon {
+    background: white;
+    color: #ca8a04;
+    box-shadow: 0 4px 10px rgba(202, 138, 4, 0.1);
+}
 
 /* Schedule Card - Fixed Height & Scrollable Table */
 .schedule-card {
@@ -110,7 +152,8 @@ html, body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Contains the scrollable table */
+    overflow: hidden;
+    /* Contains the scrollable table */
 }
 
 .schedule-header-row {
@@ -190,21 +233,69 @@ html, body {
     margin: 2px 0;
 }
 
-.block-blue { background: #f0f9ff; border-color: #e0f2fe; }
-.block-blue .time { color: #0ea5e9; font-weight: 800; font-size: 0.75rem; }
-.block-blue .route { color: #0369a1; font-size: 0.75rem; }
+.block-blue {
+    background: #f0f9ff;
+    border-color: #e0f2fe;
+}
 
-.block-purple { background: #f5f3ff; border-color: #ede9fe; }
-.block-purple .time { color: #8b5cf6; font-weight: 800; font-size: 0.75rem; }
-.block-purple .route { color: #5b21b6; font-size: 0.75rem; }
+.block-blue .time {
+    color: #0ea5e9;
+    font-weight: 800;
+    font-size: 0.75rem;
+}
 
-.block-green { background: #f0fdf4; border-color: #dcfce7; }
-.block-green .time { color: #22c55e; font-weight: 800; font-size: 0.75rem; }
-.block-green .route { color: #166534; font-size: 0.75rem; }
+.block-blue .route {
+    color: #0369a1;
+    font-size: 0.75rem;
+}
 
-.block-orange { background: #fff7ed; border-color: #ffedd5; }
-.block-orange .time { color: #f97316; font-weight: 800; font-size: 0.75rem; }
-.block-orange .route { color: #9a3412; font-size: 0.75rem; }
+.block-purple {
+    background: #f5f3ff;
+    border-color: #ede9fe;
+}
+
+.block-purple .time {
+    color: #8b5cf6;
+    font-weight: 800;
+    font-size: 0.75rem;
+}
+
+.block-purple .route {
+    color: #5b21b6;
+    font-size: 0.75rem;
+}
+
+.block-green {
+    background: #f0fdf4;
+    border-color: #dcfce7;
+}
+
+.block-green .time {
+    color: #22c55e;
+    font-weight: 800;
+    font-size: 0.75rem;
+}
+
+.block-green .route {
+    color: #166534;
+    font-size: 0.75rem;
+}
+
+.block-orange {
+    background: #fff7ed;
+    border-color: #ffedd5;
+}
+
+.block-orange .time {
+    color: #f97316;
+    font-weight: 800;
+    font-size: 0.75rem;
+}
+
+.block-orange .route {
+    color: #9a3412;
+    font-size: 0.75rem;
+}
 
 .cell-off {
     color: #cbd5e1;
@@ -213,24 +304,171 @@ html, body {
     font-weight: 500;
 }
 
-.stat-sublabels { display: flex; gap: 8px; }
-.stat-sublabel { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
-.stat-sublabel.active { color: #06A0E2; background: #e0f2fe; }
-.stat-sublabel.inactive { color: #ef4444; background: #fee2e2; }
-.stat-sublabel.perf { color: #ca8a04; background: #fef9c3; }
+.stat-sublabels {
+    display: flex;
+    gap: 8px;
+}
 
-.week-controls { display: flex; gap: 8px; }
-.btn-week { 
-    padding: 8px 20px; 
-    border-radius: 8px; 
-    font-size: 0.85rem; 
-    font-weight: 700; 
-    cursor: pointer; 
-    border: 1px solid transparent; 
+.stat-sublabel {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.stat-sublabel.active {
+    color: #06A0E2;
+    background: #e0f2fe;
+}
+
+.stat-sublabel.inactive {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.stat-sublabel.perf {
+    color: #ca8a04;
+    background: #fef9c3;
+}
+
+.week-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-week {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
     transition: all 0.2s;
     font-family: inherit;
 }
-.btn-week.prev { background: white; color: #64748b; border-color: #e2e8f0; }
-.btn-week.current { background: #60a5fa; color: white; border-color: #60a5fa; }
-.btn-week:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); opacity: 0.9; }
 
+.btn-week.prev {
+    background: white;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+.btn-week.current {
+    background: #60a5fa;
+    color: white;
+    border-color: #60a5fa;
+}
+
+.btn-week:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    opacity: 0.9;
+}
+
+.modal-thong-bao-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
+
+.modal-thong-bao-box {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 20px;
+    width: 500px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    animation: modalPop 0.3s ease-out;
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-thong-bao-tieu-de {
+    font-size: 24px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 25px;
+}
+
+.modal-thong-bao-noi-dung {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 35px;
+    line-height: 1.4;
+}
+
+/* Icons from Image */
+.modal-icon-lon {
+    font-size: 60px;
+    margin-bottom: 25px;
+    display: block;
+}
+
+.icon-loi {
+    color: #FF5722;
+}
+
+/* Orange-Red for Error */
+.icon-thanh-cong {
+    color: #4CAF50;
+}
+
+/* Green for Success */
+
+/* Buttons matching image */
+.modal-thong-bao-nut-bam {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.nut-dong-y {
+    background-color: #03A9F4;
+    color: white;
+    border: none;
+    padding: 10px 35px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 16px;
+    transition: opacity 0.2s;
+}
+
+.nut-huy {
+    background-color: white;
+    color: #03A9F4;
+    border: 2px solid #03A9F4;
+    padding: 8px 35px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.nut-dong-y:hover {
+    opacity: 0.8;
+}
+
+.nut-huy:hover {
+    background: #f0f9ff;
+}

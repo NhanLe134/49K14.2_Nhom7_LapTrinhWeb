@@ -88,44 +88,11 @@ def quanlytuyenxe(request):
 
     nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
 
-    # Thông báo chuyến trễ
-    today = datetime.now().date()
-    overdue_trips = ChuyenXe.objects.filter(
-        NgayKhoiHanh__lt=today,
-        TrangThai='Chưa hoàn thành'
-    ).select_related('TuyenXe')
-    
-    overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
-    overdue_trips_count = len(overdue_trips_list)
-
-    # Lấy danh sách tuyến trực tiếp từ DB
-    danh_sach_tuyen_raw = TuyenXe.objects.filter(nhaXe=nha_xe_obj)
-
-    # Tính toán số chuyến đang khai thác cho mỗi tuyến
-    tuyen_data = []
-    for tuyen in danh_sach_tuyen_raw:
-        # Số chuyến đang hoạt động
-        so_chuyen = ChuyenXe.objects.filter(
-            TuyenXe=tuyen,
-            TrangThai__in=['Chưa hoàn thành', 'Đang chạy']
-        ).count()
-        
-        tuyen_data.append({
-            'tuyenXeID': tuyen.tuyenXeID,
-            'tenTuyen': tuyen.tenTuyen,
-            'diemDi': tuyen.diemDi,
-            'diemDen': tuyen.diemDen,
-            'QuangDuong': tuyen.QuangDuong,
-            'ThoiGian': tuyen.ThoiGian,
-            'so_chuyen': so_chuyen
-        })
-
+    danh_sach_tuyen = TuyenXe.objects.filter(nhaXe=nha_xe_obj)
     return render(request, 'nhaxe/quanlytuyenxe.html', {
-        'danh_sach_tuyen': tuyen_data,
+        'danh_sach_tuyen': danh_sach_tuyen,
         'nha_xe': nha_xe_obj,
         'avatar_url': getattr(nha_xe_obj, 'AnhDaiDienURL', None) if nha_xe_obj else None,
-        'overdue_trips': overdue_trips_list,
-        'overdue_trips_count': overdue_trips_count
     })
 
 def them_tuyen_xe(request):

@@ -9,27 +9,26 @@ def quanlyve(request):
         return redirect('dangnhap')
         
     try:
-        # Lấy toàn bộ vé của khách hàng
-        ve_list_all = Ve.objects.filter(KhachHang_id=user_id).select_related(
+        ve_list_all = list(Ve.objects.filter(KhachHang_id=user_id).prefetch_related(
             'ChuyenXe', 'ChuyenXe__TuyenXe', 'ChuyenXe__Xe__Nhaxe', 'Ghe'
-        ).order_by('-NgayDat')
+        ).order_by('-NgayDat'))
         
         ve_da_dat = []
         ve_da_di = []
         ve_da_huy = []
-        
-        today = datetime.now().date()
+        ve_can_cap_nhat = []
         
         # Lấy ID các vé đã đánh giá
         from .models import DanhGia
-        ve_da_danh_gia_ids = list(DanhGia.objects.filter(KhachHang_id=user_id).values_list('Ve_id', flat=True))
+        ve_da_danh_gia_ids = set(DanhGia.objects.filter(KhachHang_id=user_id).values_list('Ve_id', flat=True))
 
         for v in ve_list_all:
             v.da_danh_gia = v.VeID in ve_da_danh_gia_ids
+
             # Tự động cập nhật vé thành 'Đã đi' chỉ khi chuyến xe đã hoàn thành
             if v.TrangThai == 'Đã đặt' and v.ChuyenXe and v.ChuyenXe.TrangThai == 'Hoàn thành':
                 v.TrangThai = 'Đã đi'
-                v.save(update_fields=['TrangThai'])
+                ve_can_cap_nhat.append(v)
 
             # Phân loại vé dựa trên trường TrangThai mới
             if v.TrangThai == 'Đã hủy':
@@ -38,6 +37,9 @@ def quanlyve(request):
                 ve_da_di.append(v)
             else:
                 ve_da_dat.append(v)
+
+        if ve_can_cap_nhat:
+            Ve.objects.bulk_update(ve_can_cap_nhat, ['TrangThai'])
                 
         return render(request, 'home/quanlyve.html', {
             've_da_dat': ve_da_dat,

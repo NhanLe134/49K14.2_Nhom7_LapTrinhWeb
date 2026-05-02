@@ -4,15 +4,12 @@
 {% block title %}Quản lý tuyến xe - Vexeapp{% endblock %}
 
 {% block extra_css %}
-    <!-- Page specific styling -->
     <link rel="stylesheet" href="{% static 'css/quanlytuyenxe.css' %}">
-
 {% endblock %}
 
-{% block active_trangchu %}{% endblock %}
+{% comment %} {% block active_trangchu %}{% endblock %}
 {% block color_trangchu %}#444{% endblock %}
-{% block active_tuyenxe %}active{% endblock %}
-{% block color_tuyenxe %}#06A0E2{% endblock %}
+{% block color_tuyenxe %}#06A0E2{% endblock %} {% endcomment %}
 
 {% block content %}
     <!-- VIEW 1: ROUTE LIST -->
@@ -47,11 +44,8 @@
                     </div>
                     <div class="detail-box">
                         <div class="detail-label">Thời gian dự kiến</div>
-                        <div class="detail-value">~ {{ route.ThoiGian|default:"-" }} giờ</div>
+                        <div class="detail-value">≈ {{ route.ThoiGian|default:"-" }} giờ</div>
                     </div>
-                </div>
-                <div class="route-info-footer">
-                    <span class="status-badge active">Đang hoạt động</span>
                 </div>
                 <div class="route-actions">
                     <a href="{% url 'sua_tuyen_xe' route.tuyenXeID %}" class="btn-action-edit" style="text-decoration: none;">
@@ -70,7 +64,6 @@
         </div>
     </div>
 
-    <!-- Modal: Delete Confirmation removed, using global modalHeThong -->
 {% endblock %}
 
 {% block extra_js %}

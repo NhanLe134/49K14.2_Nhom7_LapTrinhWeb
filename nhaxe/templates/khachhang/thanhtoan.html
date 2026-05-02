@@ -60,7 +60,7 @@
         <!-- Payment Methods -->
         <div class="pmt-section-title">Chọn phương thức thanh toán</div>
 
-        <form action="{% url 'confirm_payment' ve.VeID %}" method="POST" id="formThanhToan">
+        <form action="{% url 'xacnhan_thanhtoan' ve.VeID %}" method="POST" id="formThanhToan">
             {% csrf_token %}
             <input type="hidden" name="phuong_thuc" id="phuongThucDaChon" value="Chuyển khoản">
 
@@ -176,7 +176,7 @@
         
         if (statusEl) statusEl.style.display = 'block';
         
-        fetch(`/api/check-payment-status/${veId}/`)
+        fetch(`/api/kiemtra-trangthai-thanhtoan/${veId}/`)
             .then(response => response.json())
             .then(duLieu => {
                 if (duLieu.da_thanh_toan) {

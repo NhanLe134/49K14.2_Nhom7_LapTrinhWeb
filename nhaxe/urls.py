@@ -2,7 +2,6 @@ from django.urls import path
 from . import auth_views
 from . import chuyenxe_views
 from . import taixe_views
-from . import views_tuyen_xe
 from . import xuly_timkiem_view
 from . import views_danh_gia
 from . import thanhtoan_views
@@ -49,10 +48,9 @@ urlpatterns = [
     path('vecuatoi', khachhang_views.vecuatoi, name='vecuatoi'),
 
     # ==================== THANH TOÁN ====================
-    path('payment/<str:ve_id>/', thanhtoan_views.xu_ly_thanh_toan, name='process_payment'),
-    path('quanlyve/thanhtoan/<str:ve_id>/', thanhtoan_views.xu_ly_thanh_toan, name='process_payment_alt'),
-    path('confirm-payment/<str:ve_id>/', thanhtoan_views.xac_nhan_thanh_toan, name='confirm_payment'),
-    path('api/check-payment-status/<str:ve_id>/', thanhtoan_views.kiem_tra_trang_thai_thanh_toan, name='check_payment_status'),
+    path('quanlyve/thanhtoan/<str:ve_id>/', thanhtoan_views.xu_ly_thanh_toan, name='xulythanhtoan'),
+    path('xacnhan-thanhtoan/<str:ve_id>/', thanhtoan_views.xac_nhan_thanh_toan, name='xacnhan_thanhtoan'),
+    path('api/kiemtra-trangthai-thanhtoan/<str:ve_id>/', thanhtoan_views.kiem_tra_trang_thai_thanh_toan, name='kiemtra_trangthai_thanhtoan'),
     path('payment/webhook/sepay/', thanhtoan_views.webhook_sepay, name='sepay_webhook'),
 
     # ==================== ĐÁNH GIÁ (FEEDBACK) ====================
@@ -82,10 +80,10 @@ urlpatterns = [
     path('suachuyenxe/<str:pk>/', chuyenxe_views.suachuyenxe, name='suachuyenxe'),
     path('hoanthanh-chuyenxe/<str:pk>/', chuyenxe_views.hoanthanh_chuyenxe, name='hoanthanh_chuyenxe'),
 
-    path('quanlytuyenxe', tuyenxe_views.quanlytuyenxe, name='quanlytuyenxe'),
-    path('them-tuyen-xe', tuyenxe_views.them_tuyen_xe, name='them_tuyen_xe'),
-    path('sua-tuyen-xe/<str:ma_tuyen>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),
-    path('xoa-tuyen-xe/<str:ma_tuyen>/', tuyenxe_views.xoa_tuyen_xe, name='xoa_tuyen_xe'),
+    path('nhaxe/quanlytuyenxe', tuyenxe_views.quanlytuyenxe, name='quanlytuyenxe'),
+    path('nhaxe/themtuyenxe', tuyenxe_views.them_tuyen_xe, name='them_tuyen_xe'),
+    path('nhaxe/suatuyenxe/<str:ma_tuyen>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),
+    path('nhaxe/xoatuyenxe/<str:ma_tuyen>/', tuyenxe_views.xoa_tuyen_xe, name='xoa_tuyen_xe'),
 
     # ==================== QUẢN LÝ TÀI XẾ (NHÀ XE QUẢN LÝ) ====================
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),

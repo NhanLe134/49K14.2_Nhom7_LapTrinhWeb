@@ -115,7 +115,7 @@
                                 </div>
                                 <div class="ticket-actions" style="display: flex; gap: 10px;">
                                     {% if v.TrangThaiThanhToan != 'Đã thanh toán' %}
-                                    <a href="{% url 'process_payment' v.VeID %}" class="btn-pay-ticket"
+                                    <a href="{% url 'xulythanhtoan' v.VeID %}" class="btn-pay-ticket"
                                         onclick="event.stopPropagation();">
                                         <i class="fa-solid fa-credit-card"></i> Thanh toán
                                     </a>
@@ -356,24 +356,46 @@
         </div>
     </div>
 
-    <!-- Payment Success Modal -->
+    <!-- Django Messages Integration -->
+    {% if messages %}
+    <div id="django-messages" style="display: none;">
+        {% for message in messages %}
+            <div class="msg-item" data-type="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const msgItems = document.querySelectorAll('#django-messages .msg-item');
+            msgItems.forEach(item => {
+                const text = item.textContent;
+                
+                // Sử dụng modal thành công để hiển thị thông báo từ backend
+                const successModal = document.getElementById('paymentSuccessModal');
+                if (successModal) {
+                    const textEl = successModal.querySelector('.success-text');
+                    if (textEl) {
+                        textEl.innerHTML = text.replace(/\n/g, '<br>');
+                        textEl.style.lineHeight = '1.5';
+                    }
+                    successModal.style.display = 'flex';
+                    setTimeout(() => {
+                        successModal.style.display = 'none';
+                    }, 4000);
+                } else {
+                    alert(text);
+                }
+            });
+        });
+    </script>
+    {% endif %}
+
+    <!-- Payment Success Modal (Dùng chung cho thong bao backend) -->
     <div class="modal-overlay" id="paymentSuccessModal" style="display: none; z-index: 1060;">
         <div class="success-modal-content">
             <div class="success-icon">
                 <i class="fa-solid fa-check"></i>
             </div>
-            <div class="success-text">Thanh toán thành công</div>
-        </div>
-    </div>
-
-    <!-- Payment Error Modal -->
-    <div class="modal-overlay" id="paymentErrorModal" style="display: none; z-index: 1060;">
-        <div class="success-modal-content">
-            <div class="error-icon">
-                <i class="fa-solid fa-exclamation"></i>
-            </div>
-            <div class="success-text" style="line-height: 1.5; font-size: 1.25rem;">Thanh toán không thành công.<br>Vui
-                lòng thử lại.</div>
+            <div class="success-text">Thành công</div>
         </div>
     </div>
 
@@ -480,7 +502,7 @@
                     statusEl.style.color = '#FF9800';
                     if (payBtn) {
                         payBtn.style.display = 'flex';
-                        payBtn.href = `/payment/${id}/`;
+                        payBtn.href = `/quanlyve/thanhtoan/${id}/`;
                     }
                 }
 
@@ -634,160 +656,7 @@
                 }
             });
 
-            // View Payment UI Toggling Logic
-            const viewPayment = document.getElementById('view-payment');
-            const ticketTabsContainer = document.querySelector('.ticket-tabs');
-            const btnBackToTickets = document.getElementById('btnBackToTickets');
-            const btnCancelPayment = document.getElementById('btnCancelPayment');
-            const btnConfirmPayment = document.getElementById('btnConfirmPayment');
-
-            const actionBtn = document.querySelector('.detail-action button');
-
-            if (actionBtn && viewPayment) {
-                actionBtn.addEventListener('click', () => {
-                    if (actionBtn.classList.contains('btn-checkout')) {
-                        ticketModal.style.display = 'none';
-
-                        if (viewBooked) viewBooked.style.display = 'none';
-                        if (viewCompleted) viewCompleted.style.display = 'none';
-                        if (viewCancelled) viewCancelled.style.display = 'none';
-                        if (ticketTabsContainer) ticketTabsContainer.style.display = 'none';
-
-                        const details = currentViewingDetails;
-                        if (details) {
-                            document.getElementById('payId').textContent = details.id;
-                            document.getElementById('payDate').textContent = currentViewingDate;
-                            document.getElementById('payTime').textContent = currentViewingTime;
-                            document.getElementById('paySeats').textContent = currentViewingSeats;
-                            document.getElementById('payTotal').textContent = details.total;
-
-                            document.getElementById('payRoute').innerHTML = currentViewingRoute
-                                ? currentViewingRoute.replace(' - ', ' <i class="fa-solid fa-arrow-right" style="margin: 0 5px; font-size: 0.8rem"></i> ')
-                                : 'Đà Nẵng <i class="fa-solid fa-arrow-right" style="margin: 0 5px; font-size: 0.8rem"></i> Huế';
-                        }
-
-                        viewPayment.style.display = 'block';
-                    }
-                });
-            }
-
-            function backToTickets() {
-                viewPayment.style.display = 'none';
-                if (document.getElementById('paymentStep1')) document.getElementById('paymentStep1').style.display = 'block';
-                if (document.getElementById('paymentStep2QR')) document.getElementById('paymentStep2QR').style.display = 'none';
-                if (document.getElementById('paymentStatusWait')) document.getElementById('paymentStatusWait').style.display = 'none';
-                if (typeof countdownInterval !== 'undefined' && countdownInterval) clearInterval(countdownInterval);
-
-                if (ticketTabsContainer) ticketTabsContainer.style.display = 'flex';
-                const activeTab = document.querySelector('.tab-item.active');
-                if (activeTab && activeTab.textContent.includes('Đã đặt') && viewBooked) viewBooked.style.display = 'block';
-                else if (activeTab && activeTab.textContent.includes('Đã đi') && viewCompleted) viewCompleted.style.display = 'block';
-                else if (activeTab && activeTab.textContent.includes('Đã hủy') && viewCancelled) viewCancelled.style.display = 'block';
-            }
-
-            if (btnBackToTickets) btnBackToTickets.addEventListener('click', backToTickets);
-            if (btnCancelPayment) btnCancelPayment.addEventListener('click', backToTickets);
-
-            const paymentSuccessModal = document.getElementById('paymentSuccessModal');
-            const paymentErrorModal = document.getElementById('paymentErrorModal');
-            const paymentStep1 = document.getElementById('paymentStep1');
-            const paymentStep2QR = document.getElementById('paymentStep2QR');
-            const paymentStatusWait = document.getElementById('paymentStatusWait');
-            const qrCountdown = document.getElementById('qrCountdown');
-            let countdownInterval = null;
-
-            function startQRCountdown() {
-                let timeLeft = 60;
-                if (qrCountdown) qrCountdown.textContent = timeLeft + 's';
-                if (countdownInterval) clearInterval(countdownInterval);
-
-                countdownInterval = setInterval(() => {
-                    timeLeft--;
-                    if (qrCountdown) qrCountdown.textContent = timeLeft + 's';
-                    if (timeLeft <= 0) {
-                        clearInterval(countdownInterval);
-                        if (paymentErrorModal) {
-                            paymentErrorModal.style.display = 'flex';
-                            setTimeout(() => {
-                                paymentErrorModal.style.display = 'none';
-                                backToTickets();
-                            }, 3000);
-                        } else {
-                            backToTickets();
-                        }
-                    }
-                }, 1000);
-            }
-
-            if (btnConfirmPayment) {
-                btnConfirmPayment.addEventListener('click', () => {
-                    const isCash = document.querySelector('input[name="paymentMethod"]:checked')?.value === 'cash';
-
-                    if (isCash) {
-                        if (paymentSuccessModal) {
-                            const textEl = paymentSuccessModal.querySelector('.success-text');
-                            if (textEl) {
-                                textEl.innerHTML = 'Vui lòng thanh toán cho tài xế<br>khi lên xe';
-                                textEl.style.lineHeight = '1.5';
-                            }
-                            paymentSuccessModal.style.display = 'flex';
-                            setTimeout(() => {
-                                paymentSuccessModal.style.display = 'none';
-                                backToTickets();
-                            }, 2500);
-                        }
-                    } else {
-                        // Show QR step
-                        if (paymentStep1) paymentStep1.style.display = 'none';
-                        if (paymentStep2QR) paymentStep2QR.style.display = 'block';
-                        if (paymentStatusWait) paymentStatusWait.style.display = 'block';
-                        startQRCountdown();
-                    }
-                });
-            }
-
-            const btnCancelQR = document.getElementById('btnCancelQR');
-            const btnConfirmQR = document.getElementById('btnConfirmQR');
-
-            if (btnCancelQR) {
-                btnCancelQR.addEventListener('click', backToTickets);
-            }
-
-            if (btnConfirmQR) {
-                btnConfirmQR.addEventListener('click', () => {
-                    if (countdownInterval) clearInterval(countdownInterval);
-                    if (paymentSuccessModal) {
-                        const textEl = paymentSuccessModal.querySelector('.success-text');
-                        if (textEl) {
-                            textEl.innerHTML = 'Thanh toán thành công';
-                            textEl.style.lineHeight = 'normal';
-                        }
-                        paymentSuccessModal.style.display = 'flex';
-                        setTimeout(() => {
-                            paymentSuccessModal.style.display = 'none';
-                            backToTickets();
-                        }, 2000);
-                    }
-                });
-            }
-
-            const pmOptions = document.querySelectorAll('.pm-option');
-            const cashWarning = document.getElementById('cashWarning');
-            pmOptions.forEach(opt => {
-                opt.addEventListener('click', () => {
-                    pmOptions.forEach(o => o.classList.remove('active'));
-                    opt.classList.add('active');
-                    const radio = opt.querySelector('input[type="radio"]');
-                    if (radio) {
-                        radio.checked = true;
-                        if (radio.value === 'cash') {
-                            if (cashWarning) cashWarning.style.display = 'block';
-                        } else {
-                            if (cashWarning) cashWarning.style.display = 'none';
-                        }
-                    }
-                });
-            });
+            // Payment Logic removed - Handled by backend views
 
         });
     </script>

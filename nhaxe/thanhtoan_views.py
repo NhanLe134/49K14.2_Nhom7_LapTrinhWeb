@@ -158,6 +158,7 @@ def xac_nhan_thanh_toan(request, ve_id):
 
         if phuong_thuc == 'Tiền mặt':
             danh_sach_ve.update(TrangThaiThanhToan="Chưa thanh toán")
+            messages.success(request, "Vui lòng thanh toán cho tài xế khi lên xe.")
         else:
             for v in danh_sach_ve:
                 ThanhToan.objects.get_or_create(
@@ -170,7 +171,7 @@ def xac_nhan_thanh_toan(request, ve_id):
                     }
                 )
             danh_sach_ve.update(TrangThaiThanhToan="Chưa thanh toán")
-            messages.success(request, "Vui lòng chuyển khoản để hoàn tất.")
+            messages.success(request, "Vui lòng chuyển khoản để hoàn tất thanh toán.")
         return redirect('quanlyve')
     return redirect('quanlyve')
 
