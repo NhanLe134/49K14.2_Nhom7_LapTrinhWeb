@@ -76,6 +76,16 @@
                     <label class="form-label">Ngày hết hạn bằng lái</label>
                     <input type="text" class="form-input" id="detailLicenseExpiry" value="" disabled>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày bắt đầu</label>
+                    <input type="text" class="form-input" id="detailStartDate" value="" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày kết thúc</label>
+                    <input type="text" class="form-input" id="detailEndDate" value="" disabled>
+                </div>
             </div>
         </div>
     </div>
@@ -146,7 +156,12 @@
                     <input type="date" name="license_expiry" id="createLicenseExpiry" class="form-input editable">
                 </div>
 
-                <div class="placeholder"></div>
+                <div class="form-group">
+                    <label class="form-label">Ngày bắt đầu <span class="required">*</span></label>
+                    <input type="date" name="start_date" id="createStartDate" class="form-input editable"
+                        value="{% now 'Y-m-d' %}" required>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Ảnh đại diện</label>
                     <div class="file-input-wrapper">
@@ -204,6 +219,14 @@
                     <label class="form-label">Ngày hết hạn bằng lái</label>
                     <input type="date" id="editLicenseExpiry" name="license_expiry" class="form-input editable">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày bắt đầu</label>
+                    <input type="date" id="editStartDate" name="start_date" class="form-input editable">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày kết thúc</label>
+                    <input type="date" id="editEndDate" name="end_date" class="form-input editable">
+                </div>
             </div>
         </div>
         <div class="edit-modal-actions">
@@ -249,6 +272,8 @@
             license: "{{ tx.soBangLai }}",
             licenseType: "{{ tx.loaiBangLai }}",
             licenseExpiry: "{{ tx.ngayHetHanBangLai|date:'Y-m-d' }}",
+            startDate: "{{ tx.ngayBatDau|date:'Y-m-d' }}",
+            endDate: "{{ tx.ngayKetThuc|date:'Y-m-d' }}",
             avatar: "{{ tx.hinhAnh }}" || "https://ui-avatars.com/api/?name={{ tx.ten|urlencode }}&background=random"
         },
         {% endfor %}
@@ -294,6 +319,8 @@
         document.getElementById('detailLicense').value = driver.license;
         document.getElementById('detailLicenseType').value = driver.licenseType;
         document.getElementById('detailLicenseExpiry').value = driver.licenseExpiry;
+        document.getElementById('detailStartDate').value = driver.startDate;
+        document.getElementById('detailEndDate').value = driver.endDate || 'Đang làm việc';
 
         document.getElementById('driverListView').style.display = 'none';
         document.getElementById('driverDetailsView').style.display = 'flex';
@@ -320,6 +347,8 @@
         document.getElementById('editLicense').value = driver.license || '';
         document.getElementById('editLicenseType').value = driver.licenseType || 'B1';
         document.getElementById('editLicenseExpiry').value = driver.licenseExpiry || '';
+        document.getElementById('editStartDate').value = driver.startDate || '';
+        document.getElementById('editEndDate').value = driver.endDate || '';
         if (driver.avatar) document.getElementById('editAvatarPreview').src = driver.avatar;
         document.querySelector('#editModal form').action = `/sua-tai-xe/${selectedDriverId}/`;
         document.getElementById('editModal').style.display = 'flex';

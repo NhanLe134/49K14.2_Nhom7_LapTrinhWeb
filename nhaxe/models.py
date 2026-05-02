@@ -97,7 +97,7 @@ class CHITIETTAIXE(models.Model):
     Taixe = models.ForeignKey(Taixe, on_delete=models.CASCADE)
     HoTen = models.CharField(max_length=200, null=True, blank=True)
     NgayBatDau = models.DateField()
-    NgayKetThuc = models.DateField()
+    NgayKetThuc = models.DateField(null=True, blank=True)
 
     class Meta:
         unique_together = (('Nhaxe', 'Taixe'),)

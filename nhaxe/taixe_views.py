@@ -50,6 +50,11 @@ def quanlytaixe(request):
 
     for driver in drivers:
         user_info = users.get(driver.TaixeID)
+        # Lấy ngày bắt đầu từ CHITIETTAIXE
+        driver_detail = driver.chitiettaixe_set.filter(Nhaxe_id=user_id).first()
+        if not driver_detail:
+             driver_detail = driver.chitiettaixe_set.filter(nhaxe_id=user_id).first()
+
         taixe_list.append({
             'id':             driver.TaixeID,
             'ten':            driver.HoTen or (user_info.TenDangNhap if user_info else 'Chưa đặt tên'),
@@ -59,6 +64,8 @@ def quanlytaixe(request):
             'soCCCD':         driver.soCCCD,
             'loaiBangLai':    driver.LoaiBangLai,
             'hinhAnh':        getattr(driver, 'HinhAnhURL', None),
+            'ngayBatDau':     driver_detail.NgayBatDau if driver_detail else None,
+            'ngayKetThuc':    driver_detail.NgayKetThuc if driver_detail else None,
         })
     
     ma_tai_xe_moi = f"TAI{max_num + 1:04d}"
@@ -144,12 +151,21 @@ def them_tai_xe(request):
                 ma_nha_xe = request.session.get('user_id')
                 if ma_nha_xe:
                     Nhaxe_obj = Nhaxe.objects.get(NhaxeID=ma_nha_xe)
+                    # Lấy ngày bắt đầu từ form, nếu không có thì dùng ngày hiện tại
+                    start_date_str = request.POST.get('start_date')
+                    ngay_bat_dau = datetime.now().date()
+                    if start_date_str:
+                        try:
+                            ngay_bat_dau = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                        except:
+                            pass
+
                     cttx = CHITIETTAIXE(
                         Nhaxe=Nhaxe_obj,
                         Taixe=new_driver,
                         HoTen=full_name,
-                        NgayBatDau=datetime.now().date(),
-                        NgayKetThuc=datetime(2099, 12, 31).date()
+                        NgayBatDau=ngay_bat_dau,
+                        NgayKetThuc=None
                     )
                     cttx.save()
 
@@ -188,7 +204,20 @@ def sua_tai_xe(request, pk):
             )
             
             # 3. Cập nhật CHITIETTAIXE
-            CHITIETTAIXE.objects.filter(Taixe_id=pk).update(HoTen=full_name)
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
+            update_fields = {'HoTen': full_name}
+            if start_date_str:
+                try:
+                    update_fields['NgayBatDau'] = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                except:
+                    pass
+            if end_date_str:
+                try:
+                    update_fields['NgayKetThuc'] = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                except:
+                    pass
+            CHITIETTAIXE.objects.filter(Taixe_id=pk).update(**update_fields)
 
             messages.success(request, f'Cập nhật thông tin tài xế thành công.')
         except Exception as e:

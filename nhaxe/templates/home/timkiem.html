@@ -12,56 +12,63 @@
         rel="stylesheet">
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}">
-    <link rel="stylesheet" href="{% static 'css/timkiem.css' %}">
+    <link rel="stylesheet" href="{% static 'css/khachhang.css' %}?v={% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/timkiem.css' %}?v={% now 'U' %}">
 </head>
 
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="header-logo">
-            <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo">
-            <h1>Nhà xe Đà Nẵng_Huế</h1>
-        </div>
-        <div class="header-user-wrapper">
-            <div class="notification-bell">
-                <i class="fa-solid fa-bell"></i>
-                <span class="bell-badge">3</span>
+        <div class="logo-text" style="display: flex; align-items: center; gap: 12px;">
+            <div class="logo-circle" style="width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                <img src="{% static 'img/Vexeapp_logo.png' %}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 5px;">
             </div>
-            <div class="header-user" id="userDropdownBtn">
-                <span class="user-name">{{ user_name|default:"Khách hàng" }}</span>
-                <div class="user-avatar">
-                    <i class="fa-solid fa-user"></i>
+            <h1 style="margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">{{ nha_xe.TenNhaXe|default:"NHÀ XE HÙNG CƯỜNG"|upper }}</h1>
+        </div>
+        
+        <div class="header-right" style="display: flex; align-items: center; gap: 25px;">
+            <div class="header-notifications" style="position: relative; cursor: pointer;">
+                <i class="fa-solid fa-bell" style="font-size: 1.3rem; color: white;"></i>
+                <span style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 5px; border-radius: 10px; font-weight: 800;">3</span>
+            </div>
+            <div class="header-user" id="userDropdownBtn" style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
+                <span class="user-name" style="color: white; font-weight: 700; font-size: 1.1rem;">{{ request.session.ho_ten|default:"Khách hàng" }}</span>
+                <div class="user-avatar" style="width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                    {% if request.session.avatar %}
+                        <img src="{{ request.session.avatar }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <i class="fa-solid fa-user" style="color: #06A0E2; font-size: 1.4rem;"></i>
+                    {% endif %}
                 </div>
-                <i class="fa-solid fa-sort-down" style="margin-bottom: 6px;"></i>
-
-            <div class="dropdown-menu" id="userMenu">
-                <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
-                    <i class="fa-solid fa-gear"></i> Quản lý tài khoản
-                </a>
-                <a href="{% url 'dangxuat' %}" class="dropdown-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
+                <i class="fa-solid fa-sort-down" style="margin-bottom: 6px; color: white;"></i>
+                
+                <div class="dropdown-menu" id="userMenu">
+                    <a href="{% url 'thongtin_khachhang' %}" class="dropdown-item">
+                        <i class="fa-solid fa-gear"></i> Quản lý tài khoản
+                    </a>
+                    <a href="{% url 'dangxuat' %}" class="dropdown-item">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <!-- Main Wrapper -->
     <div class="main-wrapper">
         <!-- Sidebar -->
         <aside class="sidebar">
             <a href="{% url 'khachhang' %}" class="sidebar-item">
-                <i class="fa-solid fa-house" style="color: #444;"></i> Trang chủ
+                <span class="sidebar-icon-wrapper"><i class="fa-solid fa-house"></i></span> Trang chủ
             </a>
             <a href="{% url 'timkiem' %}" class="sidebar-item active">
-                <i class="fa-solid fa-magnifying-glass" style="color: #06A0E2;"></i> Tìm kiếm vé
+                <span class="sidebar-icon-wrapper"><i class="fa-solid fa-magnifying-glass"></i></span> Tìm kiếm vé
             </a>
             <a href="{% url 'quanlyve' %}" class="sidebar-item">
-                <i class="fa-solid fa-ticket" style="color: #444;"></i> Vé của tôi
+                <span class="sidebar-icon-wrapper"><svg width="22" height="22" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 13.3333L28.3332 5L31.6669 13.3333" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.33325 13.3333H36.6666V18.3333C34.1666 18.3333 31.6666 19.9999 31.6666 22.9166C31.6666 25.8333 34.1666 28.3333 36.6666 28.3333V33.3333H3.33325V28.3333C5.83339 28.3333 8.33325 26.6666 8.33325 23.3333C8.33325 19.9999 5.83325 18.3333 3.33325 18.3333V13.3333Z" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.1665 21.1541H19.1665" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M14.1665 26.1541H25.8332" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg></span> Vé của tôi
             </a>
             <a href="{% url 'danhgiachuyenxe' %}" class="sidebar-item">
-                <i class="fa-solid fa-comments" style="color: #444;"></i> Đánh giá chuyến xe
+                <span class="sidebar-icon-wrapper"><i class="fa-solid fa-comments"></i></span> Đánh giá chuyến xe
             </a>
         </aside>
 

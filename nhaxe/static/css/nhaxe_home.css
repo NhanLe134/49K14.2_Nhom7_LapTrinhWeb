@@ -30,7 +30,7 @@ html, body {
     flex-direction: column;
     padding: 30px;
     background: #f0f4f8;
-    overflow: hidden; /* Khóa cuộn toàn trang để chỉ cuộn danh sách bên dưới */
+    overflow-y: auto; /* Cho phép cuộn nội dung chính */
 }
 
 .page-title {

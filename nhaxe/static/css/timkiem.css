@@ -1,7 +1,30 @@
+html, body {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-wrapper {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
 /* Inherit main-content properties directly from khachhang */
 .main-content {
+    flex: 1;
     min-width: 0;
     background-color: #f7fbff !important;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .search-card {
