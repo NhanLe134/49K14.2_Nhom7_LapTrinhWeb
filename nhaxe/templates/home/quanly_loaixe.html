@@ -271,22 +271,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        {% if messages %}
-            {% for message in messages %}
-                {% if 'success' in message.tags and "Cập nhật giá vé thành công" in message.message %}
-                    const successModal = document.getElementById('successModal');
-                    successModal.classList.add('show-modal');
-                    setTimeout(() => {
-                        successModal.classList.remove('show-modal');
-                    }, 2000);
-                {% else %}
-                    if (typeof showGlobalPopup === 'function') {
-                        const type = '{{ message.tags }}'.includes('success') ? 'success' : 'error';
-                        showGlobalPopup(type, '{{ message.message|escapejs }}');
-                    }
-                {% endif %}
-            {% endfor %}
-        {% endif %}
+        // Không cần xử lý messages ở đây vì file cha nhaxe.html đã có logic hiển thị thông báo chung
     });
 </script>
 {% endblock %}

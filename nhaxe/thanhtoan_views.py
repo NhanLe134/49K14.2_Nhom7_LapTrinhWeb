@@ -19,14 +19,9 @@ def lay_ngan_hang_admin():
             'so_tai_khoan': cau_hinh.SoTaiKhoan,
             'ten_chu_tai_khoan': cau_hinh.TenChuTaiKhoan
         }
-    # Fallback mặc định nếu DB trống
-    return {
-        'ma_ngan_hang': 'MB',
-        'so_tai_khoan': '0352149424',
-        'ten_chu_tai_khoan': 'DANG NGOC ANH THU'
-    }
+    return None
 
-NGAN_HANG_ADMIN = lay_ngan_hang_admin()
+# NGAN_HANG_ADMIN = lay_ngan_hang_admin()
 
 DANH_SACH_NGAN_HANG = [
     {'id': 'MB', 'name': 'MB Bank (Ngân hàng Quân Đội)'},
@@ -64,19 +59,15 @@ def gui_mail_ve(ve, loai='payment', danh_sach_ve=None):
             
         # Lấy email đích (từ vé đầu tiên)
         target_email = ve.KhachHang.Email
-        if not target_email:
-            user_auth = User_Authentication.objects.filter(KhachHang=ve.KhachHang).first()
-            target_email = user_auth.email if user_auth else None
-        
         if not target_email: return False
 
         # Chọn template và tiêu đề
         if loai == 'booking':
             template_name = 'emails/booking_success.html'
-            subject = f"[VexeApp] Thông báo đặt vé thành công - #{ve.VeID}"
+            subject = f"[VexeApp] Thông báo đặt vé thành công - {ve.VeID}"
         else:
             template_name = 'emails/payment_success.html'
-            subject = f"[VexeApp] Xác nhận thanh toán thành công - Mã vé: {ve.VeID}"
+            subject = f"[VexeApp] Xác nhận thanh toán thành công - {ve.VeID}"
 
         # Tính toán dữ liệu gộp
         tong_tien = sum(v.GiaVe for v in danh_sach_ve)
@@ -102,32 +93,37 @@ def gui_mail_ve(ve, loai='payment', danh_sach_ve=None):
 def xu_ly_thanh_toan(request, ve_id):
     ve = get_object_or_404(Ve, pk=ve_id)
     nhaxe = ve.ChuyenXe.TuyenXe.nhaXe
-    thanh_toan_online_kha_dung = all([nhaxe.MaNganHang, nhaxe.SoTaiKhoan])
+    admin_bank = lay_ngan_hang_admin()
+    admin_online_ok = admin_bank is not None
+    nhaxe_online_ok = all([nhaxe.MaNganHang, nhaxe.SoTaiKhoan])
     
     # Tìm các vé khác cùng ChuyenXe, cùng KhachHang, cùng trạng thái "Chưa thanh toán" 
-    # được đặt cùng thời điểm (sai lệch tối đa 30 giây) để thanh toán gộp
-    tu_ngay = ve.NgayDat - timezone.timedelta(seconds=30)
-    den_ngay = ve.NgayDat + timezone.timedelta(seconds=30)
+    tu = ve.NgayDat - timezone.timedelta(seconds=10)
+    den = ve.NgayDat + timezone.timedelta(seconds=10)
     
     danh_sach_ve = Ve.objects.filter(
         KhachHang=ve.KhachHang,
         ChuyenXe=ve.ChuyenXe,
-        NgayDat__range=(tu_ngay, den_ngay)
+        NgayDat__range=(tu, den)
     ).exclude(TrangThaiThanhToan="Đã thanh toán").exclude(TrangThai="Đã hủy")
     
     tong_so_ve = danh_sach_ve.count()
     tong_tien = sum(v.GiaVe for v in danh_sach_ve)
     danh_sach_ghe = ", ".join([v.Ghe.soGhe for v in danh_sach_ve if v.Ghe])
     
+    # Định dạng tiền tệ cho giao diện
+    tong_tien_format = "{:,.0f}".format(tong_tien).replace(',', '.')
+    gia_ve_format = "{:,.0f}".format(ve.GiaVe).replace(',', '.')
+    
     # Lấy thông tin ngân hàng admin động
     admin_bank = lay_ngan_hang_admin()
-    
+    thanh_toan_online_kha_dung = nhaxe_online_ok and admin_online_ok
     qr_url = None
-    if thanh_toan_online_kha_dung:
+    if admin_bank and thanh_toan_online_kha_dung:
         # Nội dung thanh toán bao gồm danh sách mã vé hoặc mã vé đầu tiên đại diện
         noi_dung = f"THANH TOAN VE {ve.VeID}"
         if tong_so_ve > 1:
-            noi_dung = f"THANH TOAN {tong_so_ve} VE {ve.VeID}"
+            noi_dung = f"THANH TOAN {tong_so_ve} VE {danh_sach_ghe}"
             
         qr_url = f"https://img.vietqr.io/image/{admin_bank['ma_ngan_hang']}-{admin_bank['so_tai_khoan']}-compact.png?amount={int(2000)}&addInfo={noi_dung}&accountName={admin_bank['ten_chu_tai_khoan']}"
     
@@ -137,8 +133,12 @@ def xu_ly_thanh_toan(request, ve_id):
         'danh_sach_ghe': danh_sach_ghe,
         'tong_so_ve': tong_so_ve,
         'tong_tien': tong_tien,
+        'tong_tien_format': tong_tien_format,
+        'gia_ve_format': gia_ve_format,
         'qr_url': qr_url, 
         'thanh_toan_online_kha_dung': thanh_toan_online_kha_dung, 
+        'admin_online_ok': admin_online_ok,
+        'nhaxe_online_ok': nhaxe_online_ok,
         'thong_tin_ngan_hang': admin_bank
     })
 
@@ -147,9 +147,9 @@ def xac_nhan_thanh_toan(request, ve_id):
         ve = get_object_or_404(Ve, pk=ve_id)
         phuong_thuc = request.POST.get('phuong_thuc')
         
-        # Tìm các vé liên quan để cập nhật gộp
-        tu_ngay = ve.NgayDat - timezone.timedelta(seconds=30)
-        den_ngay = ve.NgayDat + timezone.timedelta(seconds=30)
+        # Tìm các vé liên quan
+        tu_ngay = ve.NgayDat - timezone.timedelta(seconds=10)
+        den_ngay = ve.NgayDat + timezone.timedelta(seconds=10)
         danh_sach_ve = Ve.objects.filter(
             KhachHang=ve.KhachHang,
             ChuyenXe=ve.ChuyenXe,
@@ -159,19 +159,9 @@ def xac_nhan_thanh_toan(request, ve_id):
         if phuong_thuc == 'Tiền mặt':
             danh_sach_ve.update(TrangThaiThanhToan="Chưa thanh toán")
             messages.success(request, "Vui lòng thanh toán cho tài xế khi lên xe.")
-        else:
-            for v in danh_sach_ve:
-                ThanhToan.objects.get_or_create(
-                    Ve=v, 
-                    defaults={
-                        'ThanhToanID': tao_ma_thanh_toan_tu_dong(), 
-                        'SoTien': v.GiaVe, 
-                        'NgayThanhToan': timezone.now(), 
-                        'DaQuyetToan': False
-                    }
-                )
-            danh_sach_ve.update(TrangThaiThanhToan="Chưa thanh toán")
-            messages.success(request, "Vui lòng chuyển khoản để hoàn tất thanh toán.")
+            return redirect('quanlyve')
+        
+        # Nếu là Chuyển khoản, ta không làm gì ở Backend (đã có JS chặn ở Frontend)
         return redirect('quanlyve')
     return redirect('quanlyve')
 
@@ -185,8 +175,8 @@ def webhook_sepay(request):
             ve_goc = Ve.objects.filter(VeID=khop.group(0)).first()
             if ve_goc:
                 # Tìm các vé đi kèm
-                tu_ngay = ve_goc.NgayDat - timezone.timedelta(seconds=30)
-                den_ngay = ve_goc.NgayDat + timezone.timedelta(seconds=30)
+                tu_ngay = ve_goc.NgayDat - timezone.timedelta(seconds=10)
+                den_ngay = ve_goc.NgayDat + timezone.timedelta(seconds=10)
                 danh_sach_ve = Ve.objects.filter(
                     KhachHang=ve_goc.KhachHang,
                     ChuyenXe=ve_goc.ChuyenXe,
@@ -219,6 +209,15 @@ def webhook_sepay(request):
 def kiem_tra_trang_thai_thanh_toan(request, ve_id):
     ve = Ve.objects.filter(VeID=ve_id).first()
     return JsonResponse({'da_thanh_toan': (ve.TrangThaiThanhToan == "Đã thanh toán") if ve else False})
+
+# ========== HẾT CHỨC NĂNG THANH TOÁN ĐỐI VỚI KHÁCH HÀNG =============
+
+
+
+
+
+
+# ========== THANH TOÁN ĐỐI VỚI NHÀ XE =============
 
 def nhaxe_bao_cao_doanh_thu(request):
     user_id = request.session.get('user_id')

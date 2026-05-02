@@ -48,19 +48,19 @@
             </div>
             <div class="pmt-row">
                 <span class="pmt-label">Giá mỗi ghế</span>
-                <span class="pmt-value">{{ ve.GiaVe|floatformat:0 }} đ</span>
+                <span class="pmt-value">{{ gia_ve_format }} đ</span>
             </div>
             {% endif %}
             <div class="pmt-row total">
                 <span class="pmt-label">Tổng tiền thanh toán</span>
-                <span class="pmt-value">{{ tong_tien|floatformat:0 }} đ</span>
+                <span class="pmt-value">{{ tong_tien_format }} đ</span>
             </div>
         </div>
 
         <!-- Payment Methods -->
         <div class="pmt-section-title">Chọn phương thức thanh toán</div>
 
-        <form action="{% url 'xacnhan_thanhtoan' ve.VeID %}" method="POST" id="formThanhToan">
+        <form action="{% url 'xacnhan_thanhtoan' ve.VeID %}" method="POST" id="formThanhToan" onsubmit="return thongBaoChuyenKhoan(event)">
             {% csrf_token %}
             <input type="hidden" name="phuong_thuc" id="phuongThucDaChon" value="Chuyển khoản">
 
@@ -84,25 +84,29 @@
 
             <!-- Khu vực hiển thị khi chọn Chuyển khoản -->
             <div id="khuVucChuyenKhoan" style="display: block;">
-                {% if thanh_toan_online_kha_dung %}
-                    <!-- Hiện mã QR nếu nhà xe có cấu hình -->
-                    <div id="khuVucQR" class="pmt-qr-section">
-                        <div class="pmt-qr-title">Quét mã để thanh toán</div>
-                        <div class="pmt-qr-countdown">Hết hạn sau: <span id="dongHoDemNguoc">5:00</span></div>
-                        <img src="{{ qr_url }}" class="pmt-qr-img" alt="VietQR">
-                        <div class="pmt-qr-note">
-                            <strong>Ghi chú:</strong> Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống tự động xác nhận.
-                            <br>
-                            <strong>Tài khoản:</strong> {{ thong_tin_ngan_hang.so_tai_khoan }} - {{ thong_tin_ngan_hang.ten_chu_tai_khoan }} ({{ thong_tin_ngan_hang.ma_ngan_hang }})
+                {% if admin_online_ok %}
+                    {% if nhaxe_online_ok %}
+                        <div id="khuVucQR" class="pmt-qr-section">
+                            <div class="pmt-qr-title">Quét mã để thanh toán</div>
+                            <div class="pmt-qr-countdown">Hết hạn sau: <span id="dongHoDemNguoc">5:00</span></div>
+                            <img src="{{ qr_url }}" class="pmt-qr-img" alt="VietQR">
+                            <div class="pmt-qr-note">
+                                <strong>Ghi chú:</strong> Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống xác nhận.
+                            </div>
+                            <div id="trangThaiThanhToan" style="margin-top: 15px; font-size: 0.85rem; color: #06A0E2; display: none;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang chờ xác nhận chuyển khoản...
+                            </div>
                         </div>
-                        <div id="trangThaiThanhToan" style="margin-top: 15px; font-size: 0.85rem; color: #06A0E2; display: none;">
-                            <i class="fa-solid fa-spinner fa-spin"></i> Đang chờ xác nhận chuyển khoản...
+                    {% else %}
+                        <!-- Hiện thông báo lỗi nếu nhà xe CHƯA cấu hình -->
+                        <div class="pmt-error-box" style="display: block;">
+                            <strong>Thông báo:</strong> Nhà xe này chưa thiết lập chức năng thanh toán online. Vui lòng chọn phương thức thanh toán bằng Tiền mặt.
                         </div>
-                    </div>
+                    {% endif %}
                 {% else %}
-                    <!-- Hiện thông báo lỗi nếu nhà xe CHƯA cấu hình -->
-                    <div class="pmt-error-box" style="display: block;">
-                        <strong>Thông báo:</strong> Nhà xe này chưa thiết lập chức năng thanh toán online. Vui lòng chọn phương thức thanh toán bằng Tiền mặt.
+                    <!-- Hiện thông báo lỗi nếu ADMIN hệ thống chưa cấu hình -->
+                    <div class="pmt-error-box" style="display: block; border-left-color: #ef4444;">
+                        Hệ thống đang bảo trì kênh thanh toán online. Vui lòng chọn phương thức thanh toán tiền mặt.
                     </div>
                 {% endif %}
             </div>
@@ -124,6 +128,15 @@
 </div>
 
 <script>
+    function thongBaoChuyenKhoan(event) {
+        const phuongThuc = document.getElementById('phuongThucDaChon').value;
+        if (phuongThuc === 'Chuyển khoản') {
+            alert("Vui lòng chuyển khoản qua mã QR để hoàn tất thanh toán.");
+            return false; // Chặn gửi form về server
+        }
+        return true; // Cho phép gửi form nếu là Tiền mặt
+    }
+
     const onlineKhaDung = {{ thanh_toan_online_kha_dung|yesno:"true,false" }};
 
     function chonPhuongThuc(phuongThuc, element) {
@@ -186,9 +199,9 @@
                     }
                     setTimeout(() => {
                         window.location.href = "{% url 'quanlyve' %}";
-                    }, 2000);
+                    }, 1500);
                 } else {
-                    setTimeout(kiemTraThanhToan, 3000);
+                    setTimeout(kiemTraThanhToan, 2000);
                 }
             })
             .catch(err => {

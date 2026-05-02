@@ -109,8 +109,6 @@ class Loaixe(models.Model):
     # TenLoaiXe = models.CharField(max_length=50, null=True, blank=True)
     SoCho = models.IntegerField(validators=[MinValueValidator(1)])
     SoDoGheNgoiURL = models.CharField(max_length=255, null=True, blank=True)
-    GiaVe = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-    NgayCapNhatGia = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.LoaixeID
