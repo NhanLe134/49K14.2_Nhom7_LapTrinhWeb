@@ -76,12 +76,20 @@ def dangnhap(request):
             
             # Ưu tiên lấy tên thật
             display_name = matched_user.TenDangNhap
+            avatar_url = None
+            
             if matched_user.Taixe and matched_user.Taixe.HoTen:
                 display_name = matched_user.Taixe.HoTen
+                avatar_url = matched_user.Taixe.HinhAnhURL
             elif matched_user.Nhaxe and matched_user.Nhaxe.TenNhaXe:
                 display_name = matched_user.Nhaxe.TenNhaXe
+                avatar_url = matched_user.Nhaxe.AnhDaiDienURL
+            elif matched_user.KhachHang and matched_user.KhachHang.HovaTen:
+                display_name = matched_user.KhachHang.HovaTen
+                avatar_url = matched_user.KhachHang.AnhDaiDienURL
                 
             request.session['ho_ten'] = display_name
+            request.session['avatar'] = avatar_url
             
             if matched_user.Nhaxe:
                 request.session['ma_nha_xe'] = matched_user.Nhaxe.NhaxeID

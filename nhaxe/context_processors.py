@@ -35,27 +35,42 @@ def notifications(request):
 
 def user_info(request):
     """
-    Cung cấp thông tin tên người dùng toàn cục.
+    Cung cấp thông tin tên người dùng và avatar toàn cục.
+    Lấy trực tiếp từ Database để đảm bảo chính xác nhất.
     """
     user_id = request.session.get('user_id')
     user_name = None
+    user_avatar = None
     
     if user_id:
         try:
-            # Lấy User_Authentication kèm theo các bảng liên quan để tối ưu query
-            auth_user = User_Authentication.objects.select_related('KhachHang', 'Nhaxe', 'Taixe').get(UserID=user_id)
+            # 1. Thử lấy từ User_Authentication và các FK liên kết
+            auth_user = User_Authentication.objects.get(UserID=user_id)
             
             if auth_user.KhachHang:
                 user_name = auth_user.KhachHang.HovaTen
+                user_avatar = auth_user.KhachHang.AnhDaiDienURL
             elif auth_user.Nhaxe:
-                user_name = auth_user.Nhaxe.NguoiDaiDien or auth_user.Nhaxe.HoTenNguoiDaiDien or auth_user.Nhaxe.TenNhaXe
+                user_name = auth_user.Nhaxe.TenNhaXe
+                user_avatar = auth_user.Nhaxe.AnhDaiDienURL
             elif auth_user.Taixe:
                 user_name = auth_user.Taixe.HoTen
+                user_avatar = auth_user.Taixe.HinhAnhURL
             
-            # Fallback nếu chưa có họ tên thật
+            # 2. Nếu vẫn chưa có tên (trường hợp FK bị Null nhưng bản ghi KhachHang vẫn tồn tại với cùng ID)
+            if not user_name:
+                kh = KhachHang.objects.filter(KhachHangID=user_id).first()
+                if kh:
+                    user_name = kh.HovaTen
+                    user_avatar = kh.AnhDaiDienURL
+            
+            # 3. Fallback cuối cùng là tên đăng nhập
             if not user_name:
                 user_name = auth_user.TenDangNhap
         except Exception:
             pass
             
-    return {'user_name': user_name}
+    return {
+        'user_name': user_name,
+        'user_avatar': user_avatar
+    }

@@ -176,15 +176,23 @@ def view_tim_kiem_ve(request):
         cac_diem_den = ['Đà Nẵng', 'Huế', 'Hội An']
 
     try:
-        # Cho phép tìm kiếm nếu có ít nhất một thông tin (Điểm đi, Điểm đến HOẶC Ngày đi)
-        if origin or destination or depart_date:
+        # Logic tìm kiếm mới:
+        # 1. Nếu nhấn tìm kiếm mà TRỐNG TẤT CẢ các trường -> Áp dụng mặc định (Đà Nẵng - Huế - Hôm nay)
+        # 2. Nếu có ít nhất một trường được nhập -> Tìm kiếm theo các trường đó
+        search_submitted = request.GET.get('search_submitted') == '1'
+        
+        if search_submitted or origin or destination or depart_date:
+            if search_submitted and not origin and not destination and not depart_date:
+                origin = "Đà Nẵng"
+                destination = "Huế"
+                from datetime import datetime
+                depart_date = datetime.now().strftime('%Y-%m-%d')
+            
             danh_sach_chuyen = tim_kiem_chuyen_xe_kha_dung(origin, destination, depart_date)
-            if not danh_sach_chuyen:
+            if not danh_sach_chuyen and search_submitted:
                 messages.info(request, "Không tìm thấy chuyến xe nào phù hợp với yêu cầu.")
         else:
             danh_sach_chuyen = []
-            if request.GET.get('search_submitted'):
-                messages.warning(request, "Vui lòng nhập ít nhất một thông tin để tìm kiếm.")
 
         context = {
             'chuyen_xe_list': danh_sach_chuyen,

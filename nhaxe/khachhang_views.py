@@ -118,6 +118,10 @@ def capnhat_thongtin_khachhang(request):
 
         kh.save()
 
+        # Cập nhật lại session để header hiển thị đúng tên mới
+        request.session['ho_ten'] = kh.HovaTen
+        request.session['avatar'] = kh.AnhDaiDienURL
+
         return JsonResponse({
             'status': 'success',
             'message': 'Cập nhật thông tin thành công!',

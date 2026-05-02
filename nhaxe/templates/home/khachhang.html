@@ -31,10 +31,10 @@
                 <span style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 5px; border-radius: 10px; font-weight: 800;">3</span>
             </div>
             <div class="header-user" id="userDropdownBtn" style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
-                <span class="user-name" style="color: white; font-weight: 700; font-size: 1.1rem;">{{ request.session.ho_ten|default:"Khách hàng" }}</span>
+                <span class="user-name" style="color: white; font-weight: 700; font-size: 1.1rem;">{{ user_name|default:"Khách hàng" }}</span>
                 <div class="user-avatar" style="width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
-                    {% if request.session.avatar %}
-                        <img src="{{ request.session.avatar }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% if user_avatar %}
+                        <img src="{{ user_avatar }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
                         <i class="fa-solid fa-user" style="color: #06A0E2; font-size: 1.4rem;"></i>
                     {% endif %}

@@ -45,7 +45,7 @@
                     {% elif nha_xe %}
                         {{ nha_xe.NguoiDaiDien|default:nha_xe.HoTenNguoiDaiDien|default:nha_xe.TenNhaXe }}
                     {% else %}
-                        {{ request.session.ho_ten|default:request.session.username }}
+                        {{ user_name|default:request.session.username }}
                     {% endif %}
                 </span>
                 <div class="user-avatar" style="width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
