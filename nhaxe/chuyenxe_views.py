@@ -164,7 +164,7 @@ def suachuyenxe(request, pk):
             if request.POST.get('trangthai'):
                 chuyen.TrangThai = request.POST.get('trangthai')
                 if chuyen.TrangThai == 'Hoàn thành':
-                    Ve.objects.filter(ChuyenXe_id=chuyen.ChuyenXeID).update(TrangThai='Đã đi')
+                    Ve.objects.filter(ChuyenXe_id=chuyen.ChuyenXeID).update(TrangThai='Đã đi', TrangThaiThanhToan='Đã thanh toán')
             chuyen.save()
             messages.success(request, 'Sửa chuyến xe thành công.')
             return redirect('quanlychuyenxe')
@@ -201,7 +201,7 @@ def hoanthanh_chuyenxe(request, pk):
     if request.method == 'POST':
         try:
             ChuyenXe.objects.filter(pk=pk).update(TrangThai='Hoàn thành')
-            Ve.objects.filter(ChuyenXe_id=pk).update(TrangThai='Đã đi')
+            Ve.objects.filter(ChuyenXe_id=pk).update(TrangThai='Đã đi', TrangThaiThanhToan='Đã thanh toán')
             messages.success(request, 'Đã cập nhật trạng thái: Hoàn thành.')
         except Exception as e:
             messages.error(request, f'Lỗi: {str(e)}')
@@ -280,6 +280,13 @@ def taixe_chitietchuyenxe(request):
             try:
                 chuyen.TrangThai = new_status
                 chuyen.save()
+                
+                # Tự động cập nhật vé nếu hoàn thành
+                if new_status == 'Hoàn thành':
+                    Ve.objects.filter(ChuyenXe_id=chuyenxe_id).update(
+                        TrangThai='Đã đi', 
+                        TrangThaiThanhToan='Đã thanh toán'
+                    )
                 messages.success(request, 'Cập nhật trạng thái thành công.')
             except Exception as e:
                 messages.error(request, f'Lỗi cập nhật: {str(e)}')
@@ -339,7 +346,7 @@ def chitietchuyenxe(request):
                 ChuyenXe.objects.filter(pk=post_id).update(TrangThai=new_status)
                 # Tự động cập nhật vé thành 'Đã đi' nếu chuyến xe hoàn thành
                 if new_status == 'Hoàn thành':
-                    Ve.objects.filter(ChuyenXe_id=post_id).update(TrangThai='Đã đi')
+                    Ve.objects.filter(ChuyenXe_id=post_id).update(TrangThai='Đã đi', TrangThaiThanhToan='Đã thanh toán')
                 messages.success(request, f'Đã cập nhật trạng thái thành "{new_status}".')
             except Exception as e:
                 messages.error(request, f"Lỗi: {e}")
