@@ -86,7 +86,7 @@ body {
     padding: 40px 60px;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     background-color: #f7fbff;
     overflow-y: auto; /* Content scroll */
 }

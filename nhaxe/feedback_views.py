@@ -152,3 +152,43 @@ def submit_danhgia(request):
             return redirect('danhgiachuyenxe')
 
     return redirect('danhgiachuyenxe')
+
+from django.db.models import Avg, Count
+from .decorators import nhaxe_required
+
+@nhaxe_required
+def nhaxe_xem_danh_gia(request):
+    """View dành cho Nhà xe xem tất cả đánh giá từ khách hàng."""
+    user_id = request.session.get('user_id')
+    # Ở đây chúng ta tin tưởng decorator nhaxe_required đã kiểm tra quyền
+    
+    # Lấy thông tin nhà xe
+    nhaxe = get_object_or_404(Nhaxe.objects.defer('AnhDaiDienURL'), NhaxeID=user_id)
+    
+    # Lấy tất cả đánh giá của nhà xe này
+    danh_sach_dg = DanhGia.objects.filter(Nhaxe=nhaxe).select_related('KhachHang', 'Ve__ChuyenXe__TuyenXe').order_by('-NgayDanhGia')
+    
+    # Tính toán thống kê
+    stats = danh_sach_dg.aggregate(
+        tong_dg=Count('DanhGiaID'),
+        diem_tb=Avg('Diemso')
+    )
+    
+    # Đếm số lượng từng mức sao
+    sao_counts = {
+        i: danh_sach_dg.filter(Diemso=i).count() for i in range(1, 6)
+    }
+    
+    # Tính phần trăm cho thanh progress bar
+    sao_percent = {}
+    tong = stats['tong_dg'] or 1
+    for i in range(1, 6):
+        sao_percent[i] = (sao_counts[i] / tong) * 100
+
+    return render(request, 'nhaxe/xem_danh_gia.html', {
+        'nhaxe': nhaxe,
+        'danh_sach_dg': danh_sach_dg,
+        'stats': stats,
+        'sao_counts': sao_counts,
+        'sao_percent': sao_percent
+    })

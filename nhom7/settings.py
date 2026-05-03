@@ -29,6 +29,11 @@ DEBUG = True
 ALLOWED_HOSTS = ['*', 'nanometer-unreal-vacancy.ngrok-free.dev', '.ngrok-free.dev', '.loca.lt', '127.0.0.1', 'localhost']
 CSRF_TRUSTED_ORIGINS = ['https://nanometer-unreal-vacancy.ngrok-free.dev', 'http://127.0.0.1:8000', 'http://localhost:8000']
 
+# Cấu hình để chạy được qua Proxy (Ngrok, Heroku, v.v.)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 
 # Application definition
 
@@ -86,6 +91,10 @@ DATABASES = {
         'PASSWORD': 'P1N2N3T4H5@',
         'HOST': 'aws-1-ap-southeast-1.pooler.supabase.com',
         'PORT': '6543',
+        'OPTIONS': {
+            'connect_timeout': 10,
+        },
+        'DISABLE_SERVER_SIDE_CURSORS': True,
     }
 }
 
@@ -146,10 +155,20 @@ API_TIMEOUT = 60
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+# Thiết lập Custom User Model để dùng phân quyền của Django
+AUTH_USER_MODEL = 'nhaxe.User_Authentication'
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Supabase configuration
 SUPABASE_URL = "https://hvlpysoytevbadlvupbq.supabase.co"
 SUPABASE_KEY = "sb_publishable_JXqBJpuidFsc8cYDAMMLRA_pC9Lx0EG"
 
-# Reload server
+# Cấu hình Email (Gửi thông báo quyết toán)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'vexeapp.noreply@gmail.com'
+EMAIL_HOST_PASSWORD = 'sbnh mysf ohum uleh' 
+DEFAULT_FROM_EMAIL = f"VexeApp <{EMAIL_HOST_USER}>"

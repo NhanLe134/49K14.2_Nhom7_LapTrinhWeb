@@ -1,0 +1,97 @@
+{% extends 'home/nhaxe.html' %}
+{% load static %}
+
+{% block title %}Đánh giá của khách hàng - {{ nhaxe.TenNhaXe }}{% endblock %}
+
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#444{% endblock %}
+{% block active_danhgia %}active{% endblock %}
+{% block color_danhgia %}#06A0E2{% endblock %}
+
+{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/nhaxe_xem_danh_gia.css' %}">
+{% endblock %}
+
+<div class="feedback-container">
+    <div style="margin-bottom: 25px;">
+        <h2 style="font-weight: 800; color: #1e293b;">Đánh giá của khách hàng</h2>
+        <p style="color: #64748b;">Lắng nghe phản hồi để cải thiện chất lượng dịch vụ của bạn.</p>
+    </div>
+
+    <!-- Dashboard Thống kê -->
+    <div class="stats-row">
+        <div class="card rating-summary">
+            <div class="big-score">{{ stats.diem_tb|default:0|floatformat:1 }}</div>
+            <div class="stars-display">
+                {% for i in "12345" %}
+                <i class="fa-{% if forloop.counter <= stats.diem_tb %}solid{% else %}regular{% endif %} fa-star"></i>
+                {% endfor %}
+            </div>
+            <div class="total-reviews">{{ stats.tong_dg }} nhận xét</div>
+        </div>
+
+        <div class="card">
+            <div class="rating-bars">
+                {% for i in "54321" %}
+                {% with score=i|add:"0" %}
+                <div class="bar-item">
+                    <div class="bar-label">{{ score }} sao</div>
+                    <div class="bar-bg">
+                        <div class="bar-fill" style="width: {% for k, v in sao_percent.items %}{% if k == score %}{{ v }}{% endif %}{% endfor %}%"></div>
+                    </div>
+                    <div class="bar-count">{% for k, v in sao_counts.items %}{% if k == score %}{{ v }}{% endif %}{% endfor %}</div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách Nhận xét -->
+    <div class="review-list">
+        {% for dg in danh_sach_dg %}
+        <div class="card review-card">
+            <div class="customer-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="review-content">
+                <div class="review-header">
+                    <div>
+                        <div class="customer-name">
+                            {% if dg.AnDanh %}Khách hàng ẩn danh{% else %}{{ dg.KhachHang.HovaTen }}{% endif %}
+                        </div>
+                        <div class="stars-display" style="font-size: 14px; margin-bottom: 0;">
+                            {% for i in "12345" %}
+                            <i class="fa-{% if forloop.counter <= dg.Diemso %}solid{% else %}regular{% endif %} fa-star"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="review-date">
+                        {{ dg.NgayDanhGia|date:"d/m/Y H:i" }}
+                    </div>
+                </div>
+                
+                <div class="review-comment">
+                    {{ dg.Nhanxet|default:"(Không có nội dung nhận xét)" }}
+                </div>
+
+                {% if dg.Ve %}
+                <div class="trip-info">
+                    <i class="fa-solid fa-route"></i>
+                    {{ dg.Ve.ChuyenXe.TuyenXe.TenTuyen }} | 
+                    <i class="fa-regular fa-calendar"></i>
+                    {{ dg.Ve.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="card empty-state">
+            <i class="fa-solid fa-comment-slash" style="font-size: 40px; margin-bottom: 15px;"></i>
+            <p>Nhà xe của bạn chưa có đánh giá nào từ khách hàng.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

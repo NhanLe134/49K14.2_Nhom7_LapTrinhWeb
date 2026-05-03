@@ -9,7 +9,7 @@ class KhachHang(models.Model):
     Email = models.CharField(max_length=100, unique=True, null=True, blank=True)
     NgaySinh = models.DateField(null=True, blank=True)
     NgayDangKy = models.DateTimeField(auto_now_add=True, null=True, blank=True) # Thêm trường này
-    AnhDaiDienURL = models.CharField(max_length=255, null=True, blank=True)
+    AnhDaiDienURL = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.HovaTen or self.KhachHangID
@@ -23,7 +23,6 @@ class Nhaxe(models.Model):
     DiaChiTruSo = models.CharField(max_length=200, null=True, blank=True)
     TenNhaXe = models.CharField(max_length=200, null=True, blank=True) # Tên nhà xe
     NguoiDaiDien = models.CharField(max_length=200, null=True, blank=True) # Tên người đại diện (từ DB cũ)
-    HoTenNguoiDaiDien = models.CharField(max_length=200, null=True, blank=True) # Họ tên người đại diện
     SoDienThoai = models.CharField(
         max_length=20,  # Nới rộng từ 10 thành 20
         unique=True,
@@ -43,14 +42,16 @@ class Nhaxe(models.Model):
     def __str__(self):
         return self.NhaxeID
 
+from django.contrib.auth.models import AbstractUser
+
 # 2. Bảng User_Authentication (Xác thực người dùng)
-class User_Authentication(models.Model):
+class User_Authentication(AbstractUser):
     UserID = models.CharField(max_length=10, primary_key=True)
     KhachHang = models.ForeignKey(KhachHang, on_delete=models.SET_NULL, null=True, blank=True)
     Nhaxe = models.ForeignKey(Nhaxe, on_delete=models.SET_NULL, null=True, blank=True)
     Taixe = models.ForeignKey('Taixe', on_delete=models.SET_NULL, null=True, blank=True)
-    TenDangNhap = models.CharField(max_length=200, unique=True)
-    MatKhau = models.CharField(max_length=200)
+    # TenDangNhap sẽ được đổi tên thành username (đã có trong AbstractUser)
+    # MatKhau sẽ được đổi tên thành password (đã có trong AbstractUser)
     Vaitro = models.CharField(max_length=20) # 'Nhaxe' hoặc 'Khach'
     SoDienThoai = models.CharField(
         max_length=20, 
@@ -60,7 +61,7 @@ class User_Authentication(models.Model):
     )
 
     def __str__(self):
-        return self.TenDangNhap
+        return self.username
 
 # 4. Bảng Taixe (Tài xế)
 class Taixe(models.Model):

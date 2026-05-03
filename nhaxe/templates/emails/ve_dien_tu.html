@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        .ticket-container {
+            font-family: 'Arial', sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #06A0E2 0%, #047cb0 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+            background: white;
+        }
+        .route-info {
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .route-item {
+            display: table-cell;
+            width: 40%;
+            vertical-align: middle;
+        }
+        .route-arrow {
+            display: table-cell;
+            width: 20%;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 24px;
+            color: #06A0E2;
+        }
+        .city-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .info-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .label {
+            color: #7f8c8d;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .value {
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: right;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #95a5a6;
+            border-top: 1px solid #eee;
+        }
+        .status-stamp {
+            display: inline-block;
+            border: 3px solid #27ae60;
+            color: #27ae60;
+            padding: 5px 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 5px;
+            transform: rotate(-5deg);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket-container">
+        <div class="header">
+            <h2 style="margin:0; letter-spacing: 2px;">XÁC NHẬN ĐẶT VÉ</h2>
+            <p style="margin:10px 0 0; opacity: 0.9;">Mã đơn hàng: #{{ ve.VeID }}</p>
+        </div>
+        
+        <div class="content">
+            <div class="route-info">
+                <div class="route-item">
+                    <p class="label">Điểm đi</p>
+                    <p class="city-name">{{ ve.ChuyenXe.TuyenXe.diemDi }}</p>
+                </div>
+                <div class="route-arrow">
+                    ➔
+                </div>
+                <div class="route-item" style="text-align: right;">
+                    <p class="label">Điểm đến</p>
+                    <p class="city-name">{{ ve.ChuyenXe.TuyenXe.diemDen }}</p>
+                </div>
+            </div>
+
+            <table class="info-table">
+                <tr>
+                    <td class="label">Khách hàng</td>
+                    <td class="value">{{ ve.HovaTen }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Số điện thoại</td>
+                    <td class="value">{{ ve.SoDienThoai }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Khởi hành</td>
+                    <td class="value">{{ ve.ChuyenXe.GioKhoiHanh|time:"H:i" }} - {{ ve.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Số ghế</td>
+                    <td class="value" style="color: #e74c3c; font-size: 18px;">{{ ve.MaGhe }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Nhà xe</td>
+                    <td class="value">{{ ve.ChuyenXe.TuyenXe.nhaXe.TenNhaXe }}</td>
+                </tr>
+                <tr>
+                    <td class="label" style="border:none">Tổng thanh toán</td>
+                    <td class="value" style="border:none; color: #06A0E2; font-size: 20px;">{{ gia_ve_format }} VNĐ</td>
+                </tr>
+            </table>
+
+            <div style="text-align: center;">
+                <div class="status-stamp">Đã thanh toán</div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 15px; background: #fff9db; border-radius: 8px; font-size: 13px; color: #856404; text-align: center;">
+                <strong>Lưu ý:</strong> Vui lòng có mặt tại bến trước 30 phút để đảm bảo lịch trình. Chúc bạn có một chuyến đi thượng lộ bình an!
+            </div>
+        </div>
+
+        <div class="footer">
+            Đây là email tự động từ hệ thống VexeApp. Vui lòng không trả lời email này.<br>
+            Email phục vụ cho quá làm dự án nhóm môn Lập Trình Web - Trường Đại học Kinh Tế Đà Nẵng
+
+        </div>
+    </div>
+</body>
+</html>

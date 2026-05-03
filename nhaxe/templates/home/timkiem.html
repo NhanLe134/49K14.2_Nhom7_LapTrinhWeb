@@ -113,7 +113,7 @@
                                 <div class="exchange-icon-wrapper">
                                     <i class="fa-solid fa-right-left" style="color: #13B5F6; cursor: pointer;"></i>
                                     <div class="dots-line">
-                                        <span class="dot-green" style="background-color: #2ECC71;"></span>
+                                        <span class="search-dot-green" style="background-color: #2ECC71;"></span>
                                         <span class="line-dashed" style="border-top: 2px dashed #13B5F6;"></span>
                                         <i class="fa-solid fa-location-dot" style="color: #E74C3C;"></i>
                                     </div>
@@ -162,8 +162,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Spacer to match top row exchange icon width -->
-                                <div style="width: 150px; flex-shrink: 0;"></div>
+                                <div class="row-spacer"></div>
 
                                 <div class="form-group">
                                     <label>Giờ đi</label>
@@ -301,7 +300,7 @@
                     <div class="exchange-icon-wrapper">
                         <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
                         <div class="dots-line">
-                            <span class="dot-green"></span>
+                            <span class="search-dot-green"></span>
                             <span class="line-dashed"></span>
                             <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
                         </div>
@@ -325,7 +324,7 @@
                             <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
                         </div>
                     </div>
-                    <div style="width: 150px; flex-shrink: 0;"></div>
+                    <div class="row-spacer"></div>
                     <div class="form-group">
                         <label>Giờ đi</label>
                         <div class="form-control"
@@ -391,7 +390,7 @@
                     <div class="exchange-icon-wrapper">
                         <i class="fa-solid fa-right-left" style="color: #06A0E2;"></i>
                         <div class="dots-line">
-                            <span class="dot-green"></span>
+                            <span class="search-dot-green"></span>
                             <span class="line-dashed"></span>
                             <i class="fa-solid fa-location-dot" style="color: #ff4d4f;"></i>
                         </div>
@@ -415,6 +414,7 @@
                             <span class="dynamic-date">{{ depart_date }}</span> <i class="fa-regular fa-calendar"></i>
                         </div>
                     </div>
+                    <div class="row-spacer"></div>
                     <div class="form-group">
                         <label>Giờ đi</label>
                         <div class="form-control"
@@ -475,6 +475,7 @@
                         <div class="error-msg" id="phoneError">Số điện thoại không hợp lệ</div>
                     </div>
                 </div>
+
 
                 <div class="info-action">
                     <button type="button" class="btn-info-back" id="btnInfoBack">Quay lại</button>

@@ -75,5 +75,5 @@ class DanhGiaAdmin(admin.ModelAdmin):
 
 @admin.register(User_Authentication)
 class UserAuthenticationAdmin(admin.ModelAdmin):
-    list_display = ('TenDangNhap', 'Vaitro', 'SoDienThoai','MatKhau')
-    search_fields = ('TenDangNhap', 'SoDienThoai')
+    list_display = ('username', 'Vaitro', 'SoDienThoai','password')
+    search_fields = ('username', 'SoDienThoai')

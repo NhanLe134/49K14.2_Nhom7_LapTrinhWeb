@@ -1,10 +1,13 @@
+from .decorators import nhaxe_required, taixe_required, khachhang_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import Nhaxe, ChuyenXe, Taixe, Loaixe, CHITIETLOAIXE, User_Authentication, Xe
 from datetime import datetime, timedelta
 import random
+import base64
 
+@nhaxe_required
 def nhaxe(request):
     nha_xe_id = request.session.get('ma_nha_xe')
     if not nha_xe_id:
@@ -119,6 +122,7 @@ def nhaxe(request):
 
     return render(request, 'home/nhaxe.html', context)
 
+@nhaxe_required
 def thong_tin_nha_xe(request):
     user_id = request.session.get('ma_nha_xe')
     if not user_id:
@@ -154,23 +158,24 @@ def thong_tin_nha_xe(request):
             nha_xe_obj.DiaChiTruSo = address if address else nha_xe_obj.DiaChiTruSo
             if email: nha_xe_obj.Email = email
             if anh_dai_dien:
-                from django.core.files.storage import FileSystemStorage
-                fs = FileSystemStorage()
-                # Overwrite if exists by deleting first
-                if nha_xe_obj.AnhDaiDienURL and nha_xe_obj.AnhDaiDienURL.startswith(fs.base_url):
-                    import os
-                    from django.conf import settings
-                    old_path = os.path.join(settings.MEDIA_ROOT, nha_xe_obj.AnhDaiDienURL.replace(fs.base_url, ''))
-                    if os.path.exists(old_path):
-                        os.remove(old_path)
-                
-                filename = fs.save(f"nhaxe_banners/{nha_xe_obj.NhaxeID}_banner.jpg", anh_dai_dien)
-                nha_xe_obj.AnhDaiDienURL = fs.url(filename)
+                try:
+                    # Đọc file và chuyển sang base64
+                    image_data = anh_dai_dien.read()
+                    base64_data = base64.b64encode(image_data).decode('utf-8')
+                    # Lấy extension
+                    ext = anh_dai_dien.name.split('.')[-1].lower()
+                    if ext not in ['jpg', 'jpeg', 'png', 'gif']:
+                        ext = 'jpeg' # fallback
+                    mime_type = f"image/{ext}" if ext != 'jpg' else "image/jpeg"
+                    
+                    nha_xe_obj.AnhDaiDienURL = f"data:{mime_type};base64,{base64_data}"
+                except Exception as e:
+                    print(f"Lỗi convert base64: {e}")
 
             nha_xe_obj.save()
 
             if password and user_auth:
-                user_auth.MatKhau = password
+                user_auth.password = password
                 user_auth.save()
 
             return JsonResponse({'status': 'success', 'message': 'Cập nhật thông tin thành công!'})
@@ -181,6 +186,7 @@ def thong_tin_nha_xe(request):
         'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None
     })
 
+@nhaxe_required
 def quanly_loaixe(request):
     nha_xe_id = request.session.get('user_id')
     nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
@@ -217,6 +223,7 @@ def quanly_loaixe(request):
         'overdue_trips_count': overdue_trips_count
     })
 
+@nhaxe_required
 def capnhat_gia_loaixe(request, pk):
     if request.method == 'POST':
         nha_xe_id = request.session.get('user_id')
@@ -233,6 +240,7 @@ def capnhat_gia_loaixe(request, pk):
             messages.error(request, f"Lỗi: {e}")
     return redirect('quanly_loaixe')
 
+@nhaxe_required
 def quan_ly_xe(request):
     nha_xe_id = request.session.get('ma_nha_xe')
     if not nha_xe_id: return redirect('dangnhap')
@@ -311,6 +319,7 @@ def quan_ly_xe(request):
         'overdue_trips_count': overdue_trips_count
     })
 
+@nhaxe_required
 def quanly_khachhang(request):
     nha_xe_id = request.session.get('user_id')
     nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id) if nha_xe_id else None

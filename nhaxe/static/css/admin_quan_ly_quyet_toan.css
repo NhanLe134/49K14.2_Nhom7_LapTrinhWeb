@@ -1,0 +1,76 @@
+/* MODAL STYLES THEO MẪU MỚI */
+.confirm-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.confirm-modal-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px 20px;
+    width: 380px;
+    max-width: 90vw;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.confirm-modal-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 15px;
+}
+
+.confirm-modal-msg {
+    font-size: 16px;
+    color: #000;
+    line-height: 1.4;
+    margin-bottom: 25px;
+    font-weight: 400;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.btn-modal {
+    width: 100px;
+    height: 38px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s;
+}
+
+.btn-modal-confirm {
+    background: #1ab7f5;
+    color: white;
+    border: none;
+}
+
+.btn-modal-confirm:hover { background: #00a1e6; }
+
+.btn-modal-cancel {
+    background: white;
+    color: #1ab7f5;
+    border: 2px solid #1ab7f5;
+}
+
+.btn-modal-cancel:hover { background: #f0faff; }

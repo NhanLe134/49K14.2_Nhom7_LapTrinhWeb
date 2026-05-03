@@ -2,14 +2,15 @@ from django.urls import path
 from . import auth_views
 from . import chuyenxe_views
 from . import taixe_views
-from . import tuyenxe_views
+from . import views_tuyen_xe
 from . import xuly_timkiem_view
-from . import feedback_views
+from . import views_danh_gia
 from . import thanhtoan_views
 from . import booking_views
 from . import quanlyve_views
 from . import khachhang_views
 from . import nhaxe_views
+from . import tuyenxe_views
 
 urlpatterns = [
 
@@ -46,7 +47,6 @@ urlpatterns = [
     path('lotrinh', chuyenxe_views.lotrinh, name='lotrinh'),
     path('chitietchuyenxe', chuyenxe_views.chitietchuyenxe, name='chitietchuyenxe'),
     path('vecuatoi', khachhang_views.vecuatoi, name='vecuatoi'),
-    path('khachhang/giao-dich/', thanhtoan_views.khachhang_lich_su_giao_dich, name='khachhang_giao_dich'),
 
     # ==================== THANH TOÁN ====================
     path('payment/<str:ve_id>/', thanhtoan_views.xu_ly_thanh_toan, name='process_payment'),
@@ -56,12 +56,13 @@ urlpatterns = [
     path('payment/webhook/sepay/', thanhtoan_views.webhook_sepay, name='sepay_webhook'),
 
     # ==================== ĐÁNH GIÁ (FEEDBACK) ====================
-    path('danhgiachuyenxe/', feedback_views.danhgiachuyenxe, name='danhgiachuyenxe'),
-    path('danhgiachuyenxe/pending/', feedback_views.danhgiachuyenxe, {'tab': 'pending'}, name='danhgiachuyenxe_pending'),
-    path('danhgiachuyenxe/dadanhgia/', feedback_views.danhgiachuyenxe, {'tab': 'evaluated'}, name='dadanhgia'),
-    path('danhgiachuyenxe/themdanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='themdanhgia'),
-    path('danhgiachuyenxe/suadanhgia/<str:ve_id>/', feedback_views.vietdanhgia, name='suadanhgia'),
-    path('submit_danhgia/', feedback_views.submit_danhgia, name='submit_danhgia'),
+    path('danhgiachuyenxe/', views_danh_gia.danh_gia_chuyen_xe, name='danhgiachuyenxe'),
+    path('danhgiachuyenxe/pending/', views_danh_gia.danh_gia_chuyen_xe, {'tab': 'pending'}, name='danhgiachuyenxe_pending'),
+    path('danhgiachuyenxe/dadanhgia/', views_danh_gia.danh_gia_chuyen_xe, {'tab': 'evaluated'}, name='dadanhgia'),
+    path('danhgiachuyenxe/themdanhgia/<str:ve_id>/', views_danh_gia.viet_moi_danh_gia, name='themdanhgia'),
+    path('danhgiachuyenxe/suadanhgia/<str:ve_id>/', views_danh_gia.viet_moi_danh_gia, name='suadanhgia'),
+    path('submit_danhgia/', views_danh_gia.luu_danh_gia_he_thong, name='submit_danhgia'),
+    path('nhaxe/danh-gia/', views_danh_gia.nha_xe_xem_tat_ca_danh_gia, name='nhaxe_xem_danh_gia'),
 
     # ==================== NHÀ XE ====================
     path('nhaxe', nhaxe_views.nhaxe, name='nhaxe'),
@@ -83,8 +84,8 @@ urlpatterns = [
 
     path('quanlytuyenxe', tuyenxe_views.quanlytuyenxe, name='quanlytuyenxe'),
     path('them-tuyen-xe', tuyenxe_views.them_tuyen_xe, name='them_tuyen_xe'),
-    path('sua-tuyen-xe/<str:pk>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),
-    path('xoa-tuyen-xe/<str:pk>/', tuyenxe_views.xoa_tuyen_xe, name='xoa_tuyen_xe'),
+    path('sua-tuyen-xe/<str:ma_tuyen>/', tuyenxe_views.sua_tuyen_xe, name='sua_tuyen_xe'),
+    path('xoa-tuyen-xe/<str:ma_tuyen>/', tuyenxe_views.xoa_tuyen_xe, name='xoa_tuyen_xe'),
 
     # ==================== QUẢN LÝ TÀI XẾ (NHÀ XE QUẢN LÝ) ====================
     path('quanlytaixe', taixe_views.quanlytaixe, name='quanlytaixe'),
@@ -105,4 +106,5 @@ urlpatterns = [
     path('admin/xac-nhan-quyet-toan/<str:nhaxe_id>/', thanhtoan_views.admin_xac_nhan_quyet_toan, name='admin_xac_nhan_quyet_toan'),
     path('admin/danh-sach-nhaxe/', thanhtoan_views.admin_danh_sach_nhaxe, name='admin_list_nhaxe'),
     path('admin/quan-ly-khachhang/', thanhtoan_views.admin_danh_sach_khachhang, name='admin_list_khachhang'),
+    path('admin/cau-hinh-ngan-hang/', thanhtoan_views.admin_cau_hinh_ngan_hang, name='admin_cau_hinh_ngan_hang'),
 ]

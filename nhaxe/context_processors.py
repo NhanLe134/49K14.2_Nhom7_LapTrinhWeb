@@ -66,7 +66,7 @@ def user_info(request):
             
             # 3. Fallback cuối cùng là tên đăng nhập
             if not user_name:
-                user_name = auth_user.TenDangNhap
+                user_name = auth_user.username
         except Exception:
             pass
             

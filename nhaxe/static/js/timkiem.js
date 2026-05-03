@@ -241,9 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedSeats.length > 0) {
                 document.getElementById('postChuyenID').value = window.currentBookingTrip.id;
                 const container = document.getElementById('selectedSeatsInputs');
-                container.innerHTML = '';
+                const seatNames = [];
                 selectedSeats.forEach(s => {
                     const seatId = s.getAttribute('data-seat');
+                    seatNames.push(seatId);
                     const input = document.createElement('input');
                     input.type = 'hidden';
                     input.name = 'ghe_ids';

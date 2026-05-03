@@ -1,3 +1,4 @@
+from .decorators import nhaxe_required, taixe_required, khachhang_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import ChuyenXe, TuyenXe, Xe, Taixe, Nhaxe, User_Authentication, Ve, GheNgoi, CHITIETTAIXE, CHITIETLOAIXE
@@ -9,6 +10,7 @@ import json
 
 # ==================== NHÀ XE (nx) ====================
 
+@nhaxe_required
 def quanlychuyenxe(request):
     nha_xe_id = request.session.get('user_id')
     role = request.session.get('role', '').lower()
@@ -21,29 +23,28 @@ def quanlychuyenxe(request):
         return redirect('taixe_quanlychuyenxe')
 
     try:
-        from django.db.models import Count
+        from django.db.models import Count, Q
         nha_xe_obj = get_object_or_404(Nhaxe, NhaxeID=nha_xe_id)
         
         # Thông báo chuyến trễ
         today = datetime.now().date()
-        # WORKAROUND cho TuyenXe_id (như đã sửa ở views.py)
-        overdue_trips = ChuyenXe.objects.filter(
+        overdue_trips_list = ChuyenXe.objects.filter(
             NgayKhoiHanh__lt=today,
-            TrangThai='Chưa hoàn thành'
+            TrangThai='Chưa hoàn thành',
+            TuyenXe__nhaXe_id=nha_xe_id
         ).select_related('TuyenXe')
-        
-        overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
-        overdue_trips_count = len(overdue_trips_list)
+        overdue_trips_count = overdue_trips_list.count()
 
-        # Lọc chuyến xe thuộc nhà xe này
-        # WORKAROUND cho TuyenXe_id
-        trips_raw = ChuyenXe.objects.all().select_related('TuyenXe', 'Xe', 'Taixe').order_by('-NgayKhoiHanh', '-GioDi')
-        trips = [trip for trip in trips_raw if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+        # Lọc chuyến xe thuộc nhà xe này (Sử dụng annotate để đếm vé thay vì vòng lặp N+1)
+        trips = ChuyenXe.objects.filter(
+            TuyenXe__nhaXe_id=nha_xe_id
+        ).select_related('TuyenXe', 'Xe__Loaixe', 'Taixe').annotate(
+            ticket_count=Count('ve')
+        ).order_by('-ChuyenXeID')
         
         chuyen_xe_list = []
         for cx in trips:
             total_seats = cx.Xe.Loaixe.SoCho if cx.Xe and cx.Xe.Loaixe else 0
-            ticket_count = Ve.objects.filter(ChuyenXe=cx).count()
             chuyen_xe_list.append({
                 'ChuyenXeID':   cx.ChuyenXeID,
                 'route_name':   cx.TuyenXe.tenTuyen if cx.TuyenXe else '-',
@@ -51,7 +52,7 @@ def quanlychuyenxe(request):
                 'NgayKhoiHanh': cx.NgayKhoiHanh,
                 'TrangThai':    cx.TrangThai or 'Chưa hoàn thành',
                 'seat_count':   total_seats,
-                'available_seats': (total_seats - ticket_count) if total_seats > 0 else 0,
+                'available_seats': (total_seats - cx.ticket_count) if total_seats > 0 else 0,
             })
 
         return render(request, 'home/quanlychuyenxe.html', {
@@ -81,6 +82,7 @@ def quanlychuyenxe(request):
             'nha_xe': nha_xe_obj
         })
 
+@nhaxe_required
 def themchuyenxe(request):
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
@@ -90,13 +92,12 @@ def themchuyenxe(request):
     
     # Thông báo chuyến trễ
     today = datetime.now().date()
-    overdue_trips_raw = ChuyenXe.objects.filter(
+    overdue_trips_list = ChuyenXe.objects.filter(
         NgayKhoiHanh__lt=today,
-        TrangThai='Chưa hoàn thành'
+        TrangThai='Chưa hoàn thành',
+        TuyenXe__nhaXe_id=nha_xe_id
     ).select_related('TuyenXe')
-    
-    overdue_trips_list = [trip for trip in overdue_trips_raw if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
-    overdue_trips_count = len(overdue_trips_list)
+    overdue_trips_count = overdue_trips_list.count()
         
     if request.method == 'POST':
         tuyen_id = request.POST.get('tuyenxe')
@@ -118,20 +119,11 @@ def themchuyenxe(request):
         except Exception as e:
             messages.error(request, f'Lỗi khi thêm chuyến xe: {str(e)}')
 
-    # WORKAROUND cho TuyenXe_id
-    tuyen_xe_list_raw = TuyenXe.objects.all()
-    tuyen_xe_list = [tuyen for tuyen in tuyen_xe_list_raw if getattr(tuyen, 'nhaXe_id', getattr(tuyen, 'nhaxe_id', None)) == nha_xe_id]
+    tuyen_xe_list = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
     xe_list = Xe.objects.filter(Nhaxe_id=nha_xe_id)
     
-    # WORKAROUND cho Nhaxe_id trong CHITIETTAIXE
-    taixe_list_raw = Taixe.objects.all().prefetch_related('chitiettaixe_set')
-    taixe_list = []
-    for driver in taixe_list_raw:
-        details = driver.chitiettaixe_set.all()
-        for detail in details:
-             if getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None)) == nha_xe_id:
-                  taixe_list.append(driver)
-                  break
+    # Lấy danh sách tài xế thuộc nhà xe này qua bảng trung gian CHITIETTAIXE
+    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
     
     return render(request, 'home/themchuyenxe.html', {
         'tuyen_xe_list': tuyen_xe_list,
@@ -143,6 +135,7 @@ def themchuyenxe(request):
         'overdue_trips_count': overdue_trips_count
     })
 
+@nhaxe_required
 def suachuyenxe(request, pk):
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:
@@ -152,13 +145,12 @@ def suachuyenxe(request, pk):
     
     # Thông báo chuyến trễ
     today = datetime.now().date()
-    overdue_trips_raw = ChuyenXe.objects.filter(
+    overdue_trips_list = ChuyenXe.objects.filter(
         NgayKhoiHanh__lt=today,
-        TrangThai='Chưa hoàn thành'
+        TrangThai='Chưa hoàn thành',
+        TuyenXe__nhaXe_id=nha_xe_id
     ).select_related('TuyenXe')
-    
-    overdue_trips_list = [trip for trip in overdue_trips_raw if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
-    overdue_trips_count = len(overdue_trips_list)
+    overdue_trips_count = overdue_trips_list.count()
 
     chuyen = get_object_or_404(ChuyenXe, ChuyenXeID=pk)
 
@@ -179,19 +171,11 @@ def suachuyenxe(request, pk):
         except Exception as e:
             messages.error(request, f'Lỗi khi cập nhật: {str(e)}')
 
-    tuyen_xe_list_raw = TuyenXe.objects.all()
-    tuyen_xe_list = [tuyen for tuyen in tuyen_xe_list_raw if getattr(tuyen, 'nhaXe_id', getattr(tuyen, 'nhaxe_id', None)) == nha_xe_id]
+    tuyen_xe_list = TuyenXe.objects.filter(nhaXe_id=nha_xe_id)
     xe_list = Xe.objects.filter(Nhaxe_id=nha_xe_id)
     
-    # WORKAROUND cho Nhaxe_id trong CHITIETTAIXE
-    taixe_list_raw = Taixe.objects.all().prefetch_related('chitiettaixe_set')
-    taixe_list = []
-    for driver in taixe_list_raw:
-        details = driver.chitiettaixe_set.all()
-        for detail in details:
-             if getattr(detail, 'Nhaxe_id', getattr(detail, 'nhaxe_id', None)) == nha_xe_id:
-                  taixe_list.append(driver)
-                  break
+    # Lấy danh sách tài xế thuộc nhà xe này qua bảng trung gian CHITIETTAIXE
+    taixe_list = Taixe.objects.filter(chitiettaixe__Nhaxe_id=nha_xe_id).distinct()
     
     if isinstance(chuyen.NgayKhoiHanh, str): formatted_date = chuyen.NgayKhoiHanh
     else: formatted_date = chuyen.NgayKhoiHanh.strftime('%Y-%m-%d') if chuyen.NgayKhoiHanh else ''
@@ -211,6 +195,7 @@ def suachuyenxe(request, pk):
         'overdue_trips_count': overdue_trips_count
     })
 
+@nhaxe_required
 def hoanthanh_chuyenxe(request, pk):
     """Cập nhật trạng thái chuyến xe thành 'Hoàn thành'."""
     if request.method == 'POST':
@@ -224,6 +209,7 @@ def hoanthanh_chuyenxe(request, pk):
 
 # ==================== TÀI XẾ (tx) ====================
 
+@taixe_required
 def taixe_quanlychuyenxe(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -275,6 +261,7 @@ def taixe_quanlychuyenxe(request):
             'ten_taixe': request.session.get('username')
         })
 
+@taixe_required
 def taixe_chitietchuyenxe(request):
     """Chi tiết chuyến xe cho tài xế."""
     user_id = request.session.get('user_id')
@@ -314,6 +301,7 @@ def taixe_chitietchuyenxe(request):
         'avatar_url': getattr(taixe_obj, 'HinhAnhURL', None) if taixe_obj else None
     })
 
+@nhaxe_required
 def lotrinh(request):
     nha_xe_id = request.session.get('user_id')
     nha_xe_obj = None
@@ -341,6 +329,7 @@ def lotrinh(request):
         'nha_xe': nha_xe_obj
     })
 
+@nhaxe_required
 def chitietchuyenxe(request):
     if request.method == 'POST':
         post_id = request.POST.get('id')
@@ -427,14 +416,12 @@ def chitietchuyenxe(request):
             # Thông báo chuyến trễ
             from datetime import datetime
             today = datetime.now().date()
-            # WORKAROUND cho TuyenXe_id
-            overdue_trips = ChuyenXe.objects.filter(
+            overdue_trips_list = ChuyenXe.objects.filter(
                 NgayKhoiHanh__lt=today,
-                TrangThai='Chưa hoàn thành'
+                TrangThai='Chưa hoàn thành',
+                TuyenXe__nhaXe_id=nha_xe_id
             ).select_related('TuyenXe')
-            
-            overdue_trips_list = [trip for trip in overdue_trips if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
-            overdue_trips_count = len(overdue_trips_list)
+            overdue_trips_count = overdue_trips_list.count()
         except Exception:
             pass
 

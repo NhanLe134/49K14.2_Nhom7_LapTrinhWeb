@@ -56,6 +56,10 @@
             <span class="label">Giờ đi</span>
             <div class="value">{{ chuyen_xe.GioDi|time:"H:i" }}</div>
         </div>
+        <div class="summary-item">
+            <span class="label">Giá ghế</span>
+            <div class="value" style="color: #2563eb;">{{ gia_ve|floatformat:0 }}đ</div>
+        </div>
     </div>
 
     <h2>Hãy điền thông tin cụ thể</h2>
@@ -91,8 +95,6 @@
             <input type="text" id="diem_tra" name="diem_tra" readonly class="readonly-input" 
                    placeholder="Vui lòng click trên bản đồ..." required>
         </div>
-
-        <div id="map"></div>
 
         <button type="submit" class="btn-submit">XÁC NHẬN ĐẶT {{ so_luong }} VÉ</button>
     </form>

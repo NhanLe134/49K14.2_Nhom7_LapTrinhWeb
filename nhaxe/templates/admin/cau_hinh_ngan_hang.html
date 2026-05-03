@@ -1,0 +1,65 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Cấu hình ngân hàng hệ thống - Admin{% endblock %}
+
+{% block admin_content %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_cau_hinh_ngan_hang.css' %}">
+{% endblock %}
+
+<div class="config-container">
+    <div class="config-card">
+        <div class="config-header">
+            <h1 class="config-title">Cấu hình Ngân hàng Admin</h1>
+            <p class="config-subtitle">Đây là tài khoản dùng để nhận tiền thanh toán vé của khách hàng (hiển thị qua QR).</p>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <i class="fa-solid fa-circle-check"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Ngân hàng thụ hưởng</label>
+                <select name="ma_ngan_hang" class="form-control bank-select" required>
+                    <option value="" disabled selected>Chọn ngân hàng...</option>
+                    {% for ngan_hang in danh_sach_ngan_hang %}
+                    <option value="{{ ngan_hang.id }}" {% if cau_hinh.MaNganHang == ngan_hang.id %}selected{% endif %}>
+                        {{ ngan_hang.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Số tài khoản</label>
+                <input type="text" name="so_tai_khoan" class="form-control" placeholder="Ví dụ: 0377400XXX"
+                    value="{{ cau_hinh.SoTaiKhoan|default:'' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tên chủ tài khoản (viết hoa không dấu)</label>
+                <input type="text" name="ten_chu_tai_khoan" class="form-control" placeholder="Ví dụ: NGUYEN VAN A"
+                    value="{{ cau_hinh.TenChuTaiKhoan|default:'' }}" required>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-info"></i>
+                Lưu ý: Thông tin này sẽ được dùng để tạo mã VietQR khi khách hàng chọn thanh toán online.
+            </div>
+
+            <button type="submit" class="btn-save">
+                Cập nhật cấu hình
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

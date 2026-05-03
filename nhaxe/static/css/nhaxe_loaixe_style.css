@@ -180,9 +180,32 @@ input.input-error { border-color: #dc2626 !important; }
     gap: 20px;
 }
 
-.new-success-icon svg {
-    width: 50px;
-    height: 50px;
+.new-success-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.check-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #28a745;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.check-circle i {
+    color: white;
+    font-size: 40px;
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 .new-success-message {

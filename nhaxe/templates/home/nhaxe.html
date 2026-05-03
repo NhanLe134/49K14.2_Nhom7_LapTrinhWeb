@@ -21,6 +21,92 @@
         .main-content { height: 100% !important; overflow-y: auto !important; flex: 1 !important; display: block !important; }
     </style>
     {% block extra_css %}{% endblock %}
+    <style>
+        /* Modern Centered Modal System - Matching Design Mockup */
+        .modal-thong-bao-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-thong-bao-box {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            width: 500px;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            animation: modalPop 0.3s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-thong-bao-tieu-de {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 25px;
+        }
+
+        .modal-thong-bao-noi-dung {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 35px;
+            line-height: 1.4;
+        }
+
+        /* Icons from Image */
+        .modal-icon-lon {
+            font-size: 60px;
+            margin-bottom: 25px;
+            display: block;
+        }
+        .icon-loi { color: #FF5722; } /* Orange-Red for Error */
+        .icon-thanh-cong { color: #4CAF50; } /* Green for Success */
+
+        /* Buttons matching image */
+        .modal-thong-bao-nut-bam {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .nut-dong-y {
+            background-color: #03A9F4;
+            color: white;
+            border: none;
+            padding: 10px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: opacity 0.2s;
+        }
+
+        .nut-huy {
+            background-color: white;
+            color: #03A9F4;
+            border: 2px solid #03A9F4;
+            padding: 8px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .nut-dong-y:hover { opacity: 0.8; }
+        .nut-huy:hover { background: #f0f9ff; }
+    </style>
 </head>
 
 <body>
@@ -43,7 +129,7 @@
                     {% if ten_taixe %}
                         {{ ten_taixe }}
                     {% elif nha_xe %}
-                        {{ nha_xe.NguoiDaiDien|default:nha_xe.HoTenNguoiDaiDien|default:nha_xe.TenNhaXe }}
+                        {{ nha_xe.NguoiDaiDien|default:nha_xe.TenNhaXe }}
                     {% else %}
                         {{ user_name|default:request.session.username }}
                     {% endif %}
@@ -116,7 +202,10 @@
             <a href="{% url 'nhaxe_bao_cao_doanh_thu' %}" class="sidebar-item {% block active_baocao %}{% if request.resolver_match.url_name == 'nhaxe_bao_cao_doanh_thu' %}active{% endif %}{% endblock %}">
                 <i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu
             </a>
-            {% endif %}
+            <a href="{% url 'nhaxe_xem_danh_gia' %}" class="sidebar-item {% block active_danhgia %}{% if request.resolver_match.url_name == 'nhaxe_xem_danh_gia' %}active{% endif %}{% endblock %}">
+                <i class="fa-solid fa-comments"></i> Xem đánh giá
+            </a>
+{% endif %}
         </aside>
 
         <!-- Main Content -->
@@ -228,8 +317,73 @@
     </div>
 
 
+    <!-- Modal Hệ thống -->
+    <div id="modalHeThong" class="modal-thong-bao-overlay">
+        <div class="modal-thong-bao-box">
+            <div id="vungIconModal"></div>
+            <div id="tieuDeModal" class="modal-thong-bao-tieu-de">Thông báo</div>
+            <div id="noiDungModal" class="modal-thong-bao-noi-dung">Nội dung</div>
+            <div id="nutBamModal" class="modal-thong-bao-nut-bam">
+                <button type="button" id="nutXacNhanModal" class="nut-dong-y">Đồng ý</button>
+                <button type="button" class="nut-huy" onclick="dongModalHeThong()">Hủy</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'js/common.js' %}"></script>
+    <script>
+        function hienModalHeThong(tuy_chon) {
+            const modal = document.getElementById('modalHeThong');
+            const vungIcon = document.getElementById('vungIconModal');
+            const tieuDe = document.getElementById('tieuDeModal');
+            const noiDung = document.getElementById('noiDungModal');
+            const nutBam = document.getElementById('nutBamModal');
+            const nutXacNhan = document.getElementById('nutXacNhanModal');
+
+            vungIcon.innerHTML = '';
+            vungIcon.style.display = 'none'; // Ẩn mặc định
+            tieuDe.style.display = 'block';
+            nutBam.style.display = 'none';
+
+            if (tuy_chon.loai === 'thanh_cong') {
+                vungIcon.style.display = 'block'; // Hiện lại khi có icon
+                vungIcon.innerHTML = '<i class="fa-regular fa-circle-check modal-icon-lon icon-thanh-cong"></i>';
+                tieuDe.style.display = 'none';
+            } else if (tuy_chon.loai === 'loi') {
+                vungIcon.style.display = 'block'; // Hiện lại khi có icon
+                vungIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation modal-icon-lon icon-loi"></i>';
+                tieuDe.style.display = 'none';
+            } else if (tuy_chon.loai === 'xac_nhan') {
+                nutBam.style.display = 'flex';
+                nutXacNhan.onclick = tuy_chon.hanh_dong || null;
+            }
+
+            tieuDe.textContent = tuy_chon.tieu_de || 'Thông báo';
+            noiDung.textContent = tuy_chon.noi_dung || '';
+            modal.style.display = 'flex';
+
+            if (tuy_chon.loai !== 'xac_nhan') {
+                setTimeout(dongModalHeThong, 3000);
+            }
+        }
+
+        function dongModalHeThong() {
+            document.getElementById('modalHeThong').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            {% if messages %}
+                {% for msg in messages %}
+                    let loai = '{{ msg.tags }}'.includes('error') ? 'loi' : 'thanh_cong';
+                    hienModalHeThong({
+                        loai: loai,
+                        noi_dung: "{{ msg|escapejs }}"
+                    });
+                {% endfor %}
+            {% endif %}
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 
-</html>
+</html>

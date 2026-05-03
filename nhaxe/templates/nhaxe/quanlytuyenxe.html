@@ -1,0 +1,89 @@
+{% extends 'home/nhaxe.html' %}
+{% load static %}
+
+{% block title %}Quản lý tuyến xe - Vexeapp{% endblock %}
+
+{% block extra_css %}
+    <!-- Page specific styling -->
+    <link rel="stylesheet" href="{% static 'css/quanlytuyenxe.css' %}">
+
+{% endblock %}
+
+{% block active_trangchu %}{% endblock %}
+{% block color_trangchu %}#444{% endblock %}
+{% block active_tuyenxe %}active{% endblock %}
+{% block color_tuyenxe %}#06A0E2{% endblock %}
+
+{% block content %}
+    <!-- VIEW 1: ROUTE LIST -->
+    <div id="routeListView">
+        <div class="content-header-flex">
+            <h2 class="page-title">Quản lý tuyến xe</h2>
+            <a href="{% url 'them_tuyen_xe' %}" class="btn-add-route" style="text-decoration: none;"><i class="fa-solid fa-circle-plus"></i>
+                Thêm tuyến</a>
+        </div>
+
+        <!-- Route Grid -->
+        <div class="route-grid">
+            {% for route in danh_sach_tuyen %}
+            <!-- Route -->
+            <div class="route-card">
+                <div class="route-card-header">
+                    {{ route.tenTuyen }}
+                </div>
+                <div class="route-locations">
+                    <div class="loc-item">
+                        <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDi|default:"-" }}
+                    </div>
+                    <i class="fa-solid fa-arrow-right route-arrow"></i>
+                    <div class="loc-item">
+                        <i class="fa-solid fa-location-dot loc-icon"></i> {{ route.diemDen|default:"-" }}
+                    </div>
+                </div>
+                <div class="route-details">
+                    <div class="detail-box">
+                        <div class="detail-label">Khoảng cách</div>
+                        <div class="detail-value">{{ route.QuangDuong|default:"-" }} km</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Thời gian dự kiến</div>
+                        <div class="detail-value">~ {{ route.ThoiGian|default:"-" }} giờ</div>
+                    </div>
+                </div>
+                <div class="route-info-footer">
+                    <span class="status-badge active">Đang hoạt động</span>
+                </div>
+                <div class="route-actions">
+                    <a href="{% url 'sua_tuyen_xe' route.tuyenXeID %}" class="btn-action-edit" style="text-decoration: none;">
+                        <i class="fa-solid fa-pen"></i> Sửa
+                    </a>
+                    <button class="btn-action-delete" onclick="xac_nhan_xoa_tuyen('{{ route.tuyenXeID }}')"><i
+                            class="fa-solid fa-trash"></i> Xóa</button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="route-card"
+                style="grid-column: 1 / -1; text-align: center; color: #555; padding: 20px;">
+                Bạn chưa có tuyến xe nào hoặc máy chủ không phản hồi dữ liệu.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Modal: Delete Confirmation removed, using global modalHeThong -->
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        function xac_nhan_xoa_tuyen(ma_tuyen) {
+            hienModalHeThong({
+                loai: 'xac_nhan',
+                tieu_de: 'Thông báo',
+                noi_dung: 'Bạn muốn xóa tuyến xe này?',
+                hanh_dong: function() {
+                    window.location.href = "{% url 'xoa_tuyen_xe' 'PLACEHOLDER' %}".replace('PLACEHOLDER', ma_tuyen);
+                }
+            });
+        }
+    </script>
+{% endblock %}

@@ -218,6 +218,18 @@
         </div>
     </div>
 </div>
+
+<!-- Success Modal -->
+<div id="successModal" class="nx-modal-overlay">
+    <div class="nx-modal-box new-success-alert">
+        <div class="new-success-icon">
+            <div class="check-circle">
+                <i class="fa-solid fa-check"></i>
+            </div>
+        </div>
+        <p class="new-success-message">Cập nhật giá vé thành công</p>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -242,7 +254,7 @@
         updateModal.classList.add('show-modal');
     }
 
-    document.getElementById('btn-close-update').addEventListener('click', () => updateModal.classList.remove('show-modal'));
+    document.getElementById('btn-close-update').addEventListener('click', () => confirmCancelModal.classList.add('show-modal'));
     document.getElementById('btn-cancel-update').addEventListener('click', () => confirmCancelModal.classList.add('show-modal'));
     document.getElementById('btn-no-cancel').addEventListener('click', () => confirmCancelModal.classList.remove('show-modal'));
     document.getElementById('btn-yes-cancel').addEventListener('click', () => {
@@ -261,10 +273,18 @@
     document.addEventListener('DOMContentLoaded', () => {
         {% if messages %}
             {% for message in messages %}
-                if (typeof showGlobalPopup === 'function') {
-                    const type = '{{ message.tags }}'.includes('success') ? 'success' : 'error';
-                    showGlobalPopup(type, '{{ message.message|escapejs }}');
-                }
+                {% if 'success' in message.tags and "Cập nhật giá vé thành công" in message.message %}
+                    const successModal = document.getElementById('successModal');
+                    successModal.classList.add('show-modal');
+                    setTimeout(() => {
+                        successModal.classList.remove('show-modal');
+                    }, 2000);
+                {% else %}
+                    if (typeof showGlobalPopup === 'function') {
+                        const type = '{{ message.tags }}'.includes('success') ? 'success' : 'error';
+                        showGlobalPopup(type, '{{ message.message|escapejs }}');
+                    }
+                {% endif %}
             {% endfor %}
         {% endif %}
     });

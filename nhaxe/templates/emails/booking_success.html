@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        .container { font-family: 'Arial', sans-serif; max-width: 600px; margin: 20px auto; border: 1px solid #e0e0e0; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #06A0E2 0%, #047cb0 100%); color: white; padding: 25px; text-align: center; }
+        .content { padding: 30px; background: white; }
+        .status-badge { display: inline-block; background: #fff3cd; color: #856404; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
+        .info-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .info-table td { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .label { color: #7f8c8d; font-size: 13px; }
+        .value { color: #2c3e50; font-weight: 600; text-align: right; }
+        .payment-box { background: #f8f9fa; border-left: 4px solid #06A0E2; padding: 15px; margin-top: 20px; font-size: 14px; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 style="margin:0;">ĐẶT VÉ THÀNH CÔNG</h2>
+            <p style="margin:5px 0 0; opacity: 0.9;">Mã đơn hàng: #{{ ve.VeID }}</p>
+        </div>
+        <div class="content">
+            <div style="text-align: center;">
+                <div class="status-badge">ĐANG CHỜ THANH TOÁN</div>
+            </div>
+            <p>Chào <strong>{{ ve.HoTen }}</strong>, đơn hàng của bạn đã được tiếp nhận thành công. Vui lòng kiểm tra lại thông tin bên dưới:</p>
+            
+            <table class="info-table">
+                <tr><td class="label">Lộ trình</td><td class="value">{{ ve.ChuyenXe.TuyenXe.diemDi }} ➔ {{ ve.ChuyenXe.TuyenXe.diemDen }}</td></tr>
+                <tr><td class="label">Khởi hành</td><td class="value">{{ ve.ChuyenXe.NgayKhoiHanh|date:"d/m/Y" }}</td></tr>
+                <tr><td class="label">Số ghế</td><td class="value">{{ ma_ghe }}</td></tr>
+                {% if tong_so_ve > 1 %}
+                <tr><td class="label">Số lượng vé</td><td class="value">{{ tong_so_ve }}</td></tr>
+                {% endif %}
+                <tr><td class="label">Tổng tiền</td><td class="value" style="color:#06A0E2; font-size:18px;">{{ gia_ve_format }} VNĐ</td></tr>
+            </table>
+
+        </div>
+        <div class="footer">
+            Email phục vụ cho quá làm dự án nhóm môn Lập Trình Web - Trường Đại học Kinh Tế Đà Nẵng
+
+        </div>
+    </div>
+</body>
+</html>

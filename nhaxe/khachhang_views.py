@@ -1,3 +1,4 @@
+from .decorators import nhaxe_required, taixe_required, khachhang_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
@@ -7,10 +8,13 @@ from .models import KhachHang, User_Authentication, Ve
 import json
 import time
 import random
+import base64
 
+@khachhang_required
 def khachhang(request):
     return render(request, 'home/khachhang.html')
 
+@khachhang_required
 def thongtin_khachhang(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -20,7 +24,7 @@ def thongtin_khachhang(request):
         user_auth = User_Authentication.objects.get(UserID=user_id)
         khach_hang_data = {
             'KhachHangID': user_id,
-            'HovaTen': user_auth.TenDangNhap,
+            'HovaTen': user_auth.username,
             'SoDienThoai': user_auth.SoDienThoai,
             'Email': None,
             'NgaySinh': None,
@@ -29,7 +33,7 @@ def thongtin_khachhang(request):
         try:
             kh = KhachHang.objects.get(KhachHangID=user_id)
             khach_hang_data.update({
-                'HovaTen': kh.HovaTen or user_auth.TenDangNhap,
+                'HovaTen': kh.HovaTen or user_auth.username,
                 'Email': kh.Email,
                 'NgaySinh': kh.NgaySinh,
                 'AnhDaiDienURL': kh.AnhDaiDienURL,
@@ -56,6 +60,7 @@ def thongtin_khachhang(request):
         'avatar_url': khach_hang_data.get('AnhDaiDienURL')
     })
 
+@khachhang_required
 def capnhat_thongtin_khachhang(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Phương thức không hợp lệ'}, status=405)
@@ -110,11 +115,20 @@ def capnhat_thongtin_khachhang(request):
             kh.NgaySinh = ngaysinh
 
         avatar_file = request.FILES.get('avatar')
-        avatar_url = None
         if avatar_file:
-            file_name = default_storage.save(f"avatars/{avatar_file.name}", avatar_file)
-            avatar_url = default_storage.url(file_name)
-            kh.AnhDaiDienURL = avatar_url
+            try:
+                # Đọc file và chuyển sang base64
+                image_data = avatar_file.read()
+                base64_data = base64.b64encode(image_data).decode('utf-8')
+                # Lấy extension
+                ext = avatar_file.name.split('.')[-1].lower()
+                if ext not in ['jpg', 'jpeg', 'png', 'gif']:
+                    ext = 'jpeg' # fallback
+                mime_type = f"image/{ext}" if ext != 'jpg' else "image/jpeg"
+                
+                kh.AnhDaiDienURL = f"data:{mime_type};base64,{base64_data}"
+            except Exception as e:
+                print(f"Lỗi convert base64 (khachhang): {e}")
 
         kh.save()
 
@@ -125,7 +139,7 @@ def capnhat_thongtin_khachhang(request):
         return JsonResponse({
             'status': 'success',
             'message': 'Cập nhật thông tin thành công!',
-            'avatar_url': avatar_url
+            'avatar_url': kh.AnhDaiDienURL
         })
 
     except User_Authentication.DoesNotExist:
@@ -133,6 +147,7 @@ def capnhat_thongtin_khachhang(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Lỗi phía server: {str(e)}'}, status=500)
 
+@khachhang_required
 def send_update_otp_khachhang(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
@@ -174,6 +189,7 @@ def send_update_otp_khachhang(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Lỗi hệ thống. Vui lòng thử lại sau!'}, status=500)
 
+@khachhang_required
 def vecuatoi(request):
     """Trang xem vé của khách hàng - Alias cho quanlyve"""
     return redirect('quanlyve')

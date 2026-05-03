@@ -7,7 +7,7 @@ django.setup()
 from nhaxe.models import User_Authentication, KhachHang
 
 username = "kh1"
-user = User_Authentication.objects.filter(TenDangNhap=username).first()
+user = User_Authentication.objects.filter(username=username).first()
 
 if user:
     print(f"User ID: {user.UserID}")

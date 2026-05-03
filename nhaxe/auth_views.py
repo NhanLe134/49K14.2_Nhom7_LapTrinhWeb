@@ -59,45 +59,39 @@ def dangnhap(request):
         })
 
     try:
-        # 3. Xác thực
-        matched_user = User_Authentication.objects.filter(
-            TenDangNhap=username, 
-            MatKhau=password
-        ).first()
+        from django.contrib.auth import authenticate, login
+        # 3. Xác thực bằng authenticate của Django (sẽ tự động so sánh hash mật khẩu)
+        matched_user = authenticate(request, username=username, password=password)
 
-        if matched_user:
+        if matched_user is not None:
             # Thành công -> Reset số lần sai
             request.session['failed_login_count'] = 0
             
-            # Thiết lập session
+            # Đăng nhập user vào hệ thống của Django
+            login(request, matched_user)
+            
+            # Thiết lập session tùy chỉnh (giữ nguyên để không phá vỡ logic cũ)
             request.session['user_id']  = matched_user.UserID
-            request.session['username'] = matched_user.TenDangNhap
+            request.session['username'] = matched_user.username
             request.session['role']     = (matched_user.Vaitro or '').lower()
             
             # Ưu tiên lấy tên thật
-            display_name = matched_user.TenDangNhap
-            avatar_url = None
+            display_name = matched_user.username
             
             if matched_user.Taixe and matched_user.Taixe.HoTen:
                 display_name = matched_user.Taixe.HoTen
-                avatar_url = matched_user.Taixe.HinhAnhURL
             elif matched_user.Nhaxe and matched_user.Nhaxe.TenNhaXe:
                 display_name = matched_user.Nhaxe.TenNhaXe
-                avatar_url = matched_user.Nhaxe.AnhDaiDienURL
             elif matched_user.KhachHang and matched_user.KhachHang.HovaTen:
                 display_name = matched_user.KhachHang.HovaTen
-                avatar_url = matched_user.KhachHang.AnhDaiDienURL
                 
             request.session['ho_ten'] = display_name
-            # KHÔNG ĐƯỢC LƯU avatar_url vào session vì nếu nó là chuỗi Base64 sẽ làm phình cookie vượt quá giới hạn 4KB của trình duyệt!
-            # request.session['avatar'] = avatar_url
             
             if matched_user.Nhaxe:
                 request.session['ma_nha_xe'] = matched_user.Nhaxe.NhaxeID
                 request.session['ten_nha_xe'] = matched_user.Nhaxe.TenNhaXe
             
             request.session['token']    = 'direct-db-session'
-            # request.session.set_expiry(0) # Tạm thời tắt để fix lỗi rớt session
             request.session.save() # Ép buộc lưu session vào Database trước khi redirect
             return _redirect_by_role(request.session['role'])
         else:
@@ -128,7 +122,8 @@ def dangnhap(request):
 
 def dangxuat(request):
     """Xoá session và quay về trang đăng nhập."""
-    request.session.flush()
+    from django.contrib.auth import logout
+    logout(request)
     return redirect('index')
 
 
@@ -190,7 +185,7 @@ def send_registration_otp(request):
         if re.search(r'[!@#$%^&*(),.?":{}|<>]', hoVaTen):
             return JsonResponse({'status': 'error', 'message': 'Họ tên không được chứa ký tự đặc biệt.'}, status=400)
 
-        if User_Authentication.objects.filter(TenDangNhap=username).exists():
+        if User_Authentication.objects.filter(username=username).exists():
             return JsonResponse({'status': 'error', 'message': 'Tên đăng nhập đã tồn tại.'}, status=400)
         
         if User_Authentication.objects.filter(SoDienThoai=phone).exists():
@@ -250,14 +245,18 @@ def verify_and_register(request):
                 Email=registration_data.get('email')
             )
 
-            User_Authentication.objects.create(
+            new_user = User_Authentication.objects.create_user(
                 UserID=new_kh_id,
-                TenDangNhap=registration_data.get('username'),
-                MatKhau=registration_data.get('password'),
+                username=registration_data.get('username'),
+                password=registration_data.get('password'),
                 Vaitro='Khách hàng',
                 SoDienThoai=registration_data.get('phone'),
                 KhachHang_id=new_kh_id
             )
+            
+            from django.contrib.auth.models import Group
+            group, _ = Group.objects.get_or_create(name='Khách hàng')
+            new_user.groups.add(group)
         
         del request.session['registration_data']
         del request.session['registration_otp']
@@ -289,7 +288,7 @@ def send_registration_otp_nhaxe(request):
         if len(password) < 8:
             return JsonResponse({'status': 'error', 'message': 'Mật khẩu phải có ít nhất 8 ký tự.'}, status=400)
         
-        if User_Authentication.objects.filter(TenDangNhap=username).exists():
+        if User_Authentication.objects.filter(username=username).exists():
             return JsonResponse({'status': 'error', 'message': 'Tên đăng nhập đã tồn tại.'}, status=400)
         
         if User_Authentication.objects.filter(SoDienThoai=phone).exists():
@@ -353,14 +352,18 @@ def verify_and_register_nhaxe(request):
                 Email=registration_data.get('email', f"{registration_data.get('username')}@example.com")
             )
 
-            User_Authentication.objects.create(
+            new_user = User_Authentication.objects.create_user(
                 UserID=new_nx_id,
-                TenDangNhap=registration_data.get('username'),
-                MatKhau=registration_data.get('password'), 
+                username=registration_data.get('username'),
+                password=registration_data.get('password'), 
                 Vaitro='Nhaxe',
                 SoDienThoai=registration_data.get('phone'),
                 Nhaxe_id=new_nx_id
             )
+            
+            from django.contrib.auth.models import Group
+            group, _ = Group.objects.get_or_create(name='Nhà xe')
+            new_user.groups.add(group)
             
             default_car_types = [
                 {'id': 'LX00001', 'seats': 4, 'name': 'Xe 4 chỗ'},

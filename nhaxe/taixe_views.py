@@ -1,12 +1,15 @@
+from .decorators import nhaxe_required, taixe_required, khachhang_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import Taixe, User_Authentication, CHITIETTAIXE, Nhaxe, ChuyenXe, Ve
 from datetime import datetime, timedelta
 import re
+import base64
 
 # ==================== NHÀ XE (Quản lý Tài Xế) ====================
 
+@nhaxe_required
 def quanlytaixe(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -57,8 +60,8 @@ def quanlytaixe(request):
 
         taixe_list.append({
             'id':             driver.TaixeID,
-            'ten':            driver.HoTen or (user_info.TenDangNhap if user_info else 'Chưa đặt tên'),
-            'username':       user_info.TenDangNhap if user_info else '',
+            'ten':            driver.HoTen or (user_info.username if user_info else 'Chưa đặt tên'),
+            'username':       user_info.username if user_info else '',
             'soDienThoai':    user_info.SoDienThoai if user_info else 'Chưa có',
             'soBangLai':      driver.SoBangLai,
             'soCCCD':         driver.soCCCD,
@@ -81,6 +84,7 @@ def quanlytaixe(request):
 
 # ==================== THAO TÁC CRUD TÀI XẾ ====================
 
+@nhaxe_required
 def them_tai_xe(request):
     """Tạo tài xế mới trực tiếp vào Database"""
     if request.method == 'POST':
@@ -102,7 +106,7 @@ def them_tai_xe(request):
             messages.error(request, 'Mật khẩu xác nhận không khớp.')
             return redirect('quanlytaixe')
             
-        if User_Authentication.objects.filter(TenDangNhap=username).exists():
+        if User_Authentication.objects.filter(username=username).exists():
             messages.error(request, f"Lỗi: Tên đăng nhập '{username}' đã tồn tại.")
             return redirect('quanlytaixe')
             
@@ -124,10 +128,10 @@ def them_tai_xe(request):
 
                 # 4. Lưu User
                 nha_xe_id = request.session.get('user_id')
-                new_user = User_Authentication(
+                new_user = User_Authentication.objects.create_user(
                     UserID=new_id,
-                    TenDangNhap=username,
-                    MatKhau=password,
+                    username=username,
+                    password=password,
                     SoDienThoai=phone,
                     Vaitro="taixe",
                 )
@@ -137,6 +141,25 @@ def them_tai_xe(request):
                           setattr(new_user, 'nhaxe_id', nha_xe_id)
 
                 new_user.save()
+                
+                from django.contrib.auth.models import Group
+                group, _ = Group.objects.get_or_create(name='Tài xế')
+                new_user.groups.add(group)
+
+                # Xử lý ảnh đại diện nếu có
+                hinh_anh_url = None
+                hinh_anh_file = request.FILES.get('hinh_anh')
+                if hinh_anh_file:
+                    try:
+                        image_data = hinh_anh_file.read()
+                        base64_data = base64.b64encode(image_data).decode('utf-8')
+                        ext = hinh_anh_file.name.split('.')[-1].lower()
+                        if ext not in ['jpg', 'jpeg', 'png', 'gif']:
+                            ext = 'jpeg'
+                        mime_type = f"image/{ext}" if ext != 'jpg' else "image/jpeg"
+                        hinh_anh_url = f"data:{mime_type};base64,{base64_data}"
+                    except Exception as e:
+                        print(f"Lỗi convert base64 (them_tai_xe): {e}")
 
                 # 5. Lưu Taixe
                 new_driver = Taixe.objects.create(
@@ -145,6 +168,7 @@ def them_tai_xe(request):
                     SoBangLai=license_no,
                     soCCCD=cccd,
                     LoaiBangLai=license_type,
+                    HinhAnhURL=hinh_anh_url
                 )
 
                 # 6. Lưu CHITIETTAIXE
@@ -175,6 +199,7 @@ def them_tai_xe(request):
             
     return redirect('quanlytaixe')
 
+@nhaxe_required
 def sua_tai_xe(request, pk):
     """Cập nhật thông tin tài xế trực tiếp vào Database"""
     if request.method == 'POST':
@@ -196,12 +221,28 @@ def sua_tai_xe(request, pk):
             )
 
             # 2. Cập nhật Taixe
-            Taixe.objects.filter(TaixeID=pk).update(
-                HoTen=full_name,
-                SoBangLai=license_no,
-                soCCCD=cccd,
-                LoaiBangLai=license_type,
-            )
+            taixe_update_fields = {
+                'HoTen': full_name,
+                'SoBangLai': license_no,
+                'soCCCD': cccd,
+                'LoaiBangLai': license_type,
+            }
+
+            # Xử lý ảnh đại diện mới nếu có
+            hinh_anh_file = request.FILES.get('hinh_anh')
+            if hinh_anh_file:
+                try:
+                    image_data = hinh_anh_file.read()
+                    base64_data = base64.b64encode(image_data).decode('utf-8')
+                    ext = hinh_anh_file.name.split('.')[-1].lower()
+                    if ext not in ['jpg', 'jpeg', 'png', 'gif']:
+                        ext = 'jpeg'
+                    mime_type = f"image/{ext}" if ext != 'jpg' else "image/jpeg"
+                    taixe_update_fields['HinhAnhURL'] = f"data:{mime_type};base64,{base64_data}"
+                except Exception as e:
+                    print(f"Lỗi convert base64 (sua_tai_xe): {e}")
+
+            Taixe.objects.filter(TaixeID=pk).update(**taixe_update_fields)
             
             # 3. Cập nhật CHITIETTAIXE
             start_date_str = request.POST.get('start_date')
@@ -225,6 +266,7 @@ def sua_tai_xe(request, pk):
             
     return redirect('quanlytaixe')
 
+@nhaxe_required
 def xoa_tai_xe(request, pk):
     """Xóa tài xế trực tiếp khỏi Database"""
     if request.method == 'POST':
@@ -242,6 +284,7 @@ def xoa_tai_xe(request, pk):
     return redirect('quanlytaixe')
 
 # Giữ lại các view tĩnh cũ (nếu có dùng)
+@taixe_required
 def taixe(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -316,6 +359,7 @@ def taixe(request):
         'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
         'avatar_url': avatar_url
     })
+@taixe_required
 def thongtin_taixe(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -337,6 +381,7 @@ def thongtin_taixe(request):
         'ten_taixe': driver.HoTen if driver else None,
         'avatar_url': getattr(driver, 'HinhAnhURL', None) if driver else None
     })
+@taixe_required
 def taixe_lotrinh(request):
     trip_id = request.GET.get('id', '')
     if not trip_id:
@@ -365,6 +410,7 @@ def taixe_lotrinh(request):
         'ten_taixe': taixe_obj.HoTen if taixe_obj else None,
         'avatar_url': getattr(taixe_obj, 'HinhAnhURL', None) if taixe_obj else None
     })
+@nhaxe_required
 def phancongtaixe(request):
     nha_xe_id = request.session.get('user_id')
     if not nha_xe_id:

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
 from .models import ChuyenXe, GheNgoi, Ve, User_Authentication, KhachHang, CHITIETLOAIXE
+from .thanhtoan_views import gui_mail_ve
 import uuid
 
 # ==================== ĐIỀN THÔNG TIN VÀ XÁC NHẬN ĐẶT VÉ ====================
@@ -24,11 +25,23 @@ def dat_ve_thong_tin(request):
         # Lấy dữ liệu thực tế từ ChuyenXe
         chuyen_xe = ChuyenXe.objects.select_related('TuyenXe', 'Xe__Loaixe').get(ChuyenXeID=chuyen_id)
 
+        # Lấy giá vé từ CHITIETLOAIXE
+        try:
+            chitiet = CHITIETLOAIXE.objects.get(
+                Nhaxe=chuyen_xe.TuyenXe.nhaXe,
+                Loaixe=chuyen_xe.Xe.Loaixe
+            )
+            gia_ve = chitiet.GiaVe
+        except CHITIETLOAIXE.DoesNotExist:
+            gia_ve = chuyen_xe.Xe.Loaixe.GiaVe if chuyen_xe.Xe and chuyen_xe.Xe.Loaixe else 0
+
         context = {
             'chuyen_xe': chuyen_xe,
             'chuyen_id': chuyen_id,
             'ghe_ids': ghe_ids,
             'so_luong': len(ghe_ids),
+            'gia_ve': gia_ve,
+            'tong_tien': gia_ve * len(ghe_ids),
         }
 
         # Kiểm tra session xem khách đã đăng nhập chưa để pre-fill form
@@ -99,6 +112,7 @@ def xac_nhan_dat_ve(request):
                     if num > max_num: max_num = num
 
             # Quét qua danh sách ghế đã chọn và tạo vé
+            ve_vua_tao = []
             for index, ghe_id in enumerate(ghe_ids):
                 # 0. Đảm bảo ghế tồn tại trong DB (nếu chưa có thì tạo mới)
                 # Tính prefix dựa trên số chỗ của xe
@@ -122,7 +136,7 @@ def xac_nhan_dat_ve(request):
                 ve_id = f"VE{max_num + index + 1:04d}"
                 
                 # 1. Tạo mới bản ghi Ve
-                Ve.objects.create(
+                ve_moi = Ve.objects.create(
                     VeID=ve_id,
                     KhachHang=khach_hang,
                     ChuyenXe=chuyen_xe,
@@ -134,10 +148,17 @@ def xac_nhan_dat_ve(request):
                     GiaVe=gia_ve, # Sử dụng giá vé đã được lấy chính xác
                     TrangThaiThanhToan="Chưa thanh toán" # Ràng buộc: Luôn là Chưa thanh toán khi mới tạo
                 )
+                
+                ve_vua_tao.append(ve_moi)
 
                 # 2. Đổi trạng thái ghế thành "Đã đặt"
                 ghe.trangThai = "Đã đặt"
                 ghe.save()
+
+            # Gửi mail thông báo ĐẶT VÉ THÀNH CÔNG (Gộp)
+            if ve_vua_tao:
+                from .thanhtoan_views import gui_mail_ve
+                gui_mail_ve(ve_vua_tao[0], loai='booking', danh_sach_ve=ve_vua_tao)
 
             messages.success(request, f"Chúc mừng! Bạn đã đặt thành công {len(ghe_ids)} vé.")
             return redirect('quanlyve') # Điều hướng về trang quản lý vé của tôi

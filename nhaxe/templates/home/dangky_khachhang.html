@@ -88,7 +88,8 @@
                 </div>
                 <span class="error-text otp-error-msg" id="err-otp"></span>
                 <div class="otp-actions">
-                    <button type="button" class="btn-resend" id="btnResendOtp" onclick="handleResendOtp()">Gửi lại mã</button>
+                    <button type="button" class="btn-resend" id="btnResendOtp" onclick="handleResendOtp()">Gửi lại
+                        mã</button>
                     <button type="button" class="btn-complete" onclick="handleOtpCompletion()">Hoàn thành</button>
                 </div>
             </div>
@@ -120,7 +121,9 @@
                     <i class="fa-solid fa-check"></i>
                 </div>
             </div>
-            <p class="alert-message" id="successMessageText" style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: #333;">Tạo tài khoản thành công</p>
+            <p class="alert-message" id="successMessageText"
+                style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: #333;">Tạo tài khoản khách hàng thành
+                công</p>
         </div>
     </div>
 
@@ -200,26 +203,26 @@
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                 body: JSON.stringify(formData),
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    openOtpModal();
-                } else {
-                    const errorMap = {
-                        'Tên đăng nhập đã tồn tại.': 'username',
-                        'Số điện thoại đã được sử dụng.': 'phone',
-                        'Mật khẩu phải có ít nhất 8 ký tự.': 'password',
-                        'Họ tên không được chứa ký tự đặc biệt.': 'hoVaTen'
-                    };
-                    const fieldId = errorMap[data.message];
-                    if (fieldId) {
-                        displayFieldError(fieldId, data.message);
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        openOtpModal();
                     } else {
-                        showError(data.message || 'Lỗi không xác định.');
+                        const errorMap = {
+                            'Tên đăng nhập đã tồn tại.': 'username',
+                            'Số điện thoại đã được sử dụng.': 'phone',
+                            'Mật khẩu phải có ít nhất 8 ký tự.': 'password',
+                            'Họ tên không được chứa ký tự đặc biệt.': 'hoVaTen'
+                        };
+                        const fieldId = errorMap[data.message];
+                        if (fieldId) {
+                            displayFieldError(fieldId, data.message);
+                        } else {
+                            showError(data.message || 'Lỗi không xác định.');
+                        }
                     }
-                }
-            })
-            .catch(() => showError('Lỗi kết nối. Vui lòng thử lại.'));
+                })
+                .catch(() => showError('Lỗi kết nối. Vui lòng thử lại.'));
         }
 
         function handleOtpCompletion() {
@@ -245,21 +248,21 @@
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                 body: JSON.stringify({ otp: otpValue }),
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    closeOtpModal();
-                    showSuccess(data.message);
-                    setTimeout(() => { window.location.href = URL_INDEX; }, 2000);
-                } else {
-                    otpErrorSpan.textContent = `* ${data.message}` || '* Lỗi không xác định.';
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        closeOtpModal();
+                        showSuccess(data.message);
+                        setTimeout(() => { window.location.href = URL_INDEX; }, 2000);
+                    } else {
+                        otpErrorSpan.textContent = `* ${data.message}` || '* Lỗi không xác định.';
+                        otpErrorSpan.style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    otpErrorSpan.textContent = '* Lỗi hệ thống. Vui lòng thử lại sau!';
                     otpErrorSpan.style.display = 'block';
-                }
-            })
-            .catch(() => {
-                otpErrorSpan.textContent = '* Lỗi hệ thống. Vui lòng thử lại sau!';
-                otpErrorSpan.style.display = 'block';
-            });
+                });
         }
 
         function handleResendOtp() {
@@ -365,4 +368,5 @@
     </script>
 
 </body>
+
 </html>

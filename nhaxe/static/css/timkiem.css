@@ -44,16 +44,17 @@ body {
 
 .form-row {
     display: flex;
-    gap: 30px; /* Consistent gap */
+    gap: 30px;
     margin-bottom: 25px;
+    align-items: flex-start;
 }
 
 .locations-row {
-    align-items: center;
+    align-items: flex-start;
 }
 
 .times-row {
-    gap: 30px; /* Matching locations-row gap */
+    align-items: flex-start;
 }
 
 .form-group {
@@ -658,6 +659,13 @@ body {
     background-color: #0581B8;
 }
 
+.row-spacer {
+    width: 150px;
+    flex-shrink: 0;
+    padding: 0 15px;
+    margin-top: 25px; /* Match exchange-icon-wrapper */
+}
+
 .exchange-icon-wrapper {
     width: 150px;
     display: flex;
@@ -684,11 +692,12 @@ body {
     width: 100%;
 }
 
-.dot-green {
+.search-dot-green {
     width: 6px;
     height: 6px;
     background-color: #4CAF50;
     border-radius: 50%;
+    position: static; /* Reset from potential global dot-green */
 }
 
 .line-dashed {

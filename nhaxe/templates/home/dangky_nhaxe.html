@@ -138,7 +138,8 @@
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </div>
-            <p class="alert-message" id="errorMessageText" style="margin-bottom: 0;">Hệ thống lỗi, vui lòng thử lại sau!</p>
+            <p class="alert-message" id="errorMessageText" style="margin-bottom: 0;">Hệ thống lỗi, vui lòng thử lại sau!
+            </p>
         </div>
     </div>
 
@@ -149,7 +150,9 @@
                     <i class="fa-solid fa-check"></i>
                 </div>
             </div>
-            <p class="alert-message" id="successMessageText" style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: #333;">Tạo tài khoản nhà xe thành công</p>
+            <p class="alert-message" id="successMessageText"
+                style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: #333;">Tạo tài khoản nhà xe thành
+                công</p>
         </div>
     </div>
     <script>
@@ -264,27 +267,27 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                     body: JSON.stringify(getFormData()),
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        document.getElementById('otpModal').classList.add('show-modal');
-                        startResendTimer();
-                        document.querySelector('.otp-box').focus();
-                    } else {
-                        const errorMap = {
-                            'Tên đăng nhập đã tồn tại.': 'username',
-                            'Số điện thoại đã được sử dụng.': 'phone',
-                            'Mật khẩu phải có ít nhất 8 ký tự.': 'password',
-                        };
-                        const fieldId = errorMap[data.message];
-                        if (fieldId) {
-                            displayFieldError(fieldId, data.message);
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            document.getElementById('otpModal').classList.add('show-modal');
+                            startResendTimer();
+                            document.querySelector('.otp-box').focus();
                         } else {
-                            showError(data.message || 'Lỗi không xác định.');
+                            const errorMap = {
+                                'Tên đăng nhập đã tồn tại.': 'username',
+                                'Số điện thoại đã được sử dụng.': 'phone',
+                                'Mật khẩu phải có ít nhất 8 ký tự.': 'password',
+                            };
+                            const fieldId = errorMap[data.message];
+                            if (fieldId) {
+                                displayFieldError(fieldId, data.message);
+                            } else {
+                                showError(data.message || 'Lỗi không xác định.');
+                            }
                         }
-                    }
-                })
-                .catch(() => showError('Lỗi kết nối. Vui lòng thử lại.'));
+                    })
+                    .catch(() => showError('Lỗi kết nối. Vui lòng thử lại.'));
             }
         });
 
@@ -342,28 +345,28 @@
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                 body: JSON.stringify({ otp: otpValue }),
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('otpModal').classList.remove('show-modal');
-                    clearInterval(resendTimer);
-                    document.getElementById('successMessageText').textContent = data.message;
-                    document.getElementById('successModal').classList.add('show-modal');
-                    setTimeout(function () {
-                        window.location.href = URL_INDEX;
-                    }, 2000);
-                } else {
-                    otpErrorSpan.textContent = `* ${data.message}` || '* Lỗi không xác định.';
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('otpModal').classList.remove('show-modal');
+                        clearInterval(resendTimer);
+                        document.getElementById('successMessageText').textContent = data.message;
+                        document.getElementById('successModal').classList.add('show-modal');
+                        setTimeout(function () {
+                            window.location.href = URL_INDEX;
+                        }, 2000);
+                    } else {
+                        otpErrorSpan.textContent = `* ${data.message}` || '* Lỗi không xác định.';
+                        otpErrorSpan.style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    otpErrorSpan.textContent = '* Lỗi hệ thống. Vui lòng thử lại sau!';
                     otpErrorSpan.style.display = 'block';
-                }
-            })
-            .catch(() => {
-                otpErrorSpan.textContent = '* Lỗi hệ thống. Vui lòng thử lại sau!';
-                otpErrorSpan.style.display = 'block';
-            });
+                });
         });
 
-        document.getElementById('btnResendOtp').addEventListener('click', function() {
+        document.getElementById('btnResendOtp').addEventListener('click', function () {
             if (this.disabled) return;
             fetch(URL_SEND_OTP, {
                 method: 'POST',
@@ -404,7 +407,7 @@
         }
 
         function showError(msg) {
-            if(msg) document.getElementById('errorMessageText').textContent = msg;
+            if (msg) document.getElementById('errorMessageText').textContent = msg;
             document.getElementById('errorModal').classList.add('show-modal');
             setTimeout(function () {
                 document.getElementById('errorModal').classList.remove('show-modal');
