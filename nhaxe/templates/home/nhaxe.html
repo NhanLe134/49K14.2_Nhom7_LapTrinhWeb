@@ -34,9 +34,46 @@
         </div>
         
         <div class="header-right" style="display: flex; align-items: center; gap: 25px;">
-            <div class="header-notifications" style="position: relative; cursor: pointer;">
+            <div class="header-notifications" id="notificationBtn" style="position: relative; cursor: pointer;">
                 <i class="fa-solid fa-bell" style="font-size: 1.3rem; color: white;"></i>
-                <span style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 5px; border-radius: 10px; font-weight: 800;">3</span>
+                {% if overdue_trips_count > 0 %}
+                <span style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 5px; border-radius: 10px; font-weight: 800;">
+                    {{ overdue_trips_count }}
+                </span>
+                {% endif %}
+
+                <!-- Notification Dropdown -->
+                <div class="dropdown-menu" id="notificationMenu" style="width: 300px; right: 0; top: 50px; padding: 0; overflow: hidden;">
+                    <div style="padding: 12px 15px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #334155; display: flex; justify-content: space-between;">
+                        <span>Thông báo chuyến xe</span>
+                        <span class="badge" style="background: #fee2e2; color: #ef4444; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px;">{{ overdue_trips_count }} quá hạn</span>
+                    </div>
+                    <div style="max-height: 350px; overflow-y: auto;">
+                        {% if overdue_trips %}
+                            {% for trip in overdue_trips %}
+                            <a href="{% url 'quanlychuyenxe' %}" class="dropdown-item" style="white-space: normal; padding: 12px 15px; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 4px;">
+                                <div style="font-weight: 600; color: #1e293b; font-size: 0.9rem;">
+                                    {{ trip.TuyenXe.tenTuyen }}
+                                </div>
+                                <div style="font-size: 0.8rem; color: #64748b;">
+                                    <i class="fa-regular fa-calendar" style="margin-right: 5px;"></i> {{ trip.NgayKhoiHanh|date:"d/m/Y" }} - {{ trip.GioDi|time:"H:i" }}
+                                </div>
+                                <div style="font-size: 0.75rem; color: #ef4444; font-weight: 500;">
+                                    <i class="fa-solid fa-circle-exclamation" style="margin-right: 5px;"></i> Chưa hoàn thành
+                                </div>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <div style="padding: 30px 20px; text-align: center; color: #94a3b8; font-size: 0.9rem;">
+                                <i class="fa-solid fa-check-circle" style="display: block; font-size: 2rem; margin-bottom: 10px; color: #10b981;"></i>
+                                Không có chuyến xe nào quá hạn
+                            </div>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'quanlychuyenxe' %}" style="display: block; text-align: center; padding: 10px; font-size: 0.85rem; color: #06A0E2; font-weight: 600; background: #f8fafc; text-decoration: none; border-top: 1px solid #e2e8f0;">
+                        Xem tất cả chuyến xe
+                    </a>
+                </div>
             </div>
             <div class="header-user" id="userDropdownBtn" style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
                 <span class="user-name" style="color: white; font-weight: 700; font-size: 1.1rem;">
@@ -286,6 +323,34 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Dropdown User
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userMenu');
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('show');
+                    if (notificationMenu) notificationMenu.classList.remove('show');
+                });
+            }
+
+            // Dropdown Notification
+            const notificationBtn = document.getElementById('notificationBtn');
+            const notificationMenu = document.getElementById('notificationMenu');
+            if (notificationBtn && notificationMenu) {
+                notificationBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    notificationMenu.classList.toggle('show');
+                    if (userMenu) userMenu.classList.remove('show');
+                });
+            }
+
+            // Close when clicking outside
+            document.addEventListener('click', () => {
+                if (userMenu) userMenu.classList.remove('show');
+                if (notificationMenu) notificationMenu.classList.remove('show');
+            });
+
             {% if messages %}
                 {% for msg in messages %}
                     let loai = '{{ msg.tags }}'.includes('error') ? 'loi' : 'thanh_cong';

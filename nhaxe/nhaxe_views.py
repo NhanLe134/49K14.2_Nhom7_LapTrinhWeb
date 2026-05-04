@@ -93,12 +93,22 @@ def nhaxe(request):
         total_drivers = len(drivers_queryset)
         avg_trips = round(total_trips / total_drivers, 1) if total_drivers > 0 else 0
 
+        # Fetch overdue trips for notifications
+        overdue_trips_raw = ChuyenXe.objects.filter(
+            NgayKhoiHanh__lt=today,
+            TrangThai='Chưa hoàn thành'
+        ).select_related('TuyenXe')
+        overdue_trips_list = [trip for trip in overdue_trips_raw if trip.TuyenXe and getattr(trip.TuyenXe, 'nhaXe_id', getattr(trip.TuyenXe, 'nhaxe_id', None)) == nha_xe_id]
+        overdue_trips_count = len(overdue_trips_list)
+
         context = {
             'nha_xe': nha_xe_obj,
             'week_days': week_days_display,
             'schedule': schedule_data,
             'week_offset': week_offset,
             'avatar_url': nha_xe_obj.AnhDaiDienURL if nha_xe_obj else None,
+            'overdue_trips': overdue_trips_list,
+            'overdue_trips_count': overdue_trips_count,
             'stats': {
                 'total_trips': total_trips,
                 'total_completed': total_completed,
